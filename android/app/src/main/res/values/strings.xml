@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Sudoku 3D</string>
+    <string name="title_activity_main">Sudoku 3D</string>
+    <string name="package_name">io.sudoku3d.app</string>
+    <string name="custom_url_scheme">io.sudoku3d.app</string>
+</resources>

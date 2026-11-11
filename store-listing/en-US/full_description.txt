@@ -1,0 +1,37 @@
+SUDOKU 3D — The only Sudoku app that plays on a real 3D cube.
+
+Classic Sudoku is solved on a flat 9×9 grid. Sudoku 3D wraps that grid around a cube — each face connects to the others, creating a uniquely challenging three-dimensional logic puzzle unlike anything else on the Play Store.
+
+═══════════════════════════
+GAME MODES
+═══════════════════════════
+
+▸ 3D SUDOKU — Solve a 3×3×3, 4×4×4 or 9×9×9 cube. Rotate it freely, zoom in, explore every face. The numbers on each face must follow classic Sudoku rules — but the faces interact with each other, raising the challenge to a new level.
+
+▸ CLASSIC SUDOKU 2D — The traditional 9×9 grid for daily training. Clean, fast, distraction-free.
+
+▸ KAKURO — Number crossword puzzles. Fill the grid so each row and column sum matches the clue, using each digit only once. Available in 7×7 (Easy, Intermediate) and 9×9 (Advanced, Expert).
+
+═══════════════════════════
+FEATURES
+═══════════════════════════
+
+✓ 4 difficulty levels: Easy, Intermediate, Advanced, Expert
+✓ Hints system — get unstuck without spoiling the puzzle
+✓ Unlimited Undo / Redo
+✓ Auto-validation — catch mistakes instantly
+✓ Timer and scoring
+✓ Works fully offline — no internet required
+✓ No account needed — just open and play
+
+═══════════════════════════
+WHO IS THIS FOR?
+═══════════════════════════
+
+Perfect for sudoku fans looking for a fresh challenge, Kakuro enthusiasts, and anyone who enjoys logic puzzles and brain training games. The 3D mode is genuinely unique — there is no other app on Android that offers a full 3D Sudoku experience with multiple cube sizes.
+
+═══════════════════════════
+KEYWORDS
+═══════════════════════════
+
+sudoku 3d, 3d sudoku, sudoku cube, kakuro, number puzzle, logic puzzle, brain training, math puzzle, puzzle game offline, sudoku classic, sudoku hard, number crossword

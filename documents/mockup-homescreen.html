@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Mockups — Pantalla d'inici · Sudoku³</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Nunito:wght@700;900&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #0a0a0f;
+    color: #eee;
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 14px;
+    padding: 32px 20px 64px;
+  }
+  h1 {
+    font-family: 'Nunito', sans-serif; font-weight: 900;
+    font-size: 24px; color: #fff; margin-bottom: 6px;
+  }
+  .intro { color: #666; font-size: 13px; margin-bottom: 48px; line-height: 1.6; max-width: 700px; }
+
+  .proposals { display: flex; gap: 40px; flex-wrap: wrap; align-items: flex-start; }
+
+  .proposal { display: flex; flex-direction: column; gap: 14px; }
+  .proposal-label {
+    font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;
+    color: #555; text-align: center;
+  }
+  .proposal-tag {
+    display: inline-block; margin: 0 auto;
+    padding: 3px 10px; border-radius: 20px;
+    font-size: 11px; font-weight: 600; letter-spacing: 0.06em;
+  }
+  .tag-a { background: rgba(251,191,36,.15); color: #fbbf24; border: 1px solid rgba(251,191,36,.3); }
+  .tag-b { background: rgba(139,92,246,.15); color: #a78bfa; border: 1px solid rgba(139,92,246,.3); }
+  .tag-c { background: rgba(20,184,166,.15); color: #2dd4bf; border: 1px solid rgba(20,184,166,.3); }
+
+  /* ─────────────────────────────────────────────
+     Phone frame
+  ───────────────────────────────────────────── */
+  .phone {
+    width: 320px;
+    border-radius: 32px;
+    border: 1.5px solid #222;
+    overflow: hidden;
+    position: relative;
+    flex-shrink: 0;
+  }
+
+  /* ═══════════════════════════════════════════
+     PROPOSTA A — "Card Gallery"
+     Cards grans amb degradats de color per joc.
+     Paleta: ambre · índigo · esmeralda
+  ═══════════════════════════════════════════ */
+  .phone-a {
+    background: #0c0c14;
+    min-height: 620px;
+    display: flex; flex-direction: column;
+    font-family: 'Inter', sans-serif;
+  }
+  .pa-header {
+    padding: 28px 22px 18px;
+    display: flex; flex-direction: column; gap: 4px;
+  }
+  .pa-wordmark {
+    font-family: 'Nunito', sans-serif; font-weight: 900;
+    font-size: 26px; color: #fff; letter-spacing: -0.01em;
+  }
+  .pa-wordmark span { color: #f59e0b; }
+  .pa-sub { font-size: 12px; color: #555; font-weight: 500; }
+
+  .pa-cards {
+    flex: 1; display: flex; flex-direction: column;
+    gap: 12px; padding: 0 14px 20px;
+  }
+  .pa-card {
+    border-radius: 18px; overflow: hidden;
+    position: relative; cursor: pointer;
+    flex: 1; min-height: 148px;
+    display: flex; align-items: flex-end;
+    padding: 0 20px 18px;
+    transition: transform 80ms;
+  }
+  .pa-card-bg {
+    position: absolute; inset: 0;
+  }
+  .pa-card-overlay {
+    position: absolute; inset: 0;
+    background: linear-gradient(to top, rgba(0,0,0,.75) 0%, rgba(0,0,0,.1) 55%, transparent 100%);
+  }
+  .pa-card-illus {
+    position: absolute; top: 0; right: 0; bottom: 0;
+    width: 55%; display: flex; align-items: center; justify-content: center;
+    opacity: .18; font-size: 80px; user-select: none;
+  }
+  .pa-card-text { position: relative; z-index: 1; }
+  .pa-card-badge {
+    display: inline-block; margin-bottom: 6px;
+    padding: 2px 9px; border-radius: 20px;
+    font-size: 10px; font-weight: 600; letter-spacing: .07em;
+    text-transform: uppercase;
+  }
+  .pa-card-title {
+    font-family: 'Nunito', sans-serif; font-weight: 900;
+    font-size: 20px; color: #fff; line-height: 1;
+    margin-bottom: 4px;
+  }
+  .pa-card-desc {
+    font-size: 11px; color: rgba(255,255,255,.6); line-height: 1.4;
+  }
+  .pa-card-arrow {
+    position: absolute; top: 14px; right: 16px; z-index: 1;
+    width: 30px; height: 30px; border-radius: 50%;
+    background: rgba(255,255,255,.12);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; color: rgba(255,255,255,.7);
+  }
+  /* card A — 3D Sudoku */
+  .pa-c1 .pa-card-bg { background: linear-gradient(135deg, #92400e 0%, #b45309 40%, #d97706 100%); }
+  .pa-c1 .pa-card-badge { background: rgba(251,191,36,.25); color: #fde68a; }
+  /* card B — Sudoku 2D */
+  .pa-c2 .pa-card-bg { background: linear-gradient(135deg, #1e1b4b 0%, #3730a3 40%, #4f46e5 100%); }
+  .pa-c2 .pa-card-badge { background: rgba(165,180,252,.2); color: #c7d2fe; }
+  /* card C — Kakuro */
+  .pa-c3 .pa-card-bg { background: linear-gradient(135deg, #064e3b 0%, #047857 40%, #059669 100%); }
+  .pa-c3 .pa-card-badge { background: rgba(52,211,153,.2); color: #a7f3d0; }
+
+
+  /* ═══════════════════════════════════════════
+     PROPOSTA B — "Neon Arcade"
+     Panells verticals de colors vibrents,
+     estètica arcada/retro-digital amb glow.
+  ═══════════════════════════════════════════ */
+  .phone-b {
+    background: #050508;
+    min-height: 620px;
+    display: flex; flex-direction: column;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+  .pb-header {
+    padding: 26px 20px 14px;
+    border-bottom: 1px solid #111;
+    display: flex; justify-content: space-between; align-items: flex-end;
+  }
+  .pb-wordmark {
+    font-family: 'Nunito', sans-serif; font-weight: 900;
+    font-size: 22px; color: #fff;
+  }
+  .pb-wordmark em { font-style: normal; color: #f59e0b; }
+  .pb-sub { font-size: 9px; letter-spacing: .18em; color: #333; }
+
+  .pb-panels {
+    flex: 1; display: flex;
+  }
+  .pb-panel {
+    flex: 1; display: flex; flex-direction: column;
+    align-items: center; justify-content: flex-end;
+    padding-bottom: 22px; position: relative;
+    cursor: pointer; overflow: hidden;
+    border-right: 1px solid #0a0a0a;
+  }
+  .pb-panel:last-child { border-right: none; }
+  .pb-panel-glow {
+    position: absolute; inset: 0;
+    opacity: 0;
+    transition: opacity 200ms;
+  }
+  .pb-panel-num {
+    font-size: 72px; font-weight: 600;
+    line-height: 1; margin-bottom: 16px;
+    position: relative; z-index: 1;
+    text-shadow: 0 0 30px currentColor;
+  }
+  .pb-panel-name {
+    font-size: 9px; letter-spacing: .16em; text-transform: uppercase;
+    color: rgba(255,255,255,.5); margin-bottom: 6px;
+    position: relative; z-index: 1;
+  }
+  .pb-panel-btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 36px; height: 36px; border-radius: 50%;
+    border: 1.5px solid currentColor;
+    font-size: 14px; position: relative; z-index: 1;
+    opacity: .7;
+  }
+  .pb-scan {
+    position: absolute; top: 0; left: 0; right: 0;
+    height: 2px; opacity: .25;
+    animation: scan 3s linear infinite;
+  }
+  @keyframes scan { 0%{top:0} 100%{top:100%} }
+
+  /* panel 1 — 3D */
+  .pb-p1 .pb-panel-num { color: #fb923c; }
+  .pb-p1 .pb-panel-btn { color: #fb923c; }
+  .pb-p1 .pb-scan { background: #fb923c; }
+  .pb-p1 .pb-panel-glow { background: radial-gradient(ellipse at 50% 80%, rgba(251,146,60,.12) 0%, transparent 70%); opacity: 1; }
+  /* panel 2 — 2D */
+  .pb-p2 .pb-panel-num { color: #818cf8; }
+  .pb-p2 .pb-panel-btn { color: #818cf8; }
+  .pb-p2 .pb-scan { background: #818cf8; animation-delay: -1s; }
+  .pb-p2 .pb-panel-glow { background: radial-gradient(ellipse at 50% 80%, rgba(129,140,248,.12) 0%, transparent 70%); opacity: 1; }
+  /* panel 3 — KK */
+  .pb-p3 .pb-panel-num { color: #34d399; }
+  .pb-p3 .pb-panel-btn { color: #34d399; }
+  .pb-p3 .pb-scan { background: #34d399; animation-delay: -2s; }
+  .pb-p3 .pb-panel-glow { background: radial-gradient(ellipse at 50% 80%, rgba(52,211,153,.12) 0%, transparent 70%); opacity: 1; }
+
+  .pb-footer {
+    padding: 12px 20px;
+    border-top: 1px solid #111;
+    display: flex; justify-content: center; gap: 6px;
+  }
+  .pb-dot { width: 6px; height: 6px; border-radius: 50%; background: #222; }
+  .pb-dot.on { background: #f59e0b; }
+
+
+  /* ═══════════════════════════════════════════
+     PROPOSTA C — "Editorial Minimal"
+     Llista vertical amb tipografia gran,
+     línia de separació i accent de color lateral.
+     Look: revista de disseny / app premium.
+  ═══════════════════════════════════════════ */
+  .phone-c {
+    background: #111116;
+    min-height: 620px;
+    display: flex; flex-direction: column;
+    font-family: 'Inter', sans-serif;
+  }
+  .pc-header {
+    padding: 30px 22px 20px;
+  }
+  .pc-label {
+    font-size: 9px; letter-spacing: .2em; text-transform: uppercase;
+    color: #444; margin-bottom: 10px;
+  }
+  .pc-wordmark {
+    font-family: 'Nunito', sans-serif; font-weight: 900;
+    font-size: 30px; color: #fff; line-height: 1;
+    letter-spacing: -.02em;
+  }
+  .pc-wordmark b { color: #f59e0b; font-weight: 900; }
+  .pc-tagline { font-size: 12px; color: #444; margin-top: 6px; }
+
+  .pc-list { flex: 1; padding: 8px 0; }
+  .pc-item {
+    display: flex; align-items: stretch;
+    padding: 0 22px; cursor: pointer;
+    border-bottom: 1px solid #1a1a20;
+    position: relative; overflow: hidden;
+  }
+  .pc-item:last-child { border-bottom: none; }
+  .pc-stripe {
+    width: 3px; border-radius: 2px; margin: 18px 18px 18px 0;
+    flex-shrink: 0;
+  }
+  .pc-item-body {
+    flex: 1; padding: 18px 0;
+  }
+  .pc-item-num {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px; letter-spacing: .1em; color: #333;
+    margin-bottom: 4px;
+  }
+  .pc-item-title {
+    font-family: 'Nunito', sans-serif; font-weight: 900;
+    font-size: 22px; color: #f0f0f0; line-height: 1; margin-bottom: 5px;
+  }
+  .pc-item-desc {
+    font-size: 11px; color: #555; line-height: 1.5;
+  }
+  .pc-item-meta {
+    display: flex; align-items: center; gap: 8px; margin-top: 8px;
+  }
+  .pc-item-tag {
+    font-size: 9px; letter-spacing: .1em; font-weight: 600;
+    text-transform: uppercase; padding: 2px 8px;
+    border-radius: 20px;
+  }
+  .pc-item-arrow {
+    margin-left: auto; font-size: 14px; color: #333;
+    align-self: center;
+  }
+  /* item 1 — 3D */
+  .pc-i1 .pc-stripe { background: #f59e0b; box-shadow: 0 0 8px rgba(245,158,11,.4); }
+  .pc-i1 .pc-item-tag { background: rgba(245,158,11,.12); color: #fbbf24; }
+  /* item 2 — 2D */
+  .pc-i2 .pc-stripe { background: #6366f1; box-shadow: 0 0 8px rgba(99,102,241,.4); }
+  .pc-i2 .pc-item-tag { background: rgba(99,102,241,.12); color: #a5b4fc; }
+  /* item 3 — KK */
+  .pc-i3 .pc-stripe { background: #10b981; box-shadow: 0 0 8px rgba(16,185,129,.4); }
+  .pc-i3 .pc-item-tag { background: rgba(16,185,129,.12); color: #6ee7b7; }
+
+  .pc-footer {
+    padding: 14px 22px 20px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .pc-streak {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px; color: #333; letter-spacing: .06em;
+  }
+  .pc-streak span { color: #f59e0b; }
+  .pc-settings {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: #1a1a20; border: 1px solid #222;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; cursor: pointer;
+  }
+
+  /* ─── Notes i comparació ─────────────────── */
+  .notes-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 24px; margin-top: 56px;
+  }
+  .note-block { border-top: 2px solid #1e1e2a; padding-top: 16px; }
+  .note-title { font-size: 12px; font-weight: 600; color: #ddd; margin-bottom: 8px; }
+  .note-body  { font-size: 12px; color: #555; line-height: 1.7; }
+  .note-body strong { color: #aaa; }
+
+  /* ─── Subtítols de secció ───────────────── */
+  h2 {
+    font-size: 11px; letter-spacing: .14em; color: #333;
+    text-transform: uppercase; margin-bottom: 28px; margin-top: 56px;
+  }
+</style>
+</head>
+<body>
+
+<h1>Pantalla d'inici — 3 propostes</h1>
+<p class="intro">
+  Mockups per substituir el selector de mode actual (botons 3D·2D·KK a la capçalera) per una pantalla d'inici completa que mostri tots els jocs de la plataforma de forma atractiva.
+  Cada proposta té un caràcter visual diferent.
+</p>
+
+<h2>Comparació de les tres propostes</h2>
+<div class="proposals">
+
+  <!-- ══════════════════════ PROPOSTA A ══════════════════════ -->
+  <div class="proposal">
+    <div class="proposal-label">Proposta A</div>
+    <div class="proposal-tag tag-a">Card Gallery</div>
+
+    <div class="phone phone-a">
+      <div class="pa-header">
+        <div class="pa-wordmark">Sudoku<span>³</span></div>
+        <div class="pa-sub">Choose your puzzle</div>
+      </div>
+
+      <div class="pa-cards">
+        <!-- 3D Sudoku -->
+        <div class="pa-card pa-c1">
+          <div class="pa-card-bg"></div>
+          <div class="pa-card-overlay"></div>
+          <div class="pa-card-illus">⬛</div>
+          <div class="pa-card-arrow">›</div>
+          <div class="pa-card-text">
+            <div class="pa-card-badge">3D · 4³ / 9³</div>
+            <div class="pa-card-title">Sudoku 3D</div>
+            <div class="pa-card-desc">Fill the cube. No repeats in any axis.</div>
+          </div>
+        </div>
+
+        <!-- Sudoku 2D + Kakuro en fila -->
+        <div style="display:flex;gap:10px;flex:1">
+          <div class="pa-card pa-c2" style="flex:1;min-height:120px">
+            <div class="pa-card-bg"></div>
+            <div class="pa-card-overlay"></div>
+            <div class="pa-card-illus" style="font-size:54px">#</div>
+            <div class="pa-card-arrow" style="top:10px;right:10px">›</div>
+            <div class="pa-card-text">
+              <div class="pa-card-badge">Classic</div>
+              <div class="pa-card-title" style="font-size:17px">Sudoku<br>2D</div>
+            </div>
+          </div>
+          <div class="pa-card pa-c3" style="flex:1;min-height:120px">
+            <div class="pa-card-bg"></div>
+            <div class="pa-card-overlay"></div>
+            <div class="pa-card-illus" style="font-size:54px">+</div>
+            <div class="pa-card-arrow" style="top:10px;right:10px">›</div>
+            <div class="pa-card-text">
+              <div class="pa-card-badge">Sums</div>
+              <div class="pa-card-title" style="font-size:17px">Kakuro</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════ PROPOSTA B ══════════════════════ -->
+  <div class="proposal">
+    <div class="proposal-label">Proposta B</div>
+    <div class="proposal-tag tag-b">Neon Arcade</div>
+
+    <div class="phone phone-b">
+      <div class="pb-header">
+        <div>
+          <div class="pb-wordmark">Sudoku<em>³</em></div>
+        </div>
+        <div class="pb-sub">SELECT GAME</div>
+      </div>
+
+      <div class="pb-panels">
+        <!-- 3D -->
+        <div class="pb-panel pb-p1">
+          <div class="pb-panel-glow"></div>
+          <div class="pb-scan"></div>
+          <div class="pb-panel-num">3D</div>
+          <div class="pb-panel-name">Sudoku 3D</div>
+          <div class="pb-panel-btn">▶</div>
+        </div>
+        <!-- 2D -->
+        <div class="pb-panel pb-p2">
+          <div class="pb-panel-glow"></div>
+          <div class="pb-scan"></div>
+          <div class="pb-panel-num">2D</div>
+          <div class="pb-panel-name">Sudoku 2D</div>
+          <div class="pb-panel-btn">▶</div>
+        </div>
+        <!-- KK -->
+        <div class="pb-panel pb-p3">
+          <div class="pb-panel-glow"></div>
+          <div class="pb-scan"></div>
+          <div class="pb-panel-num">KK</div>
+          <div class="pb-panel-name">Kakuro</div>
+          <div class="pb-panel-btn">▶</div>
+        </div>
+      </div>
+
+      <div class="pb-footer">
+        <div class="pb-dot on"></div>
+        <div class="pb-dot"></div>
+        <div class="pb-dot"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════ PROPOSTA C ══════════════════════ -->
+  <div class="proposal">
+    <div class="proposal-label">Proposta C</div>
+    <div class="proposal-tag tag-c">Editorial Minimal</div>
+
+    <div class="phone phone-c">
+      <div class="pc-header">
+        <div class="pc-label">Puzzle platform</div>
+        <div class="pc-wordmark">Sudoku<b>³</b></div>
+        <div class="pc-tagline">Three games. One platform.</div>
+      </div>
+
+      <div class="pc-list">
+        <!-- 3D Sudoku -->
+        <div class="pc-item pc-i1">
+          <div class="pc-stripe"></div>
+          <div class="pc-item-body">
+            <div class="pc-item-num">01 · PUZZLE</div>
+            <div class="pc-item-title">Sudoku 3D</div>
+            <div class="pc-item-desc">Fill a cube so no number repeats in any row, column or pillar.</div>
+            <div class="pc-item-meta">
+              <span class="pc-item-tag">4³ · 9³</span>
+              <span class="pc-item-tag">4 levels</span>
+            </div>
+          </div>
+          <div class="pc-item-arrow">›</div>
+        </div>
+
+        <!-- Sudoku 2D -->
+        <div class="pc-item pc-i2">
+          <div class="pc-stripe"></div>
+          <div class="pc-item-body">
+            <div class="pc-item-num">02 · CLASSIC</div>
+            <div class="pc-item-title">Sudoku 2D</div>
+            <div class="pc-item-desc">The classic 9×9 grid. A familiar challenge, refined.</div>
+            <div class="pc-item-meta">
+              <span class="pc-item-tag">9×9</span>
+              <span class="pc-item-tag">4 levels</span>
+            </div>
+          </div>
+          <div class="pc-item-arrow">›</div>
+        </div>
+
+        <!-- Kakuro -->
+        <div class="pc-item pc-i3">
+          <div class="pc-stripe"></div>
+          <div class="pc-item-body">
+            <div class="pc-item-num">03 · SUMS</div>
+            <div class="pc-item-title">Kakuro</div>
+            <div class="pc-item-desc">Fill runs of cells so digits sum to the clue — no repeats.</div>
+            <div class="pc-item-meta">
+              <span class="pc-item-tag">7×7 · 9×9</span>
+              <span class="pc-item-tag">4 levels</span>
+            </div>
+          </div>
+          <div class="pc-item-arrow">›</div>
+        </div>
+      </div>
+
+      <div class="pc-footer">
+        <div class="pc-streak">Streak <span>7 days 🔥</span></div>
+        <div class="pc-settings">⚙</div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- .proposals -->
+
+<!-- Notes comparatives -->
+<div class="notes-grid">
+  <div class="note-block">
+    <div class="note-title" style="color:#fbbf24">A · Card Gallery</div>
+    <div class="note-body">
+      <strong>Punt fort:</strong> molt visual i modern. Les targetes grans amb degradats de color fan que cada joc tingui una identitat clara. El Sudoku 3D és el protagonista (targeta gran), mentre que 2D i Kakuro comparteixen una fila inferior.<br><br>
+      <strong>Punt feble:</strong> a mida que s'afegeixin jocs, la jerarquia (un gran + dos petits) s'haurà de repensar.
+    </div>
+  </div>
+  <div class="note-block">
+    <div class="note-title" style="color:#a78bfa">B · Neon Arcade</div>
+    <div class="note-body">
+      <strong>Punt fort:</strong> molt impactant i diferenciador. L'estètica de panells verticals amb glow i scan lines dona un caràcter únic de "consola retro-digital". Tots els jocs reben el mateix pes visual.<br><br>
+      <strong>Punt feble:</strong> el caràcter és molt pronunciat (pot no agradar a tothom) i amb molts jocs les columnes es farien estretes.
+    </div>
+  </div>
+  <div class="note-block">
+    <div class="note-title" style="color:#2dd4bf">C · Editorial Minimal</div>
+    <div class="note-body">
+      <strong>Punt fort:</strong> molt net i escalable — és fàcil afegir nous jocs com a entrades de llista. La franja de color lateral identifica ràpidament cada joc. L'espai per a descripció i metadades és generós.<br><br>
+      <strong>Punt feble:</strong> menys "espectacular" a primera vista que les altres dues, però la més funcional a llarg termini.
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,1 @@
+Classic Sudoku reimagined in 3D cube form. Includes Kakuro puzzles.

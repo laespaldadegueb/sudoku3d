@@ -1,0 +1,62 @@
+════════════════════════════════════════════════
+PLAY STORE PUBLICATION CHECKLIST
+Sudoku 3D · io.sudoku3d.app
+════════════════════════════════════════════════
+
+GENERATED FILES IN THIS DIRECTORY
+──────────────────────────────────────
+✓ icon-512.png          — App icon 512x512 for Play Store
+✓ feature-graphic.png   — Feature graphic 1024x500
+✓ en-US/title.txt
+✓ en-US/short_description.txt
+✓ en-US/full_description.txt
+
+SCREENSHOTS (PENDING — take manually)
+────────────────────────────────────────
+Format: 1080x1920px PNG vertical
+  1. 3D cube rotating with visible numbers
+     Overlay text: "Sudoku in three dimensions"
+  2. Large cube (9x9x9) being solved
+     Overlay text: "4 difficulty levels"
+  3. Kakuro mode in play (9x9 grid)
+     Overlay text: "Kakuro included"
+  4. Game mode selection screen
+     Overlay text: "3 games in one app"
+
+STEP BY STEP TO PUBLISH
+─────────────────────────
+1. Generate signed AAB:
+   cd android && ./gradlew bundleRelease
+   File: android/app/build/outputs/bundle/release/app-release.aab
+
+2. Play Console → Create new app:
+   - Name: Sudoku 3D
+   - Default language: English (United States)
+   - Type: Game
+   - Free
+
+3. Store listing → Main store details:
+   - Paste title, short description and full description from en-US/
+   - Upload icon-512.png as app icon
+   - Upload feature-graphic.png as feature graphic
+   - Upload screenshots
+
+4. Categorisation:
+   - Category: Puzzle
+   - Tags: sudoku, kakuro, puzzle, brain training
+
+5. Content rating:
+   - Complete the questionnaire (all No restrictions)
+
+6. Privacy policy:
+   - Generate at: https://app-privacy-policy-generator.firebaseapp.com
+   - Mention: no personal data collected, no ads
+
+7. Production → Create release → Upload AAB
+
+NOTE ON ADS (if added later)
+──────────────────────────────
+When AdMob is integrated, update:
+- Privacy policy (mention third-party ads)
+- Content rating form (declare ads)
+- AndroidManifest.xml (add AdMob APP_ID meta-data)

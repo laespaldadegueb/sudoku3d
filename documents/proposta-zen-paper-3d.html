@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Zen Paper — Sudoku 3D Vista Real</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: #e8e4dd;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 48px 20px 80px;
+  font-family: 'IBM Plex Mono', monospace;
+}
+
+.page-title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+  color: #1a1714;
+  margin-bottom: 6px;
+  text-align: center;
+  letter-spacing: -.02em;
+}
+.page-sub {
+  font-size: 10px;
+  color: #9a9080;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  margin-bottom: 48px;
+  text-align: center;
+}
+
+/* Frame del telèfon */
+.phone-wrap {
+  position: relative;
+  width: 290px;
+  height: 580px;
+  border-radius: 44px;
+  overflow: hidden;
+  box-shadow:
+    0 2px 0 rgba(255,255,255,.7) inset,
+    0 -1px 0 rgba(0,0,0,.08) inset,
+    0 40px 80px rgba(0,0,0,.25),
+    0 8px 20px rgba(0,0,0,.12);
+}
+
+canvas#cube {
+  position: absolute;
+  top: 0; left: 0;
+  width: 290px; height: 580px;
+}
+
+/* === Overlays sobre el canvas === */
+
+.status {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 22px;
+  pointer-events: none;
+}
+.status-time {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: #1a1714;
+}
+.status-icons {
+  display: flex; gap: 4px; align-items: center;
+}
+.status-icon { width: 14px; height: 7px; background: #1a1714; border-radius: 2px; opacity: .55; }
+
+/* Top-left: brand + level */
+.hud-tl {
+  position: absolute;
+  top: 52px; left: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.hud-wordmark {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: #1a1714;
+  letter-spacing: -.02em;
+  line-height: 1;
+}
+.hud-wordmark sup { font-size: 10px; color: #c06040; vertical-align: super; }
+.hud-level {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(250,248,245,.82);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(192,180,165,.5);
+  border-radius: 20px;
+  padding: 4px 10px 4px 8px;
+  font-size: 10px;
+  color: #6a5a48;
+  cursor: pointer;
+  width: fit-content;
+}
+.hud-level-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: #c06040;
+  box-shadow: 0 0 6px rgba(192,96,64,.5);
+}
+.hud-level-name { color: #1a1714; font-weight: 600; font-size: 11px; }
+.hud-level-caret { color: #a09080; font-size: 8px; }
+
+/* Top-right: timer + errors + hints */
+.hud-tr {
+  position: absolute;
+  top: 52px; right: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: flex-end;
+}
+.hud-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(250,248,245,.82);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(192,180,165,.4);
+  border-radius: 7px;
+  padding: 4px 10px;
+}
+.hud-chip-icon { font-size: 10px; opacity: .5; }
+.hud-chip-val {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 13px;
+  color: #1a1714;
+  min-width: 36px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.hud-chip-val.accent { color: #c06040; }
+.hud-chip-val.dim { color: #a09080; }
+
+/* Coordinate display (bottom-left) */
+.coord {
+  position: absolute;
+  bottom: 84px; left: 18px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  color: #8a7a6a;
+  display: flex;
+  gap: 2px;
+  align-items: baseline;
+}
+.coord-ax { color: #b8a898; margin-right: 1px; font-size: 9px; }
+.coord-n { color: #1a1714; margin-right: 8px; font-weight: 600; }
+
+/* Slicer (dreta) */
+.slicer {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.slice-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.slice-ax {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  font-weight: 600;
+  color: #a09080;
+  width: 10px;
+  text-align: center;
+  letter-spacing: .05em;
+}
+.slice-track {
+  display: inline-flex;
+  gap: 2px;
+  padding: 3px;
+  background: rgba(250,248,245,.85);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(192,180,165,.5);
+  border-radius: 8px;
+}
+.slice-btn {
+  background: transparent;
+  border: none;
+  border-radius: 5px;
+  color: #a09080;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+  padding: 5px 0;
+  min-width: 22px;
+  cursor: pointer;
+  text-align: center;
+  line-height: 1;
+}
+.slice-btn.all { min-width: 24px; font-size: 13px; color: #c8b8a8; }
+.slice-btn.active {
+  background: #c06040;
+  color: #fff;
+  font-weight: 700;
+}
+
+/* Numpad (baix) */
+.numpad {
+  position: absolute;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: inline-flex;
+  align-items: stretch;
+  gap: 1px;
+  padding: 4px;
+  background: rgba(250,248,245,.88);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(192,180,165,.5);
+  border-radius: 14px;
+  box-shadow: 0 4px 16px rgba(0,0,0,.08);
+}
+.num-btn {
+  min-width: 36px;
+  height: 44px;
+  border-radius: 10px;
+  border: none;
+  background: transparent;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 18px;
+  font-weight: 600;
+  color: #1a1714;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background .1s;
+}
+.num-btn:hover { background: rgba(192,96,64,.08); }
+.num-btn.active {
+  background: #c06040;
+  color: #fff;
+}
+.num-btn.dim { color: #c8b8a8; }
+.num-sep {
+  width: 1px;
+  background: rgba(192,180,165,.4);
+  align-self: stretch;
+  margin: 4px 2px;
+  flex-shrink: 0;
+}
+.num-tool {
+  min-width: 36px;
+  height: 44px;
+  border-radius: 10px;
+  border: none;
+  background: transparent;
+  font-size: 16px;
+  color: #8a7a6a;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.num-tool.on { color: #1a1714; }
+
+/* ===================== ANNOTACIÓ ===================== */
+.annotation {
+  max-width: 290px;
+  margin-top: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.ann-item {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+.ann-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  margin-top: 4px;
+  flex-shrink: 0;
+}
+.ann-text {
+  font-size: 10px;
+  color: #6a5a48;
+  line-height: 1.5;
+  letter-spacing: .02em;
+}
+.ann-text b { color: #1a1714; }
+
+/* Comparativa al costat */
+.comparison {
+  display: flex;
+  gap: 40px;
+  align-items: flex-start;
+  margin-top: 60px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.comparison-label {
+  font-size: 9px;
+  letter-spacing: .25em;
+  text-transform: uppercase;
+  color: #9a9080;
+  text-align: center;
+  margin-bottom: 14px;
+}
+</style>
+</head>
+<body>
+
+<div class="page-title">Sudoku 3D · Zen Paper</div>
+<p class="page-sub">com quedaria la vista 3D real</p>
+
+<div class="comparison">
+
+  <!-- ================================================================
+       MOCKUP ZEN PAPER 3D
+       ================================================================ -->
+  <div>
+    <div class="comparison-label">Zen Paper 3D · proposta</div>
+    <div class="phone-wrap">
+      <canvas id="cube" width="290" height="580"></canvas>
+
+      <!-- Status bar -->
+      <div class="status">
+        <div class="status-time">9:41</div>
+        <div class="status-icons">
+          <div class="status-icon" style="width:16px;"></div>
+          <div class="status-icon" style="width:10px;"></div>
+          <div class="status-icon" style="border-radius:50%;width:8px;height:8px;"></div>
+        </div>
+      </div>
+
+      <!-- Top-left -->
+      <div class="hud-tl">
+        <div class="hud-wordmark">Sudoku<sup>³</sup></div>
+        <div class="hud-level">
+          <div class="hud-level-dot"></div>
+          <span class="hud-level-name">Difícil</span>
+          <span class="hud-level-caret">▾</span>
+        </div>
+      </div>
+
+      <!-- Top-right -->
+      <div class="hud-tr">
+        <div class="hud-chip">
+          <span class="hud-chip-icon">⏱</span>
+          <span class="hud-chip-val">08:42</span>
+        </div>
+        <div class="hud-chip">
+          <span class="hud-chip-icon">✗</span>
+          <span class="hud-chip-val dim">0/3</span>
+        </div>
+        <div class="hud-chip">
+          <span class="hud-chip-icon">💡</span>
+          <span class="hud-chip-val accent">2</span>
+        </div>
+      </div>
+
+      <!-- Coord -->
+      <div class="coord">
+        <span class="coord-ax">X</span><span class="coord-n">2</span>
+        <span class="coord-ax">Y</span><span class="coord-n">3</span>
+        <span class="coord-ax">Z</span><span class="coord-n">1</span>
+        <span style="color:#b8a898;font-size:8px;margin-left:4px;">· donat</span>
+      </div>
+
+      <!-- Slicer dreta -->
+      <div class="slicer">
+        <div class="slice-row">
+          <span class="slice-ax">X</span>
+          <div class="slice-track">
+            <button class="slice-btn all">·</button>
+            <button class="slice-btn">1</button>
+            <button class="slice-btn active">2</button>
+            <button class="slice-btn">3</button>
+            <button class="slice-btn">4</button>
+          </div>
+        </div>
+        <div class="slice-row">
+          <span class="slice-ax">Y</span>
+          <div class="slice-track">
+            <button class="slice-btn all">·</button>
+            <button class="slice-btn">1</button>
+            <button class="slice-btn">2</button>
+            <button class="slice-btn">3</button>
+            <button class="slice-btn">4</button>
+          </div>
+        </div>
+        <div class="slice-row">
+          <span class="slice-ax">Z</span>
+          <div class="slice-track">
+            <button class="slice-btn all">·</button>
+            <button class="slice-btn">1</button>
+            <button class="slice-btn">2</button>
+            <button class="slice-btn">3</button>
+            <button class="slice-btn">4</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Numpad -->
+      <div class="numpad">
+        <button class="num-btn active">1</button>
+        <button class="num-btn">2</button>
+        <button class="num-btn">3</button>
+        <button class="num-btn dim">4</button>
+        <div class="num-sep"></div>
+        <button class="num-tool on">✎</button>
+        <button class="num-tool on">↩</button>
+        <button class="num-tool">⌫</button>
+      </div>
+    </div>
+
+    <!-- Anotació -->
+    <div class="annotation">
+      <div class="ann-item">
+        <div class="ann-dot" style="background:#c06040;"></div>
+        <div class="ann-text"><b>Cel·la seleccionada</b> — terracota warm, glow suau. El número <b>1</b> actiu al numpad.</div>
+      </div>
+      <div class="ann-item">
+        <div class="ann-dot" style="background:#342820;"></div>
+        <div class="ann-text"><b>Cel·les donades</b> — marró fosc càlid (#342820) amb número en crema. Semblen "impreses".</div>
+      </div>
+      <div class="ann-item">
+        <div class="ann-dot" style="background:#e8ddd0;box-shadow:inset 0 0 0 1px #c0b0a0;"></div>
+        <div class="ann-text"><b>Cel·les buides</b> — vidre translúcid warm. L'estructura 3D és visible a través seu.</div>
+      </div>
+      <div class="ann-item">
+        <div class="ann-dot" style="background:#faf8f5;box-shadow:inset 0 0 0 1px rgba(192,180,165,.5);"></div>
+        <div class="ann-text"><b>HUD, slicer, numpad</b> — frosted glass càlid, en lloc del glass fosc actual. Coherent amb Zen Paper.</div>
+      </div>
+      <div class="ann-item">
+        <div class="ann-dot" style="background:linear-gradient(135deg,#f8f4ee,#ede8e0);box-shadow:inset 0 0 0 1px #d0c8bc;"></div>
+        <div class="ann-text"><b>Fons</b> — degradat càlid paper (en lloc del cosmos fosc). La llum ve de dalt.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================================================================
+       MOCKUP ACTUAL (comparació)
+       ================================================================ -->
+  <div>
+    <div class="comparison-label">Disseny actual · referència</div>
+    <div class="phone-wrap" style="border-radius:44px;overflow:hidden;width:290px;height:580px;background:#0a0b14;">
+      <canvas id="current" width="290" height="580"></canvas>
+      <!-- Status -->
+      <div style="position:absolute;top:0;left:0;right:0;height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 22px;">
+        <span style="font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:600;color:#f0ead8;">9:41</span>
+        <div style="display:flex;gap:4px;align-items:center;">
+          <div style="width:16px;height:7px;background:#f0ead8;border-radius:2px;opacity:.5;"></div>
+          <div style="width:10px;height:7px;background:#f0ead8;border-radius:2px;opacity:.5;"></div>
+          <div style="width:8px;height:8px;background:#f0ead8;border-radius:50%;opacity:.5;"></div>
+        </div>
+      </div>
+      <!-- HUD TL -->
+      <div style="position:absolute;top:52px;left:18px;display:flex;flex-direction:column;gap:6px;">
+        <div style="font-family:'Space Grotesk',sans-serif;font-size:18px;font-weight:700;color:#f0ead8;letter-spacing:-.02em;">Sudoku<sup style="font-size:10px;color:#d4882a;vertical-align:super;">³</sup></div>
+        <div style="display:inline-flex;align-items:center;gap:5px;background:rgba(29,25,18,.82);backdrop-filter:blur(10px);border:1px solid #3d3830;border-radius:20px;padding:4px 10px 4px 8px;font-size:10px;color:#8a8070;">
+          <div style="width:6px;height:6px;border-radius:50%;background:#d4882a;box-shadow:0 0 7px #d4882a;"></div>
+          <span style="color:#f0ead8;font-weight:600;font-size:11px;">Difícil</span>
+          <span style="color:#504840;font-size:8px;">▾</span>
+        </div>
+      </div>
+      <!-- HUD TR -->
+      <div style="position:absolute;top:52px;right:14px;display:flex;flex-direction:column;gap:4px;align-items:flex-end;">
+        <div style="display:flex;align-items:center;gap:6px;background:rgba(29,25,18,.8);backdrop-filter:blur(10px);border:1px solid #2a2520;border-radius:7px;padding:4px 10px;">
+          <span style="font-size:10px;opacity:.5;color:#f0ead8;">⏱</span>
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:13px;color:#f0ead8;min-width:36px;text-align:right;">08:42</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;background:rgba(29,25,18,.8);backdrop-filter:blur(10px);border:1px solid #2a2520;border-radius:7px;padding:4px 10px;">
+          <span style="font-size:10px;opacity:.5;color:#f0ead8;">✗</span>
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:13px;color:#8a8070;min-width:36px;text-align:right;">0/3</span>
+        </div>
+      </div>
+      <!-- Slicer actual -->
+      <div style="position:absolute;right:14px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:6px;">
+        <div style="display:flex;align-items:center;gap:6px;">
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:600;color:#8a8070;width:10px;text-align:center;">X</span>
+          <div style="display:inline-flex;gap:2px;padding:3px;background:rgba(29,25,18,.82);backdrop-filter:blur(10px);border:1px solid #3d3830;border-radius:7px;">
+            <button style="background:transparent;border:none;color:#504840;font-family:'IBM Plex Mono',monospace;font-size:13px;padding:5px 0;min-width:24px;">·</button>
+            <button style="background:transparent;border:none;color:#8a8070;font-family:'IBM Plex Mono',monospace;font-size:10px;padding:5px 0;min-width:22px;">1</button>
+            <button style="background:#d4882a;border:none;color:#100d0a;font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:700;padding:5px 0;min-width:22px;border-radius:5px;">2</button>
+            <button style="background:transparent;border:none;color:#8a8070;font-family:'IBM Plex Mono',monospace;font-size:10px;padding:5px 0;min-width:22px;">3</button>
+            <button style="background:transparent;border:none;color:#8a8070;font-family:'IBM Plex Mono',monospace;font-size:10px;padding:5px 0;min-width:22px;">4</button>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:600;color:#8a8070;width:10px;text-align:center;">Y</span>
+          <div style="display:inline-flex;gap:2px;padding:3px;background:rgba(29,25,18,.82);backdrop-filter:blur(10px);border:1px solid #3d3830;border-radius:7px;">
+            <button style="background:transparent;border:none;color:#504840;font-family:'IBM Plex Mono',monospace;font-size:13px;padding:5px 0;min-width:24px;">·</button>
+            <button style="background:transparent;border:none;color:#8a8070;font-family:'IBM Plex Mono',monospace;font-size:10px;padding:5px 0;min-width:22px;">1</button>
+            <button style="background:transparent;border:none;color:#8a8070;font-family:'IBM Plex Mono',monospace;font-size:10px;padding:5px 0;min-width:22px;">2</button>
+            <button style="background:transparent;border:none;color:#8a8070;font-family:'IBM Plex Mono',monospace;font-size:10px;padding:5px 0;min-width:22px;">3</button>
+            <button style="background:transparent;border:none;color:#8a8070;font-family:'IBM Plex Mono',monospace;font-size:10px;padding:5px 0;min-width:22px;">4</button>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:600;color:#8a8070;width:10px;text-align:center;">Z</span>
+          <div style="display:inline-flex;gap:2px;padding:3px;background:rgba(29,25,18,.82);backdrop-filter:blur(10px);border:1px solid #3d3830;border-radius:7px;">
+            <button style="background:transparent;border:none;color:#504840;font-family:'IBM Plex Mono',monospace;font-size:13px;padding:5px 0;min-width:24px;">·</button>
+            <button style="background:transparent;border:none;color:#8a8070;font-family:'IBM Plex Mono',monospace;font-size:10px;padding:5px 0;min-width:22px;">1</button>
+            <button style="background:transparent;border:none;color:#8a8070;font-family:'IBM Plex Mono',monospace;font-size:10px;padding:5px 0;min-width:22px;">2</button>
+            <button style="background:transparent;border:none;color:#8a8070;font-family:'IBM Plex Mono',monospace;font-size:10px;padding:5px 0;min-width:22px;">3</button>
+            <button style="background:transparent;border:none;color:#8a8070;font-family:'IBM Plex Mono',monospace;font-size:10px;padding:5px 0;min-width:22px;">4</button>
+          </div>
+        </div>
+      </div>
+      <!-- Numpad actual -->
+      <div style="position:absolute;bottom:16px;left:50%;transform:translateX(-50%);display:inline-flex;align-items:stretch;gap:1px;padding:4px;background:rgba(29,25,18,.88);backdrop-filter:blur(14px);border:1px solid #3d3830;border-radius:14px;">
+        <button style="min-width:36px;height:44px;border-radius:10px;border:none;background:#d4882a;color:#100d0a;font-family:'IBM Plex Mono',monospace;font-size:18px;font-weight:600;">1</button>
+        <button style="min-width:36px;height:44px;border-radius:10px;border:none;background:transparent;color:#f0ead8;font-family:'IBM Plex Mono',monospace;font-size:18px;font-weight:600;">2</button>
+        <button style="min-width:36px;height:44px;border-radius:10px;border:none;background:transparent;color:#f0ead8;font-family:'IBM Plex Mono',monospace;font-size:18px;font-weight:600;">3</button>
+        <button style="min-width:36px;height:44px;border-radius:10px;border:none;background:transparent;color:#504840;font-family:'IBM Plex Mono',monospace;font-size:18px;font-weight:600;">4</button>
+        <div style="width:1px;background:#3d3830;align-self:stretch;margin:4px 2px;"></div>
+        <button style="min-width:36px;height:44px;border-radius:10px;border:none;background:transparent;color:#8a8070;font-size:16px;">✎</button>
+        <button style="min-width:36px;height:44px;border-radius:10px;border:none;background:transparent;color:#8a8070;font-size:16px;">↩</button>
+        <button style="min-width:36px;height:44px;border-radius:10px;border:none;background:transparent;color:#8a8070;font-size:16px;">⌫</button>
+      </div>
+    </div>
+    <div class="annotation" style="margin-top:28px;">
+      <div class="ann-item">
+        <div class="ann-dot" style="background:#0a0b14;box-shadow:inset 0 0 0 1px #3d3830;"></div>
+        <div class="ann-text"><b>Cosmos fosc actual</b> — bonic tècnicament però idèntic a molts jocs generats per IA.</div>
+      </div>
+      <div class="ann-item">
+        <div class="ann-dot" style="background:#d4882a;"></div>
+        <div class="ann-text"><b>Accent taronja</b> — color genèric sense connexió visual amb el concepte "3D Sudoku".</div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /comparison -->
+
+<script>
+// ====================================================================
+// DIBUIX DEL CUB 3D — ZEN PAPER
+// ====================================================================
+(function() {
+  const canvas = document.getElementById('cube');
+  const ctx = canvas.getContext('2d');
+  const W = 290, H = 580;
+
+  // Paràmetres isomètrics
+  const DX = 26, DY = 15, DH = 30;
+  const OX = 130, OY = 268; // origen del cub (centre del cub a la pantalla)
+
+  // N=4 cub (4×4×4), valors 1-4
+  const FIXED = {
+    '3,3,0':4, '2,3,1':1, '1,3,2':3, '0,3,3':2,  // capa top
+    '3,2,1':2, '3,1,2':1, '3,0,3':3,              // cara dreta
+    '1,2,3':1, '2,1,3':4,                          // cara frontal
+  };
+  const USER = {
+    '2,3,0':3, '3,3,1':2, '1,0,3':4, '2,2,3':1
+  };
+  const SELECTED = '1,3,1'; // cel·la seleccionada (capa top)
+  const SLICED_X = 2; // slicer X=2 actiu, mostrem la capa interna
+
+  function key(ix, iy, iz) { return `${ix},${iy},${iz}`; }
+  function state(ix, iy, iz) {
+    const k = key(ix, iy, iz);
+    if (k === SELECTED) return { t:'sel', v:0 };
+    if (FIXED[k])  return { t:'fix', v:FIXED[k] };
+    if (USER[k])   return { t:'usr', v:USER[k] };
+    return { t:'emp', v:0 };
+  }
+
+  // Posició en pantalla del centre d'una cel·la
+  function pos(ix, iy, iz) {
+    return {
+      x: OX + (ix - iz) * DX,
+      y: OY - iy * DH + (ix + iz) * DY
+    };
+  }
+
+  // Colors per cara i estat
+  const C = {
+    emp: {
+      top:   'rgba(230,222,210,0.42)',
+      right: 'rgba(215,207,195,0.38)',
+      front: 'rgba(200,192,180,0.34)',
+      str:   'rgba(170,158,144,0.5)',
+      sw: 0.7
+    },
+    fix: {
+      top:   '#342820',
+      right: '#281e16',
+      front: '#1e1610',
+      str:   'rgba(70,50,35,0.85)',
+      tc: '#f0ece6',
+      sw: 0.9
+    },
+    usr: {
+      top:   '#c06040',
+      right: '#a85035',
+      front: '#90442a',
+      str:   'rgba(110,45,25,0.8)',
+      tc: '#ffffff',
+      sw: 0.9
+    },
+    sel: {
+      top:   '#f8e8e0',
+      right: '#f0d8c8',
+      front: '#e8c8b8',
+      str:   '#c06040',
+      tc: '#c06040',
+      sw: 1.8
+    }
+  };
+
+  function poly(pts) {
+    ctx.beginPath();
+    ctx.moveTo(pts[0][0], pts[0][1]);
+    for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i][0], pts[i][1]);
+    ctx.closePath();
+  }
+
+  function drawFaceTop(ix, iy, iz) {
+    const {x: cx, y: cy} = pos(ix, iy, iz);
+    const s = state(ix, iy, iz);
+    const c = C[s.t];
+    poly([[cx+DX,cy-DY],[cx,cy],[cx-DX,cy-DY],[cx,cy-DH-DY]]);
+    ctx.fillStyle = c.top; ctx.fill();
+    ctx.strokeStyle = c.str; ctx.lineWidth = c.sw; ctx.stroke();
+    if (s.v) {
+      ctx.font = '600 10px "IBM Plex Mono",monospace';
+      ctx.fillStyle = c.tc; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText(s.v, cx, cy - DY - 4);
+    }
+  }
+
+  function drawFaceRight(ix, iy, iz) {
+    const {x: cx, y: cy} = pos(ix, iy, iz);
+    const s = state(ix, iy, iz);
+    const c = C[s.t];
+    poly([[cx+DX,cy-DY],[cx,cy],[cx,cy+DH],[cx+DX,cy+DY]]);
+    ctx.fillStyle = c.right; ctx.fill();
+    ctx.strokeStyle = c.str; ctx.lineWidth = c.sw; ctx.stroke();
+    if (s.v) {
+      ctx.font = '600 9px "IBM Plex Mono",monospace';
+      ctx.fillStyle = c.tc; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText(s.v, cx + DX*0.5, cy + DY);
+    }
+  }
+
+  function drawFaceFront(ix, iy, iz) {
+    const {x: cx, y: cy} = pos(ix, iy, iz);
+    const s = state(ix, iy, iz);
+    const c = C[s.t];
+    poly([[cx,cy],[cx-DX,cy-DY],[cx-DX,cy+DY],[cx,cy+DH]]);
+    ctx.fillStyle = c.front; ctx.fill();
+    ctx.strokeStyle = c.str; ctx.lineWidth = c.sw; ctx.stroke();
+    if (s.v) {
+      ctx.font = '600 9px "IBM Plex Mono",monospace';
+      ctx.fillStyle = c.tc; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText(s.v, cx - DX*0.5, cy + DY);
+    }
+  }
+
+  // Dibuixa el tall intern (capa X=SLICED_X exposada)
+  function drawSlicedLayer() {
+    const ix = SLICED_X - 1; // la capa tallada, mostrem les cares dreta tallada
+    for (let iy = 0; iy < 4; iy++) {
+      for (let iz = 3; iz >= 0; iz--) {
+        // Dibuixem la cara "dreta" de la capa interior (exposada pel tall)
+        const {x: cx, y: cy} = pos(ix, iy, iz);
+        const s = state(ix, iy, iz);
+        const c = C[s.t === 'emp' ? 'emp' : s.t];
+        // Cara exposada del tall: la cara "dreta" del cub adjacent
+        poly([[cx+DX,cy-DY],[cx,cy],[cx,cy+DH],[cx+DX,cy+DY]]);
+        // Color una mica diferent per indicar que és la capa interna exposada
+        const fillColor = s.t === 'emp'
+          ? 'rgba(245,238,228,0.55)'
+          : c.right;
+        ctx.fillStyle = fillColor;
+        ctx.fill();
+        ctx.strokeStyle = s.t === 'emp' ? 'rgba(160,148,134,0.45)' : c.str;
+        ctx.lineWidth = s.t === 'emp' ? 0.6 : c.sw;
+        ctx.stroke();
+        if (s.v) {
+          ctx.font = '600 9px "IBM Plex Mono",monospace';
+          ctx.fillStyle = c.tc; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+          ctx.fillText(s.v, cx + DX*0.5, cy + DY);
+        }
+      }
+    }
+  }
+
+  function draw() {
+    // ── Background: paper gradient ──────────────────────────────
+    const bg = ctx.createRadialGradient(145, 200, 20, 145, 200, 320);
+    bg.addColorStop(0,   '#fdfaf6');
+    bg.addColorStop(0.6, '#f5f0e8');
+    bg.addColorStop(1,   '#ede8de');
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, 0, W, H);
+
+    // Vignette subtil
+    const vig = ctx.createRadialGradient(145, 290, 100, 145, 290, 300);
+    vig.addColorStop(0, 'rgba(0,0,0,0)');
+    vig.addColorStop(1, 'rgba(0,0,0,0.06)');
+    ctx.fillStyle = vig;
+    ctx.fillRect(0, 0, W, H);
+
+    // Llum suau de dalt
+    const light = ctx.createLinearGradient(145, 0, 145, 300);
+    light.addColorStop(0, 'rgba(255,252,245,0.3)');
+    light.addColorStop(1, 'rgba(255,252,245,0)');
+    ctx.fillStyle = light;
+    ctx.fillRect(0, 0, W, H);
+
+    // ── Dibuixar el cub 4×4×4 ──────────────────────────────────
+    // Ordre: de darrere a davant (painter's algorithm)
+
+    // 1. Capes que NO es veuen pel tall (ix > SLICED_X-1)
+    // Cara dreta exterior (ix=3): de baix a dalt, de darrere a davant
+    for (let iy = 0; iy < 4; iy++) {
+      for (let iz = 3; iz >= 0; iz--) {
+        if (3 >= SLICED_X) drawFaceRight(3, iy, iz);
+      }
+    }
+
+    // 2. Capa tallada exposada (cara interior visible pel slicer)
+    drawSlicedLayer();
+
+    // 3. Cara frontal exterior (iz=3): de baix a dalt, d'esquerra a dreta
+    for (let iy = 0; iy < 4; iy++) {
+      for (let ix = 0; ix < 4; ix++) {
+        drawFaceFront(ix, iy, 3);
+      }
+    }
+
+    // 4. Cara top exterior (iy=3): de darrere a davant
+    for (let iz = 0; iz < 4; iz++) {
+      for (let ix = 3; ix >= 0; ix--) {
+        drawFaceTop(ix, 3, iz);
+      }
+    }
+
+    // ── Indicador del tall X=2 ──────────────────────────────────
+    // Línia vertical subtil per marcar el tall
+    const sliceX1 = pos(SLICED_X - 1, 0, 3);
+    const sliceX2 = pos(SLICED_X - 1, 3, 3);
+    const sliceX3 = pos(SLICED_X - 1, 3, 0);
+    const sliceX4 = pos(SLICED_X - 1, 0, 0);
+    ctx.beginPath();
+    ctx.moveTo(sliceX1.x, sliceX1.y + DH);
+    ctx.lineTo(sliceX2.x, sliceX2.y - DH - DY);
+    ctx.lineTo(sliceX3.x, sliceX3.y - DH - DY);
+    ctx.lineTo(sliceX4.x, sliceX4.y + DH);
+    ctx.closePath();
+    ctx.strokeStyle = 'rgba(192,96,64,0.15)';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([3, 4]);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // ── Glow suau a la cel·la seleccionada ──────────────────────
+    const selPt = pos(1, 3, 1);
+    const glowGrad = ctx.createRadialGradient(selPt.x, selPt.y - DY, 0, selPt.x, selPt.y - DY, 35);
+    glowGrad.addColorStop(0, 'rgba(192,96,64,0.12)');
+    glowGrad.addColorStop(1, 'rgba(192,96,64,0)');
+    ctx.fillStyle = glowGrad;
+    ctx.fillRect(selPt.x - 40, selPt.y - DY - 40, 80, 80);
+  }
+
+  draw();
+})();
+
+// ====================================================================
+// DIBUIX DEL CUB ACTUAL (version fosc, per comparació)
+// ====================================================================
+(function() {
+  const canvas = document.getElementById('current');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const W = 290, H = 580;
+  const DX = 26, DY = 15, DH = 30;
+  const OX = 130, OY = 268;
+  const SLICED_X = 2;
+
+  const FIXED = {
+    '3,3,0':4, '2,3,1':1, '1,3,2':3, '0,3,3':2,
+    '3,2,1':2, '3,1,2':1, '3,0,3':3,
+    '1,2,3':1, '2,1,3':4,
+  };
+  const USER = {'2,3,0':3,'3,3,1':2,'1,0,3':4,'2,2,3':1};
+  const SELECTED = '1,3,1';
+
+  function key(ix,iy,iz){return`${ix},${iy},${iz}`;}
+  function state(ix,iy,iz){
+    const k=key(ix,iy,iz);
+    if(k===SELECTED)return{t:'sel',v:0};
+    if(FIXED[k])return{t:'fix',v:FIXED[k]};
+    if(USER[k])return{t:'usr',v:USER[k]};
+    return{t:'emp',v:0};
+  }
+  function pos(ix,iy,iz){return{x:OX+(ix-iz)*DX,y:OY-iy*DH+(ix+iz)*DY};}
+
+  const C={
+    emp:{top:'rgba(30,32,70,0.35)',right:'rgba(22,25,60,0.3)',front:'rgba(18,20,52,0.28)',str:'rgba(100,120,200,0.45)',sw:0.7},
+    fix:{top:'#3a4a80',right:'#2e3a6a',front:'#242e54',str:'rgba(100,120,220,0.8)',tc:'#e0e8ff',sw:0.8},
+    usr:{top:'#2d6a55',right:'#224f40',front:'#1a3e32',str:'rgba(60,160,120,0.7)',tc:'#90ffdc',sw:0.8},
+    sel:{top:'rgba(210,140,40,0.7)',right:'rgba(180,115,30,0.6)',front:'rgba(150,95,25,0.55)',str:'#d4882a',tc:'#ffeecc',sw:1.8},
+  };
+
+  function poly(pts){ctx.beginPath();ctx.moveTo(pts[0][0],pts[0][1]);for(let i=1;i<pts.length;i++)ctx.lineTo(pts[i][0],pts[i][1]);ctx.closePath();}
+
+  function drawFaceT(ix,iy,iz){
+    const{x:cx,y:cy}=pos(ix,iy,iz);const s=state(ix,iy,iz);const c=C[s.t];
+    poly([[cx+DX,cy-DY],[cx,cy],[cx-DX,cy-DY],[cx,cy-DH-DY]]);
+    ctx.fillStyle=c.top;ctx.fill();ctx.strokeStyle=c.str;ctx.lineWidth=c.sw;ctx.stroke();
+    if(s.v){ctx.font='600 10px "IBM Plex Mono",monospace';ctx.fillStyle=c.tc;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(s.v,cx,cy-DY-4);}
+  }
+  function drawFaceR(ix,iy,iz){
+    const{x:cx,y:cy}=pos(ix,iy,iz);const s=state(ix,iy,iz);const c=C[s.t];
+    poly([[cx+DX,cy-DY],[cx,cy],[cx,cy+DH],[cx+DX,cy+DY]]);
+    ctx.fillStyle=c.right;ctx.fill();ctx.strokeStyle=c.str;ctx.lineWidth=c.sw;ctx.stroke();
+    if(s.v){ctx.font='600 9px "IBM Plex Mono",monospace';ctx.fillStyle=c.tc;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(s.v,cx+DX*0.5,cy+DY);}
+  }
+  function drawFaceF(ix,iy,iz){
+    const{x:cx,y:cy}=pos(ix,iy,iz);const s=state(ix,iy,iz);const c=C[s.t];
+    poly([[cx,cy],[cx-DX,cy-DY],[cx-DX,cy+DY],[cx,cy+DH]]);
+    ctx.fillStyle=c.front;ctx.fill();ctx.strokeStyle=c.str;ctx.lineWidth=c.sw;ctx.stroke();
+    if(s.v){ctx.font='600 9px "IBM Plex Mono",monospace';ctx.fillStyle=c.tc;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(s.v,cx-DX*0.5,cy+DY);}
+  }
+
+  function draw(){
+    // Background cosmos fosc
+    ctx.fillStyle='#0a0b14';
+    ctx.fillRect(0,0,W,H);
+    // Nebulosa simulada
+    [{x:200,y:180,r:120,c:'rgba(50,25,115,0.25)'},{x:80,y:300,r:100,c:'rgba(25,52,105,0.2)'}].forEach(n=>{
+      const g=ctx.createRadialGradient(n.x,n.y,0,n.x,n.y,n.r);
+      g.addColorStop(0,n.c);g.addColorStop(1,'rgba(0,0,0,0)');
+      ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+    });
+    // Estrelles
+    ctx.fillStyle='rgba(255,255,255,0.6)';
+    [[30,60],[80,40],[150,80],[200,50],[250,100],[60,180],[220,160],[170,130],[40,260],[260,200]].forEach(([x,y])=>{
+      ctx.beginPath();ctx.arc(x,y,0.8,0,Math.PI*2);ctx.fill();
+    });
+
+    for(let iy=0;iy<4;iy++)for(let iz=3;iz>=0;iz--)drawFaceR(3,iy,iz);
+
+    // Interior tallat
+    const ixi=SLICED_X-1;
+    for(let iy=0;iy<4;iy++)for(let iz=3;iz>=0;iz--){
+      const{x:cx,y:cy}=pos(ixi,iy,iz);const s=state(ixi,iy,iz);const c=C[s.t];
+      poly([[cx+DX,cy-DY],[cx,cy],[cx,cy+DH],[cx+DX,cy+DY]]);
+      ctx.fillStyle=s.t==='emp'?'rgba(40,45,100,0.4)':c.right;ctx.fill();
+      ctx.strokeStyle=s.t==='emp'?'rgba(80,100,200,0.4)':c.str;ctx.lineWidth=0.7;ctx.stroke();
+      if(s.v){ctx.font='600 9px "IBM Plex Mono",monospace';ctx.fillStyle=c.tc;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(s.v,cx+DX*0.5,cy+DY);}
+    }
+
+    for(let iy=0;iy<4;iy++)for(let ix=0;ix<4;ix++)drawFaceF(ix,iy,3);
+    for(let iz=0;iz<4;iz++)for(let ix=3;ix>=0;ix--)drawFaceT(ix,3,iz);
+  }
+  draw();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,1214 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Zen Paper — Pantalles de Joc</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: #ede9e2;
+  font-family: 'Inter', sans-serif;
+  padding: 48px 24px 80px;
+  min-height: 100vh;
+}
+
+.page-header {
+  text-align: center;
+  margin-bottom: 56px;
+}
+.page-kicker {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  letter-spacing: .3em;
+  text-transform: uppercase;
+  color: #a09080;
+  margin-bottom: 8px;
+}
+.page-title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 28px;
+  font-weight: 700;
+  color: #1a1714;
+  letter-spacing: -.02em;
+}
+.page-sub {
+  font-size: 12px;
+  color: #9a9080;
+  margin-top: 6px;
+}
+
+/* Grid de tres mòbils */
+.screens {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+  gap: 48px 32px;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.screen-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.screen-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  letter-spacing: .25em;
+  text-transform: uppercase;
+  color: #9a9080;
+}
+.screen-title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: #1a1714;
+  margin-top: -4px;
+  text-align: center;
+}
+.screen-desc {
+  font-size: 11px;
+  color: #9a9080;
+  line-height: 1.5;
+  text-align: center;
+  max-width: 280px;
+}
+
+/* El "mòbil" */
+.phone {
+  width: 290px;
+  height: 580px;
+  border-radius: 44px;
+  overflow: hidden;
+  position: relative;
+  background: #faf8f5;
+  box-shadow:
+    0 2px 0 rgba(255,255,255,.8) inset,
+    0 -2px 0 rgba(0,0,0,.06) inset,
+    0 32px 64px rgba(0,0,0,.18),
+    0 8px 16px rgba(0,0,0,.1);
+}
+
+/* Status bar */
+.status-bar {
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 22px;
+  flex-shrink: 0;
+}
+.status-time {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: #1a1714;
+}
+.status-icons {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+}
+.status-bar-icon {
+  width: 14px; height: 7px;
+  background: #1a1714;
+  border-radius: 2px;
+  opacity: .6;
+}
+
+/* Barra superior de cada joc */
+.game-topbar {
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 18px;
+  flex-shrink: 0;
+}
+.back-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: #9a9080;
+  cursor: pointer;
+}
+.back-arrow { font-size: 14px; }
+
+.game-timer {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 13px;
+  font-weight: 500;
+  color: #1a1714;
+  letter-spacing: .08em;
+}
+
+.game-level {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: #9a9080;
+}
+
+/* ================================================================
+   JOC 1 — SUDOKU 3D (terracota)
+   ================================================================ */
+.s3d-accent { color: #c06040; }
+.s3d-bg-accent { background: #c06040; }
+
+.s3d-content {
+  display: flex;
+  flex-direction: column;
+  height: calc(100% - 44px);
+}
+
+.s3d-cube-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0 16px;
+  gap: 10px;
+  position: relative;
+}
+
+/* Indicador de capa */
+.s3d-layer-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+.s3d-layer-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: #ddd;
+}
+.s3d-layer-dot.active {
+  background: #c06040;
+  box-shadow: 0 0 6px rgba(192,96,64,.4);
+}
+.s3d-layer-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 8px;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  color: #9a9080;
+}
+
+/* La graella 9×9 principal */
+.sudoku-grid {
+  display: grid;
+  gap: 0;
+  border: 2px solid #1a1714;
+}
+.sudoku-grid-9 {
+  grid-template-columns: repeat(9, 1fr);
+  width: 252px;
+  height: 252px;
+}
+.sudoku-grid-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 13px;
+  font-weight: 500;
+  color: #1a1714;
+  border: .5px solid #d8d0c4;
+  cursor: pointer;
+  position: relative;
+  background: #faf8f5;
+}
+/* Línies de caixa 3×3 */
+.sudoku-grid-cell:nth-child(3n) { border-right: 1.5px solid #a09080; }
+.sudoku-grid-cell:nth-child(9n) { border-right: none; }
+.row-border-bottom { border-bottom: 1.5px solid #a09080 !important; }
+
+.sudoku-grid-cell.given { color: #1a1714; font-weight: 600; }
+.sudoku-grid-cell.user { color: #c06040; }
+.sudoku-grid-cell.user-blue { color: #5090b0; }
+.sudoku-grid-cell.user-green { color: #508050; }
+.sudoku-grid-cell.selected {
+  background: rgba(192,96,64,.08);
+}
+.sudoku-grid-cell.highlight {
+  background: rgba(192,96,64,.04);
+}
+.sudoku-grid-cell.same-num {
+  background: rgba(192,96,64,.12);
+}
+.sudoku-grid-cell.notes {
+  font-size: 5.5px;
+  display: grid;
+  grid-template-columns: repeat(3,1fr);
+  gap: 0;
+  align-items: center;
+  justify-items: center;
+  padding: 2px;
+  color: #9a9080;
+}
+
+/* Capa 3D indicator lateral */
+.s3d-cube-nav {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  margin-top: 8px;
+}
+.s3d-cube-nav-btn {
+  width: 28px; height: 28px;
+  border-radius: 8px;
+  background: #eee8e0;
+  border: 1px solid #ddd4c8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  color: #6a6058;
+  cursor: pointer;
+}
+.s3d-cube-nav-info {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  color: #1a1714;
+  font-weight: 500;
+  padding: 0 8px;
+}
+
+/* Vista miniatura de les capes */
+.s3d-layers-thumb {
+  display: flex;
+  gap: 5px;
+  align-items: flex-end;
+}
+.s3d-layer-thumb {
+  width: 22px;
+  height: 22px;
+  border-radius: 4px;
+  border: 1px solid #d0c8bc;
+  background: #f0ece6;
+  display: grid;
+  grid-template-columns: repeat(3,1fr);
+  gap: .5px;
+  padding: 2px;
+  opacity: .5;
+}
+.s3d-layer-thumb.current {
+  opacity: 1;
+  border-color: #c06040;
+  box-shadow: 0 0 0 1px rgba(192,96,64,.2);
+  transform: scale(1.1);
+}
+.s3d-thumb-cell {
+  border-radius: 1px;
+  background: #d0c8bc;
+}
+.s3d-thumb-cell.f { background: #c06040; opacity: .7; }
+
+/* Barra de números */
+.numpad {
+  padding: 8px 12px 12px;
+  flex-shrink: 0;
+}
+.numpad-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 4px;
+  margin-bottom: 6px;
+}
+.num-btn {
+  flex: 1;
+  height: 36px;
+  border-radius: 10px;
+  background: #eee8e0;
+  border: 1px solid #ddd4c8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 15px;
+  font-weight: 500;
+  color: #1a1714;
+  cursor: pointer;
+}
+.num-btn.accent-btn {
+  background: #c06040;
+  border-color: #c06040;
+  color: #fff;
+}
+.num-btn.accent-btn-blue {
+  background: #5090b0;
+  border-color: #5090b0;
+  color: #fff;
+}
+.num-btn.accent-btn-green {
+  background: #508050;
+  border-color: #508050;
+  color: #fff;
+}
+.num-btn.dim {
+  opacity: .35;
+}
+
+.tools-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 4px;
+}
+.tool-btn {
+  flex: 1;
+  height: 32px;
+  border-radius: 10px;
+  background: transparent;
+  border: 1px solid #ddd4c8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 8px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: #9a9080;
+  cursor: pointer;
+}
+.tool-btn.active {
+  background: #1a1714;
+  border-color: #1a1714;
+  color: #f0ece6;
+}
+.tool-icon { font-size: 12px; }
+
+/* ================================================================
+   JOC 2 — SUDOKU CLÀSSIC (blau pàl·lid)
+   ================================================================ */
+.s2d-content {
+  display: flex;
+  flex-direction: column;
+  height: calc(100% - 44px);
+}
+
+.s2d-header {
+  padding: 0 20px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.s2d-progress-bar {
+  height: 3px;
+  background: #e8e0d8;
+  border-radius: 2px;
+  overflow: hidden;
+  margin: 0 20px;
+}
+.s2d-progress-fill {
+  height: 100%;
+  background: #5090b0;
+  border-radius: 2px;
+  width: 62%;
+}
+
+.s2d-stats {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 20px 0;
+}
+.s2d-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+.s2d-stat-num {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: #1a1714;
+  line-height: 1;
+}
+.s2d-stat-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 7px;
+  letter-spacing: .15em;
+  text-transform: uppercase;
+  color: #a09080;
+}
+.s2d-stat-num.accent { color: #5090b0; }
+
+.s2d-grid-wrap {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
+}
+
+.sudoku-grid-cell.sel-blue { background: rgba(80,144,176,.1); }
+.sudoku-grid-cell.hl-blue { background: rgba(80,144,176,.05); }
+.sudoku-grid-cell.same-blue { background: rgba(80,144,176,.14); }
+
+/* ================================================================
+   JOC 3 — KAKURO (verd suau)
+   ================================================================ */
+.kk-content {
+  display: flex;
+  flex-direction: column;
+  height: calc(100% - 44px);
+}
+
+.kk-info-bar {
+  padding: 0 20px 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.kk-difficulty {
+  display: flex;
+  gap: 3px;
+  align-items: center;
+}
+.kk-diff-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: #c8c0b4;
+}
+.kk-diff-dot.on { background: #508050; }
+.kk-diff-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 8px;
+  letter-spacing: .12em;
+  color: #9a9080;
+  margin-left: 6px;
+}
+
+.kk-errors {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  color: #9a9080;
+  letter-spacing: .08em;
+}
+.kk-errors span { color: #c06040; }
+
+/* Graella kakuro */
+.kk-grid-wrap {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 12px;
+}
+
+.kakuro-grid {
+  display: grid;
+  border: 2px solid #1a1714;
+  gap: 0;
+}
+
+.kk-cell {
+  width: 32px;
+  height: 32px;
+  border: .5px solid #c8c0b4;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Cel·la negra (bloc) */
+.kk-black {
+  background: #1a1714;
+}
+.kk-black-diag {
+  background: #1a1714;
+  position: relative;
+  overflow: hidden;
+}
+/* Línia diagonal per la cel·la de pista */
+.kk-black-diag::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: #1a1714;
+}
+.kk-black-diag::after {
+  content: '';
+  position: absolute;
+  top: 50%; left: -2px; right: -2px;
+  height: 1px;
+  background: #2e2e2e;
+  transform: rotate(-35deg) translateY(-50%);
+}
+.kk-clue-down {
+  position: absolute;
+  bottom: 3px; right: 4px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 7px;
+  font-weight: 600;
+  color: #f0ece6;
+  line-height: 1;
+  z-index: 1;
+}
+.kk-clue-across {
+  position: absolute;
+  top: 3px; left: 4px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 7px;
+  font-weight: 600;
+  color: #f0ece6;
+  line-height: 1;
+  z-index: 1;
+}
+/* Cel·la de joc (entrada) */
+.kk-input {
+  background: #faf8f5;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 14px;
+  font-weight: 500;
+  color: #1a1714;
+}
+.kk-input.user-val { color: #508050; }
+.kk-input.selected-kk { background: rgba(80,128,80,.1); }
+.kk-input.error { color: #c06040; background: rgba(192,96,64,.06); }
+/* Nombres petits notes kakuro */
+.kk-notes-cell {
+  display: grid;
+  grid-template-columns: repeat(3,1fr);
+  gap: 0;
+  align-items: center;
+  justify-items: center;
+  padding: 2px;
+}
+.kk-note-n {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 5px;
+  color: #9a9080;
+  line-height: 1;
+}
+
+/* Notes sota la graella */
+.kk-sum-hint {
+  padding: 6px 16px;
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+.kk-sum-pill {
+  background: rgba(80,128,80,.1);
+  border: 1px solid rgba(80,128,80,.2);
+  border-radius: 10px;
+  padding: 4px 10px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  color: #508050;
+  display: flex;
+  gap: 6px;
+}
+.kk-sum-label { color: #9a9080; }
+
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <div class="page-kicker">Zen Paper · Pantalles de Joc</div>
+  <div class="page-title">Com quedaria dins de cada joc</div>
+  <div class="page-sub">Tres accents de color — un per joc. La graella és sempre el protagonista.</div>
+</div>
+
+<div class="screens">
+
+  <!-- ============================================================
+       JOC 1: SUDOKU 3D
+       ============================================================ -->
+  <div class="screen-wrap">
+    <div class="screen-label">Joc 01</div>
+    <div class="screen-title">Sudoku 3D</div>
+
+    <div class="phone">
+      <div class="status-bar">
+        <div class="status-time">9:41</div>
+        <div class="status-icons">
+          <div class="status-bar-icon" style="width:16px;"></div>
+          <div class="status-bar-icon" style="width:10px;"></div>
+          <div class="status-bar-icon" style="border-radius:50%;width:8px;height:8px;"></div>
+        </div>
+      </div>
+
+      <div class="s3d-content">
+        <!-- Top bar -->
+        <div class="game-topbar">
+          <div class="back-btn">
+            <div class="back-arrow">←</div>
+            <span>inici</span>
+          </div>
+          <div class="game-timer">12:34</div>
+          <div class="game-level" style="color:#c06040;">difícil</div>
+        </div>
+
+        <!-- Àrea principal: graella + controls capa -->
+        <div class="s3d-cube-area">
+
+          <!-- Selector de capa -->
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;">
+            <div class="s3d-layers-thumb">
+              <div class="s3d-layer-thumb">
+                <div class="s3d-thumb-cell f"></div><div class="s3d-thumb-cell"></div><div class="s3d-thumb-cell f"></div>
+                <div class="s3d-thumb-cell"></div><div class="s3d-thumb-cell f"></div><div class="s3d-thumb-cell"></div>
+                <div class="s3d-thumb-cell f"></div><div class="s3d-thumb-cell"></div><div class="s3d-thumb-cell"></div>
+              </div>
+              <div class="s3d-layer-thumb">
+                <div class="s3d-thumb-cell"></div><div class="s3d-thumb-cell f"></div><div class="s3d-thumb-cell"></div>
+                <div class="s3d-thumb-cell f"></div><div class="s3d-thumb-cell"></div><div class="s3d-thumb-cell f"></div>
+                <div class="s3d-thumb-cell"></div><div class="s3d-thumb-cell f"></div><div class="s3d-thumb-cell"></div>
+              </div>
+              <div class="s3d-layer-thumb current">
+                <div class="s3d-thumb-cell"></div><div class="s3d-thumb-cell"></div><div class="s3d-thumb-cell f"></div>
+                <div class="s3d-thumb-cell f"></div><div class="s3d-thumb-cell"></div><div class="s3d-thumb-cell"></div>
+                <div class="s3d-thumb-cell"></div><div class="s3d-thumb-cell f"></div><div class="s3d-thumb-cell f"></div>
+              </div>
+            </div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:8px;color:#9a9080;letter-spacing:.12em;">
+              CAPA <span style="color:#c06040;font-weight:600;">3</span>/9
+            </div>
+          </div>
+
+          <!-- Graella 9×9 amb accent terracota -->
+          <div class="sudoku-grid sudoku-grid-9">
+            <!-- Fila 1 -->
+            <div class="sudoku-grid-cell given">5</div>
+            <div class="sudoku-grid-cell given">3</div>
+            <div class="sudoku-grid-cell given"></div>
+            <div class="sudoku-grid-cell given"></div>
+            <div class="sudoku-grid-cell given">7</div>
+            <div class="sudoku-grid-cell given"></div>
+            <div class="sudoku-grid-cell given"></div>
+            <div class="sudoku-grid-cell given"></div>
+            <div class="sudoku-grid-cell given"></div>
+            <!-- Fila 2 -->
+            <div class="sudoku-grid-cell given">6</div>
+            <div class="sudoku-grid-cell given"></div>
+            <div class="sudoku-grid-cell given"></div>
+            <div class="sudoku-grid-cell user same-num">1</div>
+            <div class="sudoku-grid-cell given">9</div>
+            <div class="sudoku-grid-cell given">5</div>
+            <div class="sudoku-grid-cell given"></div>
+            <div class="sudoku-grid-cell given"></div>
+            <div class="sudoku-grid-cell given"></div>
+            <!-- Fila 3 -->
+            <div class="sudoku-grid-cell given"></div>
+            <div class="sudoku-grid-cell given">9</div>
+            <div class="sudoku-grid-cell given">8</div>
+            <div class="sudoku-grid-cell given"></div>
+            <div class="sudoku-grid-cell given"></div>
+            <div class="sudoku-grid-cell given"></div>
+            <div class="sudoku-grid-cell given"></div>
+            <div class="sudoku-grid-cell given">6</div>
+            <div class="sudoku-grid-cell given row-border-bottom"></div>
+            <!-- Fila 4 -->
+            <div class="sudoku-grid-cell given">8</div>
+            <div class="sudoku-grid-cell given"></div>
+            <div class="sudoku-grid-cell given"></div>
+            <div class="sudoku-grid-cell given"></div>
+            <div class="sudoku-grid-cell given">6</div>
+            <div class="sudoku-grid-cell given"></div>
+            <div class="sudoku-grid-cell given"></div>
+            <div class="sudoku-grid-cell given"></div>
+            <div class="sudoku-grid-cell given">3</div>
+            <!-- Fila 5 -->
+            <div class="sudoku-grid-cell given">4</div>
+            <div class="sudoku-grid-cell given"></div>
+            <div class="sudoku-grid-cell given"></div>
+            <div class="sudoku-grid-cell given">8</div>
+            <div class="sudoku-grid-cell selected">
+              <!-- cel·la seleccionada -->
+            </div>
+            <div class="sudoku-grid-cell given">3</div>
+            <div class="sudoku-grid-cell given"></div>
+            <div class="sudoku-grid-cell given"></div>
+            <div class="sudoku-grid-cell given">1</div>
+            <!-- Fila 6 -->
+            <div class="sudoku-grid-cell given">7</div>
+            <div class="sudoku-grid-cell given"></div>
+            <div class="sudoku-grid-cell given"></div>
+            <div class="sudoku-grid-cell given"></div>
+            <div class="sudoku-grid-cell given">2</div>
+            <div class="sudoku-grid-cell given"></div>
+            <div class="sudoku-grid-cell given"></div>
+            <div class="sudoku-grid-cell given"></div>
+            <div class="sudoku-grid-cell given row-border-bottom">6</div>
+            <!-- Fila 7 -->
+            <div class="sudoku-grid-cell given"></div>
+            <div class="sudoku-grid-cell given">6</div>
+            <div class="sudoku-grid-cell given"></div>
+            <div class="sudoku-grid-cell given"></div>
+            <div class="sudoku-grid-cell given"></div>
+            <div class="sudoku-grid-cell given"></div>
+            <div class="sudoku-grid-cell given">2</div>
+            <div class="sudoku-grid-cell given">8</div>
+            <div class="sudoku-grid-cell given"></div>
+            <!-- Fila 8 -->
+            <div class="sudoku-grid-cell given"></div>
+            <div class="sudoku-grid-cell given"></div>
+            <div class="sudoku-grid-cell given"></div>
+            <div class="sudoku-grid-cell given">4</div>
+            <div class="sudoku-grid-cell given">1</div>
+            <div class="sudoku-grid-cell given">9</div>
+            <div class="sudoku-grid-cell given"></div>
+            <div class="sudoku-grid-cell given"></div>
+            <div class="sudoku-grid-cell given">5</div>
+            <!-- Fila 9 -->
+            <div class="sudoku-grid-cell given"></div>
+            <div class="sudoku-grid-cell given"></div>
+            <div class="sudoku-grid-cell given"></div>
+            <div class="sudoku-grid-cell given"></div>
+            <div class="sudoku-grid-cell given">8</div>
+            <div class="sudoku-grid-cell given"></div>
+            <div class="sudoku-grid-cell given"></div>
+            <div class="sudoku-grid-cell given">7</div>
+            <div class="sudoku-grid-cell given">9</div>
+          </div>
+
+          <!-- Navegació de capes -->
+          <div class="s3d-cube-nav">
+            <div class="s3d-cube-nav-btn">‹</div>
+            <div class="s3d-cube-nav-info">capa 3 de 9</div>
+            <div class="s3d-cube-nav-btn">›</div>
+          </div>
+        </div>
+
+        <!-- Numpad -->
+        <div class="numpad">
+          <div class="numpad-row">
+            <div class="num-btn">1</div>
+            <div class="num-btn">2</div>
+            <div class="num-btn">3</div>
+            <div class="num-btn">4</div>
+            <div class="num-btn">5</div>
+            <div class="num-btn accent-btn">6</div>
+            <div class="num-btn">7</div>
+            <div class="num-btn">8</div>
+            <div class="num-btn dim">9</div>
+          </div>
+          <div class="tools-row">
+            <div class="tool-btn"><span class="tool-icon">✎</span> notes</div>
+            <div class="tool-btn active"><span class="tool-icon">↩</span> desfés</div>
+            <div class="tool-btn"><span class="tool-icon">💡</span> pista</div>
+            <div class="tool-btn"><span class="tool-icon">⌫</span> esborra</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="screen-desc">
+      Les miniatures de les 9 capes a dalt permeten veure el progrés global. El terracota marca la capa activa i les cel·les introduïdes per l'usuari.
+    </div>
+  </div>
+
+  <!-- ============================================================
+       JOC 2: SUDOKU CLÀSSIC
+       ============================================================ -->
+  <div class="screen-wrap">
+    <div class="screen-label">Joc 02</div>
+    <div class="screen-title">Sudoku Clàssic</div>
+
+    <div class="phone">
+      <div class="status-bar">
+        <div class="status-time">9:41</div>
+        <div class="status-icons">
+          <div class="status-bar-icon" style="width:16px;"></div>
+          <div class="status-bar-icon" style="width:10px;"></div>
+          <div class="status-bar-icon" style="border-radius:50%;width:8px;height:8px;"></div>
+        </div>
+      </div>
+
+      <div class="s2d-content">
+        <!-- Top bar -->
+        <div class="game-topbar">
+          <div class="back-btn">
+            <div class="back-arrow">←</div>
+            <span>inici</span>
+          </div>
+          <div class="game-timer">07:18</div>
+          <div class="game-level" style="color:#5090b0;">mitjà</div>
+        </div>
+
+        <!-- Stats -->
+        <div class="s2d-stats">
+          <div class="s2d-stat">
+            <div class="s2d-stat-num accent">34</div>
+            <div class="s2d-stat-label">resoltes</div>
+          </div>
+          <div class="s2d-stat">
+            <div class="s2d-stat-num">47</div>
+            <div class="s2d-stat-label">restants</div>
+          </div>
+          <div class="s2d-stat">
+            <div class="s2d-stat-num">0</div>
+            <div class="s2d-stat-label">errors</div>
+          </div>
+        </div>
+        <!-- Barra de progrés -->
+        <div class="s2d-progress-bar" style="background:#e8e0d8;height:3px;margin:6px 20px;border-radius:2px;overflow:hidden;">
+          <div style="height:100%;background:#5090b0;width:42%;border-radius:2px;"></div>
+        </div>
+
+        <!-- Graella principal -->
+        <div class="s2d-grid-wrap">
+          <div class="sudoku-grid sudoku-grid-9" style="width:260px;height:260px;">
+            <!-- Fila 1 -->
+            <div class="sudoku-grid-cell given">5</div>
+            <div class="sudoku-grid-cell given">3</div>
+            <div class="sudoku-grid-cell given"></div>
+            <div class="sudoku-grid-cell given"></div>
+            <div class="sudoku-grid-cell given">7</div>
+            <div class="sudoku-grid-cell given"></div>
+            <div class="sudoku-grid-cell given"></div>
+            <div class="sudoku-grid-cell given"></div>
+            <div class="sudoku-grid-cell given"></div>
+            <!-- Fila 2 -->
+            <div class="sudoku-grid-cell hl-blue">6</div>
+            <div class="sudoku-grid-cell given"></div>
+            <div class="sudoku-grid-cell given"></div>
+            <div class="sudoku-grid-cell user-blue same-blue">1</div>
+            <div class="sudoku-grid-cell hl-blue">9</div>
+            <div class="sudoku-grid-cell given">5</div>
+            <div class="sudoku-grid-cell given"></div>
+            <div class="sudoku-grid-cell given"></div>
+            <div class="sudoku-grid-cell given"></div>
+            <!-- Fila 3 -->
+            <div class="sudoku-grid-cell given"></div>
+            <div class="sudoku-grid-cell given">9</div>
+            <div class="sudoku-grid-cell given">8</div>
+            <div class="sudoku-grid-cell given"></div>
+            <div class="sudoku-grid-cell given"></div>
+            <div class="sudoku-grid-cell given"></div>
+            <div class="sudoku-grid-cell given"></div>
+            <div class="sudoku-grid-cell given">6</div>
+            <div class="sudoku-grid-cell given row-border-bottom"></div>
+            <!-- Fila 4 -->
+            <div class="sudoku-grid-cell given">8</div>
+            <div class="sudoku-grid-cell given"></div>
+            <div class="sudoku-grid-cell given"></div>
+            <div class="sudoku-grid-cell sel-blue"></div>
+            <div class="sudoku-grid-cell given">6</div>
+            <div class="sudoku-grid-cell given"></div>
+            <div class="sudoku-grid-cell given"></div>
+            <div class="sudoku-grid-cell given"></div>
+            <div class="sudoku-grid-cell given">3</div>
+            <!-- Fila 5 -->
+            <div class="sudoku-grid-cell given">4</div>
+            <div class="sudoku-grid-cell given notes">
+              <span>1</span><span>2</span><span></span>
+              <span></span><span>5</span><span></span>
+              <span></span><span></span><span>9</span>
+            </div>
+            <div class="sudoku-grid-cell given"></div>
+            <div class="sudoku-grid-cell given">8</div>
+            <div class="sudoku-grid-cell sel-blue"></div>
+            <div class="sudoku-grid-cell given">3</div>
+            <div class="sudoku-grid-cell given"></div>
+            <div class="sudoku-grid-cell given notes">
+              <span></span><span>2</span><span>3</span>
+              <span></span><span></span><span></span>
+              <span>7</span><span></span><span></span>
+            </div>
+            <div class="sudoku-grid-cell given">1</div>
+            <!-- Fila 6 -->
+            <div class="sudoku-grid-cell given">7</div>
+            <div class="sudoku-grid-cell given"></div>
+            <div class="sudoku-grid-cell given"></div>
+            <div class="sudoku-grid-cell given"></div>
+            <div class="sudoku-grid-cell given">2</div>
+            <div class="sudoku-grid-cell given"></div>
+            <div class="sudoku-grid-cell given"></div>
+            <div class="sudoku-grid-cell given"></div>
+            <div class="sudoku-grid-cell given row-border-bottom">6</div>
+            <!-- Fila 7 -->
+            <div class="sudoku-grid-cell given"></div>
+            <div class="sudoku-grid-cell given">6</div>
+            <div class="sudoku-grid-cell given"></div>
+            <div class="sudoku-grid-cell given"></div>
+            <div class="sudoku-grid-cell given"></div>
+            <div class="sudoku-grid-cell given"></div>
+            <div class="sudoku-grid-cell given">2</div>
+            <div class="sudoku-grid-cell given">8</div>
+            <div class="sudoku-grid-cell given"></div>
+            <!-- Fila 8 -->
+            <div class="sudoku-grid-cell given"></div>
+            <div class="sudoku-grid-cell given"></div>
+            <div class="sudoku-grid-cell given"></div>
+            <div class="sudoku-grid-cell given">4</div>
+            <div class="sudoku-grid-cell given">1</div>
+            <div class="sudoku-grid-cell given">9</div>
+            <div class="sudoku-grid-cell user-blue">7</div>
+            <div class="sudoku-grid-cell given"></div>
+            <div class="sudoku-grid-cell given">5</div>
+            <!-- Fila 9 -->
+            <div class="sudoku-grid-cell given"></div>
+            <div class="sudoku-grid-cell given"></div>
+            <div class="sudoku-grid-cell given"></div>
+            <div class="sudoku-grid-cell given"></div>
+            <div class="sudoku-grid-cell given">8</div>
+            <div class="sudoku-grid-cell given"></div>
+            <div class="sudoku-grid-cell given"></div>
+            <div class="sudoku-grid-cell given">7</div>
+            <div class="sudoku-grid-cell given">9</div>
+          </div>
+        </div>
+
+        <!-- Numpad -->
+        <div class="numpad" style="padding-top:4px;">
+          <div class="numpad-row">
+            <div class="num-btn">1</div>
+            <div class="num-btn accent-btn-blue">2</div>
+            <div class="num-btn">3</div>
+            <div class="num-btn">4</div>
+            <div class="num-btn">5</div>
+            <div class="num-btn">6</div>
+            <div class="num-btn">7</div>
+            <div class="num-btn">8</div>
+            <div class="num-btn">9</div>
+          </div>
+          <div class="tools-row">
+            <div class="tool-btn active"><span class="tool-icon">✎</span> notes</div>
+            <div class="tool-btn"><span class="tool-icon">↩</span> desfés</div>
+            <div class="tool-btn"><span class="tool-icon">💡</span> pista</div>
+            <div class="tool-btn"><span class="tool-icon">⌫</span> esborra</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="screen-desc">
+      La barra de progrés i les estadístiques fan que el Clàssic tingui identitat pròpia. El blau pàl·lid diferencia les entrades de l'usuari de les originals sense ser agressiu.
+    </div>
+  </div>
+
+  <!-- ============================================================
+       JOC 3: KAKURO
+       ============================================================ -->
+  <div class="screen-wrap">
+    <div class="screen-label">Joc 03</div>
+    <div class="screen-title">Kakuro</div>
+
+    <div class="phone">
+      <div class="status-bar">
+        <div class="status-time">9:41</div>
+        <div class="status-icons">
+          <div class="status-bar-icon" style="width:16px;"></div>
+          <div class="status-bar-icon" style="width:10px;"></div>
+          <div class="status-bar-icon" style="border-radius:50%;width:8px;height:8px;"></div>
+        </div>
+      </div>
+
+      <div class="kk-content">
+        <!-- Top bar -->
+        <div class="game-topbar">
+          <div class="back-btn">
+            <div class="back-arrow">←</div>
+            <span>inici</span>
+          </div>
+          <div class="game-timer">04:52</div>
+          <div class="game-level" style="color:#508050;">fàcil</div>
+        </div>
+
+        <!-- Info bar -->
+        <div class="kk-info-bar">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div class="kk-difficulty">
+              <div class="kk-diff-dot on"></div>
+              <div class="kk-diff-dot on"></div>
+              <div class="kk-diff-dot"></div>
+              <div class="kk-diff-dot"></div>
+              <div class="kk-diff-dot"></div>
+            </div>
+            <div class="kk-diff-label">fàcil</div>
+          </div>
+          <div class="kk-errors">errors: <span>1</span>/3</div>
+        </div>
+
+        <!-- Graella Kakuro -->
+        <div class="kk-grid-wrap">
+          <div class="kakuro-grid" style="grid-template-columns:repeat(8,32px);grid-template-rows:repeat(8,32px);">
+
+            <!-- Fila 0 -->
+            <div class="kk-cell kk-black"></div>
+            <div class="kk-cell kk-black"></div>
+            <div class="kk-cell kk-black-diag"><span class="kk-clue-down">17</span></div>
+            <div class="kk-cell kk-black-diag"><span class="kk-clue-down">24</span></div>
+            <div class="kk-cell kk-black"></div>
+            <div class="kk-cell kk-black-diag"><span class="kk-clue-down">20</span></div>
+            <div class="kk-cell kk-black-diag"><span class="kk-clue-down">6</span></div>
+            <div class="kk-cell kk-black"></div>
+
+            <!-- Fila 1 -->
+            <div class="kk-cell kk-black"></div>
+            <div class="kk-cell kk-black-diag"><span class="kk-clue-across">3</span></div>
+            <div class="kk-cell kk-input user-val">1</div>
+            <div class="kk-cell kk-input user-val">2</div>
+            <div class="kk-cell kk-black-diag"><span class="kk-clue-across">26</span><span class="kk-clue-down">12</span></div>
+            <div class="kk-cell kk-input selected-kk"></div>
+            <div class="kk-cell kk-input user-val">3</div>
+            <div class="kk-cell kk-input">4</div>
+
+            <!-- Fila 2 -->
+            <div class="kk-cell kk-black-diag"><span class="kk-clue-across">10</span></div>
+            <div class="kk-cell kk-input user-val">4</div>
+            <div class="kk-cell kk-input user-val">6</div>
+            <div class="kk-cell kk-black-diag"><span class="kk-clue-across">16</span><span class="kk-clue-down">3</span></div>
+            <div class="kk-cell kk-input error">8</div>
+            <div class="kk-cell kk-input user-val">7</div>
+            <div class="kk-cell kk-input user-val">1</div>
+            <div class="kk-cell kk-black"></div>
+
+            <!-- Fila 3 -->
+            <div class="kk-cell kk-black-diag"><span class="kk-clue-across">9</span></div>
+            <div class="kk-cell kk-input user-val">3</div>
+            <div class="kk-cell kk-input user-val">2</div>
+            <div class="kk-cell kk-input kk-notes-cell">
+              <span class="kk-note-n">1</span><span class="kk-note-n"></span><span class="kk-note-n">3</span>
+              <span class="kk-note-n"></span><span class="kk-note-n">5</span><span class="kk-note-n"></span>
+              <span class="kk-note-n"></span><span class="kk-note-n"></span><span class="kk-note-n">9</span>
+            </div>
+            <div class="kk-cell kk-input user-val">2</div>
+            <div class="kk-cell kk-input">1</div>
+            <div class="kk-cell kk-black"></div>
+            <div class="kk-cell kk-black"></div>
+
+            <!-- Fila 4 -->
+            <div class="kk-cell kk-black"></div>
+            <div class="kk-cell kk-black-diag"><span class="kk-clue-across">15</span></div>
+            <div class="kk-cell kk-input user-val">9</div>
+            <div class="kk-cell kk-input user-val">6</div>
+            <div class="kk-cell kk-black-diag"><span class="kk-clue-across">7</span></div>
+            <div class="kk-cell kk-input user-val">4</div>
+            <div class="kk-cell kk-input">3</div>
+            <div class="kk-cell kk-black"></div>
+
+            <!-- Fila 5 -->
+            <div class="kk-cell kk-black-diag"><span class="kk-clue-across">4</span></div>
+            <div class="kk-cell kk-input user-val">3</div>
+            <div class="kk-cell kk-input">1</div>
+            <div class="kk-cell kk-black"></div>
+            <div class="kk-cell kk-black-diag"><span class="kk-clue-across">14</span></div>
+            <div class="kk-cell kk-input user-val">5</div>
+            <div class="kk-cell kk-input">9</div>
+            <div class="kk-cell kk-black"></div>
+
+            <!-- Fila 6 -->
+            <div class="kk-cell kk-black"></div>
+            <div class="kk-cell kk-black"></div>
+            <div class="kk-cell kk-black-diag"><span class="kk-clue-across">11</span></div>
+            <div class="kk-cell kk-input user-val">2</div>
+            <div class="kk-cell kk-input user-val">9</div>
+            <div class="kk-cell kk-black-diag"><span class="kk-clue-across">4</span></div>
+            <div class="kk-cell kk-input user-val">3</div>
+            <div class="kk-cell kk-input">1</div>
+
+            <!-- Fila 7 -->
+            <div class="kk-cell kk-black"></div>
+            <div class="kk-cell kk-black"></div>
+            <div class="kk-cell kk-black"></div>
+            <div class="kk-cell kk-input user-val">8</div>
+            <div class="kk-cell kk-input user-val">1</div>
+            <div class="kk-cell kk-black"></div>
+            <div class="kk-cell kk-black"></div>
+            <div class="kk-cell kk-black"></div>
+
+          </div>
+        </div>
+
+        <!-- Hint de suma activa -->
+        <div class="kk-sum-hint">
+          <div class="kk-sum-pill">
+            <span class="kk-sum-label">suma →</span>
+            <span>26</span>
+          </div>
+          <div class="kk-sum-pill">
+            <span class="kk-sum-label">↓</span>
+            <span>12</span>
+          </div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:8px;color:#9a9080;margin-left:4px;">cel·la activa</div>
+        </div>
+
+        <!-- Numpad verd -->
+        <div class="numpad" style="padding-top:2px;">
+          <div class="numpad-row">
+            <div class="num-btn">1</div>
+            <div class="num-btn">2</div>
+            <div class="num-btn">3</div>
+            <div class="num-btn">4</div>
+            <div class="num-btn accent-btn-green">5</div>
+            <div class="num-btn">6</div>
+            <div class="num-btn">7</div>
+            <div class="num-btn">8</div>
+            <div class="num-btn dim">9</div>
+          </div>
+          <div class="tools-row">
+            <div class="tool-btn"><span class="tool-icon">✎</span> notes</div>
+            <div class="tool-btn"><span class="tool-icon">↩</span> desfés</div>
+            <div class="tool-btn active"><span class="tool-icon">Σ</span> sumes</div>
+            <div class="tool-btn"><span class="tool-icon">⌫</span> esborra</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="screen-desc">
+      El kakuro mostra les pistes de suma actives a la barra inferior. El vermell (error) contrasta bé sobre el verd. Les notes petites dins les cel·les segueixen el mateix estil que el sudoku.
+    </div>
+  </div>
+
+</div><!-- /screens -->
+
+<!-- Nota de sistema de colors -->
+<div style="max-width:1100px;margin:60px auto 0;padding:28px;background:rgba(255,255,255,.5);border-radius:16px;border:1px solid rgba(0,0,0,.06);">
+  <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:#9a9080;margin-bottom:16px;">Sistema de color · Zen Paper</div>
+  <div style="display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start;">
+    <div>
+      <div style="display:flex;gap:6px;margin-bottom:8px;">
+        <div style="width:36px;height:36px;border-radius:8px;background:#faf8f5;border:1px solid #ddd;"></div>
+        <div style="width:36px;height:36px;border-radius:8px;background:#1a1714;"></div>
+        <div style="width:36px;height:36px;border-radius:8px;background:#e8e0d8;"></div>
+      </div>
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:8px;color:#9a9080;">Base (tots els jocs)</div>
+    </div>
+    <div>
+      <div style="display:flex;gap:6px;margin-bottom:8px;">
+        <div style="width:36px;height:36px;border-radius:8px;background:#c06040;"></div>
+        <div style="width:36px;height:36px;border-radius:8px;background:#e8d0c0;"></div>
+      </div>
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:8px;color:#9a9080;">Sudoku 3D · Terracota</div>
+    </div>
+    <div>
+      <div style="display:flex;gap:6px;margin-bottom:8px;">
+        <div style="width:36px;height:36px;border-radius:8px;background:#5090b0;"></div>
+        <div style="width:36px;height:36px;border-radius:8px;background:#c0d8e8;"></div>
+      </div>
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:8px;color:#9a9080;">Sudoku Clàssic · Blau pàl·lid</div>
+    </div>
+    <div>
+      <div style="display:flex;gap:6px;margin-bottom:8px;">
+        <div style="width:36px;height:36px;border-radius:8px;background:#508050;"></div>
+        <div style="width:36px;height:36px;border-radius:8px;background:#c0d8c0;"></div>
+      </div>
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:8px;color:#9a9080;">Kakuro · Verd sage</div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

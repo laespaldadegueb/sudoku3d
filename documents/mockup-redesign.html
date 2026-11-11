@@ -1,0 +1,2193 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Mockup Redisseny — Sudoku³</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Nunito:wght@700;900&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #111;
+    color: #eee;
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 14px;
+    padding: 24px 16px 48px;
+  }
+  h1 { font-size: 22px; margin-bottom: 6px; color: #fff; }
+  .intro { color: #aaa; font-size: 13px; margin-bottom: 32px; line-height: 1.6; max-width: 700px; }
+  h2 { font-size: 13px; letter-spacing: 0.12em; color: #666; text-transform: uppercase; margin-bottom: 16px; }
+
+  .section { margin-bottom: 48px; }
+  .row { display: flex; gap: 24px; flex-wrap: wrap; align-items: flex-start; }
+
+  .phone {
+    width: 320px; min-height: 540px;
+    border-radius: 28px;
+    border: 1.5px solid #333;
+    overflow: hidden;
+    position: relative;
+    flex-shrink: 0;
+  }
+  .phone-label {
+    font-size: 11px; color: #555; letter-spacing: 0.08em; text-transform: uppercase;
+    margin-bottom: 8px; text-align: center;
+  }
+  .phone-wrap { display: flex; flex-direction: column; align-items: center; }
+
+  /* ===== ACTUAL (before) ===== */
+  .before {
+    background: #0A0E18;
+  }
+  .before .top-bar {
+    padding: 20px 16px 12px;
+    display: flex; justify-content: space-between; align-items: flex-start;
+  }
+  .before .brand { display: flex; flex-direction: column; gap: 8px; }
+  .before .wordmark {
+    font-size: 15px; font-weight: 500; color: #DDE3F0;
+    font-family: 'Inter', sans-serif; letter-spacing: 0.04em;
+  }
+  .before .wordmark sup { font-size: 10px; color: #6B7490; }
+  .before .pill {
+    font-size: 11px; color: #6B7490; display: flex; align-items: center; gap: 6px;
+    background: none; border: none; cursor: pointer;
+  }
+  .before .pill .dot { width: 6px; height: 6px; border-radius: 50%; background: #c27a25; box-shadow: 0 0 6px #c27a25; }
+  .before .pill .name { color: #DDE3F0; font-weight: 500; font-size: 12px; }
+  .before .hud-right { text-align: right; }
+  .before .read-line {
+    display: flex; align-items: baseline; justify-content: flex-end; gap: 10px;
+    font-family: 'IBM Plex Mono', monospace; line-height: 1.8;
+  }
+  .before .read-line .k { color: #434B64; font-size: 10px; letter-spacing: 0.14em; }
+  .before .read-line .v { color: #DDE3F0; font-size: 14px; min-width: 50px; font-variant-numeric: tabular-nums; }
+  .before .cube-area {
+    height: 260px;
+    background: linear-gradient(135deg, #0f1420 0%, #141926 100%);
+    display: flex; align-items: center; justify-content: center;
+    color: #2a3558; font-size: 80px; position: relative;
+  }
+  .before .cube-area .cube-hint { color: #3a4566; font-size: 12px; font-family: 'IBM Plex Mono', monospace; letter-spacing: 0.08em; }
+  .before .pad {
+    position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%);
+    display: inline-flex; border: 1px solid #232A3D; background: #141926;
+  }
+  .before .pad-cell {
+    width: 40px; height: 40px; background: transparent; border: none;
+    color: #DDE3F0; font-family: 'IBM Plex Mono', monospace; font-size: 15px; cursor: pointer;
+    border-right: 1px solid #232A3D;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .before .pad-cell:last-child { border-right: none; }
+  .before .pad-cell.action { color: #6B7490; font-size: 17px; }
+  .before .pad-cell.erase { color: #c47a7a; }
+  .before .pad-sep { width: 0; border-left: 1px solid #38415A; }
+  .before .slice-ui {
+    position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+    display: flex; flex-direction: column; gap: 6px;
+  }
+  .before .slice-row { display: flex; align-items: center; gap: 8px; }
+  .before .slice-ax { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #6B7490; width: 10px; }
+  .before .slice-track { display: inline-flex; border: 1px solid #232A3D; background: #0F1420; }
+  .before .slice-seg {
+    background: transparent; border: none; color: #6B7490;
+    font-family: 'IBM Plex Mono', monospace; font-size: 11px;
+    padding: 5px 0; cursor: pointer; min-width: 24px; border-right: 1px solid #232A3D;
+  }
+  .before .slice-seg:last-child { border-right: none; }
+  .before .slice-seg.active { background: #c27a25; color: #0A0E18; font-weight: 500; }
+
+  /* ===== AFTER (new design) ===== */
+  /* Paleta: carbó càlid + ambre */
+  :root {
+    --n-bg: #151310;
+    --n-surf: #1e1b16;
+    --n-surf2: #252118;
+    --n-rule: #2e2a22;
+    --n-rule2: #3d3830;
+    --n-text: #f0ead8;
+    --n-muted: #8a8070;
+    --n-dim: #504840;
+    --n-accent: #d4882a;
+    --n-accent-dim: #a06018;
+    --n-red: #c86060;
+    --r: 8px;
+  }
+
+  .after {
+    background: var(--n-bg);
+    font-family: 'Inter', sans-serif;
+  }
+
+  /* Top bar */
+  .after .top-bar {
+    padding: 20px 16px 14px;
+    display: flex; justify-content: space-between; align-items: flex-start;
+  }
+  .after .brand { display: flex; flex-direction: column; gap: 6px; }
+
+  /* Wordmark amb tipografia de joc */
+  .after .wordmark {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 900; font-size: 22px;
+    color: var(--n-text); letter-spacing: -0.01em; line-height: 1;
+  }
+  .after .wordmark sup { font-size: 14px; color: var(--n-accent); vertical-align: super; }
+
+  /* Pill amb forma de pastilla real */
+  .after .pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--n-surf); border: 1px solid var(--n-rule2);
+    border-radius: 20px; padding: 4px 10px 4px 8px;
+    font-size: 11px; color: var(--n-muted); cursor: pointer;
+  }
+  .after .pill .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--n-accent); }
+  .after .pill .name { color: var(--n-text); font-weight: 600; font-size: 12px; }
+  .after .pill .caret { color: var(--n-dim); font-size: 8px; }
+
+  /* HUD: icones + valor, no lletres crítiques */
+  .after .hud-right { display: flex; flex-direction: column; gap: 4px; align-items: flex-end; }
+  .after .hud-chip {
+    display: flex; align-items: center; gap: 6px;
+    background: var(--n-surf); border-radius: 6px; padding: 3px 8px;
+  }
+  .after .hud-chip .icon { font-size: 11px; opacity: 0.6; }
+  .after .hud-chip .val {
+    font-family: 'IBM Plex Mono', monospace; font-size: 13px;
+    font-weight: 500; color: var(--n-text); font-variant-numeric: tabular-nums;
+    min-width: 36px; text-align: right;
+  }
+  .after .hud-chip.hi .icon { opacity: 1; }
+  .after .hud-chip.hi .val { color: var(--n-accent); }
+
+  /* Cube area */
+  .after .cube-area {
+    height: 260px;
+    background: radial-gradient(ellipse at 40% 40%, #231e15 0%, #151310 70%);
+    display: flex; align-items: center; justify-content: center;
+    position: relative;
+  }
+
+  /* Number pad: botons tàctils */
+  .after .pad {
+    position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%);
+    display: inline-flex; gap: 5px; padding: 6px;
+    background: var(--n-surf); border-radius: var(--r);
+    border: 1px solid var(--n-rule);
+  }
+  .after .pad-group { display: flex; gap: 4px; }
+  .after .pad-cell {
+    width: 42px; height: 46px; border-radius: 7px;
+    background: var(--n-surf2); border: 1px solid var(--n-rule2);
+    color: var(--n-text); font-family: 'Inter', sans-serif;
+    font-size: 17px; font-weight: 600; cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center;
+    box-shadow: 0 2px 0 var(--n-dim);
+  }
+  .after .pad-cell.action {
+    width: 38px; height: 46px;
+    color: var(--n-muted); font-size: 16px; font-weight: 400;
+  }
+  .after .pad-cell.erase { color: var(--n-red); font-size: 15px; }
+  .after .pad-divider { width: 1px; background: var(--n-rule2); margin: 0 1px; }
+
+  /* Slice: trackbars arrodonits */
+  .after .slice-ui {
+    position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+    display: flex; flex-direction: column; gap: 5px;
+  }
+  .after .slice-row { display: flex; align-items: center; gap: 6px; }
+  .after .slice-ax {
+    font-size: 10px; font-weight: 600; color: var(--n-muted);
+    width: 12px; text-align: center; letter-spacing: 0.05em;
+  }
+  .after .slice-track {
+    display: inline-flex; background: var(--n-surf);
+    border: 1px solid var(--n-rule2); border-radius: 6px; overflow: hidden;
+    gap: 1px; padding: 2px;
+  }
+  .after .slice-seg {
+    background: transparent; border: none; border-radius: 4px;
+    color: var(--n-muted); font-family: 'IBM Plex Mono', monospace; font-size: 10px;
+    padding: 4px 0; cursor: pointer; min-width: 22px;
+    font-variant-numeric: tabular-nums;
+  }
+  .after .slice-seg.active { background: var(--n-accent); color: var(--n-bg); font-weight: 700; }
+
+  /* ===== COMPARACIÓ PANTALLES OVERLAY ===== */
+
+  /* Victory before */
+  .vic-before {
+    background: rgba(10,14,24,0.95);
+    padding: 28px 24px;
+    width: 100%;
+  }
+  .vic-before .vic-head { font-size: 13px; font-weight: 500; color: #c27a25; margin-bottom: 6px; }
+  .vic-before .vic-sub { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: #6B7490; letter-spacing: 0.1em; margin-bottom: 16px; }
+  .vic-before .grid { display: grid; grid-template-columns: auto 1fr; gap: 8px 16px; }
+  .vic-before .k { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: #6B7490; letter-spacing: 0.12em; align-self: center; }
+  .vic-before .v { font-family: 'IBM Plex Mono', monospace; font-size: 22px; color: #DDE3F0; font-variant-numeric: tabular-nums; }
+  .vic-before .divider { grid-column: 1/-1; height: 1px; background: #232A3D; margin: 4px 0; }
+  .vic-before .cta { margin-top: 20px; display: flex; justify-content: flex-end; }
+  .vic-before .cta button { background: #c27a25; color: #0A0E18; border: none; padding: 10px 20px; font-size: 13px; font-weight: 500; cursor: pointer; }
+
+  /* Victory after */
+  .vic-after {
+    background: rgba(21,19,16,0.97);
+    padding: 24px 20px;
+    width: 100%;
+    font-family: 'Inter', sans-serif;
+  }
+  .vic-after .badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--n-accent); border-radius: 20px;
+    padding: 4px 12px; margin-bottom: 14px;
+    font-size: 12px; font-weight: 700; color: var(--n-bg); letter-spacing: 0.03em;
+  }
+  .vic-after .badge .icon { font-size: 14px; }
+  .vic-after .diff-label { font-size: 12px; color: var(--n-muted); margin-bottom: 20px; }
+
+  .vic-after .stats-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px;
+  }
+  .vic-after .stat-card {
+    background: var(--n-surf); border-radius: 8px; padding: 10px 12px;
+    border: 1px solid var(--n-rule);
+  }
+  .vic-after .stat-card.accent-card {
+    background: rgba(212,136,42,0.12); border-color: rgba(212,136,42,0.3);
+  }
+  .vic-after .stat-label { font-size: 10px; color: var(--n-muted); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 4px; }
+  .vic-after .stat-val { font-family: 'IBM Plex Mono', monospace; font-size: 20px; font-weight: 500; color: var(--n-text); font-variant-numeric: tabular-nums; }
+  .vic-after .stat-val.gold { color: var(--n-accent); }
+  .vic-after .stat-tag { font-size: 9px; color: var(--n-accent); letter-spacing: 0.1em; text-transform: uppercase; }
+
+  .vic-after .bests {
+    display: flex; gap: 8px; margin-bottom: 20px;
+  }
+  .vic-after .best-item {
+    flex: 1; background: var(--n-surf); border-radius: 6px; padding: 8px 10px;
+    border: 1px solid var(--n-rule);
+  }
+  .vic-after .best-label { font-size: 10px; color: var(--n-muted); margin-bottom: 3px; }
+  .vic-after .best-val { font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: var(--n-muted); }
+
+  .vic-after .streak-bar {
+    display: flex; align-items: center; gap: 8px; padding: 10px 12px;
+    background: var(--n-surf); border-radius: 8px; margin-bottom: 20px;
+    border: 1px solid var(--n-rule);
+  }
+  .vic-after .streak-icon { font-size: 18px; }
+  .vic-after .streak-text { font-size: 12px; color: var(--n-muted); }
+  .vic-after .streak-num { font-size: 16px; font-weight: 700; color: var(--n-accent); margin-left: auto; font-family: 'IBM Plex Mono', monospace; }
+
+  .vic-after .cta button {
+    width: 100%; padding: 13px;
+    background: var(--n-accent); color: var(--n-bg); border: none;
+    border-radius: var(--r); font-size: 15px; font-weight: 700;
+    cursor: pointer; font-family: 'Inter', sans-serif;
+    letter-spacing: 0.02em;
+  }
+
+  /* Settings before */
+  .sett-before {
+    background: #141926; border: 1px solid #232A3D;
+    padding: 14px 16px; width: 240px;
+  }
+  .sett-before .row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 6px 0; }
+  .sett-before .label { font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; color: #6B7490; letter-spacing: 0.06em; }
+  .sett-before .sep { height: 1px; background: #232A3D; margin: 4px 0; }
+  .sett-before .btn { background: none; border: 1px solid #232A3D; color: #DDE3F0; font-size: 11px; padding: 7px 10px; width: 100%; text-align: left; margin: 3px 0; cursor: pointer; }
+  .sett-before .btn.danger { color: #c47a7a; border-color: #5a2a2a; }
+  .sett-before .size-grp { display: flex; border: 1px solid #232A3D; }
+  .sett-before .size-btn { background: none; border: none; border-right: 1px solid #232A3D; color: #6B7490; font-family: 'IBM Plex Mono', monospace; font-size: 11px; padding: 5px 10px; cursor: pointer; }
+  .sett-before .size-btn:last-child { border-right: none; }
+  .sett-before .size-btn.active { background: #c27a25; color: #0A0E18; }
+  .sett-before input[type=range] { width: 80px; height: 2px; accent-color: #c27a25; }
+  .sett-before input[type=checkbox] { accent-color: #c27a25; }
+
+  /* Settings after */
+  .sett-after {
+    background: var(--n-surf); border: 1px solid var(--n-rule2);
+    border-radius: 14px; padding: 16px;
+    width: 260px; font-family: 'Inter', sans-serif;
+  }
+  .sett-after .sect-label {
+    font-size: 10px; color: var(--n-muted); letter-spacing: 0.1em; text-transform: uppercase;
+    margin-bottom: 8px; padding-bottom: 4px; border-bottom: 1px solid var(--n-rule);
+  }
+  .sett-after .sect { margin-bottom: 14px; }
+  .sett-after .row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 5px 0; }
+  .sett-after .label { font-size: 12px; color: var(--n-text); }
+  .sett-after .sub-label { font-size: 11px; color: var(--n-muted); }
+  .sett-after .size-grp { display: flex; gap: 4px; }
+  .sett-after .size-btn {
+    background: var(--n-surf2); border: 1px solid var(--n-rule2); border-radius: 6px;
+    color: var(--n-muted); font-size: 12px; font-weight: 600; padding: 5px 12px; cursor: pointer;
+  }
+  .sett-after .size-btn.active { background: var(--n-accent); color: var(--n-bg); border-color: var(--n-accent); }
+  .sett-after input[type=range] { width: 80px; height: 3px; accent-color: var(--n-accent); border-radius: 2px; }
+  .sett-after .toggle {
+    width: 36px; height: 20px; background: var(--n-rule2); border-radius: 10px;
+    position: relative; cursor: pointer; transition: background 200ms;
+    border: none; flex-shrink: 0;
+  }
+  .sett-after .toggle::after {
+    content: ''; position: absolute; width: 14px; height: 14px;
+    background: var(--n-muted); border-radius: 50%; top: 3px; left: 3px; transition: all 200ms;
+  }
+  .sett-after .toggle.on { background: rgba(212,136,42,0.3); }
+  .sett-after .toggle.on::after { background: var(--n-accent); left: 19px; }
+  .sett-after .btn {
+    background: var(--n-surf2); border: 1px solid var(--n-rule); border-radius: 6px;
+    color: var(--n-text); font-size: 12px; font-weight: 500; padding: 8px 12px;
+    width: 100%; text-align: left; margin: 3px 0; cursor: pointer;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .sett-after .btn .icon { opacity: 0.5; font-size: 13px; }
+  .sett-after .btn.danger { color: var(--n-red); }
+  .sett-after .btn.danger .icon { opacity: 0.7; }
+
+  /* ===== Anotacions de canvi ===== */
+  .changes {
+    background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 8px;
+    padding: 16px 20px; max-width: 340px; align-self: flex-start;
+  }
+  .changes h3 { font-size: 13px; color: #ddd; margin-bottom: 12px; }
+  .change-item { display: flex; gap: 10px; margin-bottom: 10px; align-items: flex-start; }
+  .change-item .tag {
+    font-size: 10px; font-weight: 600; letter-spacing: 0.05em;
+    padding: 2px 7px; border-radius: 10px; white-space: nowrap; flex-shrink: 0; margin-top: 1px;
+  }
+  .tag.add { background: rgba(60,180,80,0.15); color: #4cb860; }
+  .tag.change { background: rgba(80,140,220,0.15); color: #5a9cdc; }
+  .tag.remove { background: rgba(200,80,80,0.15); color: #c86060; }
+  .change-item p { font-size: 12px; color: #888; line-height: 1.5; }
+  .change-item p strong { color: #ccc; }
+</style>
+</head>
+<body>
+
+<h1>Mockup Redisseny — Sudoku³</h1>
+<p class="intro">
+  Proposta de redisseny per eliminar l'estètica "IA generativa". El problema principal és la combinació de
+  fons blau-negre fred, fonts monoespaciades arreu, etiquetes críptiques (T/E/H/V), i cantonades 90°
+  en tot. La proposta manté el caràcter fosc del joc però li dóna personalitat pròpia.
+</p>
+
+<!-- ===== SECCIÓ 1: HUD PRINCIPAL ===== -->
+<div class="section">
+  <h2>1 · Pantalla principal — HUD i pad de números</h2>
+  <div class="row">
+    <div class="phone-wrap">
+      <div class="phone-label">Actual</div>
+      <div class="phone before">
+        <div class="top-bar">
+          <div class="brand">
+            <div class="wordmark">Sudoku<sup>3</sup></div>
+            <div class="pill">
+              <span class="dot"></span>
+              <span class="name">Novell</span>
+              <span style="color:#434B64;font-size:9px;">▾</span>
+            </div>
+            <div style="color:#6B7490;font-size:11px;font-family:'IBM Plex Mono',monospace;margin-top:2px">? com es juga</div>
+          </div>
+          <div class="hud-right">
+            <div class="read-line"><span class="k">T</span><span class="v">3:42</span></div>
+            <div class="read-line"><span class="k">E</span><span class="v">02</span></div>
+            <div class="read-line"><span class="k">H</span><span class="v">00</span></div>
+            <div class="read-line"><span class="k">V</span><span class="v">01</span></div>
+          </div>
+        </div>
+        <div class="cube-area">
+          <div>
+            <div style="color:#3a4a80;font-size:64px;text-align:center;">⬛</div>
+            <div class="cube-hint">cub 3D · arrastra per girar</div>
+          </div>
+          <div class="slice-ui">
+            <div class="slice-row">
+              <span class="slice-ax">x</span>
+              <div class="slice-track">
+                <button class="slice-seg active">all</button>
+                <button class="slice-seg">1</button>
+                <button class="slice-seg">2</button>
+                <button class="slice-seg">3</button>
+                <button class="slice-seg">4</button>
+              </div>
+            </div>
+            <div class="slice-row">
+              <span class="slice-ax">y</span>
+              <div class="slice-track">
+                <button class="slice-seg active">all</button>
+                <button class="slice-seg">1</button>
+                <button class="slice-seg">2</button>
+                <button class="slice-seg">3</button>
+                <button class="slice-seg">4</button>
+              </div>
+            </div>
+            <div class="slice-row">
+              <span class="slice-ax">z</span>
+              <div class="slice-track">
+                <button class="slice-seg active">all</button>
+                <button class="slice-seg">1</button>
+                <button class="slice-seg">2</button>
+                <button class="slice-seg">3</button>
+                <button class="slice-seg">4</button>
+              </div>
+            </div>
+          </div>
+          <div class="pad">
+            <button class="pad-cell">1</button>
+            <button class="pad-cell">2</button>
+            <button class="pad-cell">3</button>
+            <button class="pad-cell">4</button>
+            <button class="pad-cell erase">⌫</button>
+            <div class="pad-sep"></div>
+            <button class="pad-cell action">↶</button>
+            <button class="pad-cell action">↷</button>
+            <div class="pad-sep"></div>
+            <button class="pad-cell action">⟳</button>
+            <div class="pad-sep"></div>
+            <button class="pad-cell action">𝑛</button>
+            <button class="pad-cell action">♪</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="align-self:center;color:#555;font-size:24px;">→</div>
+
+    <div class="phone-wrap">
+      <div class="phone-label">Proposta</div>
+      <div class="phone after">
+        <div class="top-bar">
+          <div class="brand">
+            <div class="wordmark">Sudoku<sup>3</sup></div>
+            <div class="pill">
+              <span class="dot"></span>
+              <span class="name">Novell</span>
+              <span class="caret">▾</span>
+            </div>
+          </div>
+          <div class="hud-right">
+            <div class="hud-chip hi">
+              <span class="icon">⏱</span>
+              <span class="val">3:42</span>
+            </div>
+            <div class="hud-chip">
+              <span class="icon">⚠</span>
+              <span class="val" style="color:var(--n-red)">02</span>
+            </div>
+            <div class="hud-chip">
+              <span class="icon">💡</span>
+              <span class="val" style="color:var(--n-muted)">—</span>
+            </div>
+          </div>
+        </div>
+        <div class="cube-area">
+          <div>
+            <div style="color:#3d3420;font-size:64px;text-align:center;">⬛</div>
+            <div style="color:#504838;font-size:11px;font-family:'IBM Plex Mono',monospace;text-align:center;letter-spacing:0.06em;">cub 3D · arrastra per girar</div>
+          </div>
+          <div class="slice-ui">
+            <div class="slice-row">
+              <span class="slice-ax">X</span>
+              <div class="slice-track">
+                <button class="slice-seg active">∞</button>
+                <button class="slice-seg">1</button>
+                <button class="slice-seg">2</button>
+                <button class="slice-seg">3</button>
+                <button class="slice-seg">4</button>
+              </div>
+            </div>
+            <div class="slice-row">
+              <span class="slice-ax">Y</span>
+              <div class="slice-track">
+                <button class="slice-seg active">∞</button>
+                <button class="slice-seg">1</button>
+                <button class="slice-seg">2</button>
+                <button class="slice-seg">3</button>
+                <button class="slice-seg">4</button>
+              </div>
+            </div>
+            <div class="slice-row">
+              <span class="slice-ax">Z</span>
+              <div class="slice-track">
+                <button class="slice-seg active">∞</button>
+                <button class="slice-seg">1</button>
+                <button class="slice-seg">2</button>
+                <button class="slice-seg">3</button>
+                <button class="slice-seg">4</button>
+              </div>
+            </div>
+          </div>
+          <div class="pad">
+            <div class="pad-group">
+              <button class="pad-cell">1</button>
+              <button class="pad-cell">2</button>
+              <button class="pad-cell">3</button>
+              <button class="pad-cell">4</button>
+              <button class="pad-cell erase">⌫</button>
+            </div>
+            <div class="pad-divider"></div>
+            <div class="pad-group">
+              <button class="pad-cell action">↶</button>
+              <button class="pad-cell action">↷</button>
+            </div>
+            <div class="pad-divider"></div>
+            <div class="pad-group">
+              <button class="pad-cell action">⟳</button>
+              <button class="pad-cell action" style="font-size:13px;font-style:italic">n</button>
+              <button class="pad-cell action">♪</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="changes">
+      <h3>Canvis aplicats</h3>
+      <div class="change-item">
+        <span class="tag add">NOU</span>
+        <p><strong>Tipografia del títol</strong>: Nunito 900 (arrodonit, personalitat de joc) en lloc de Space Grotesk 500 (genèric tech).</p>
+      </div>
+      <div class="change-item">
+        <span class="tag change">CANVI</span>
+        <p><strong>Paleta</strong>: carbó càlid <code>#151310</code> en lloc de blau-negre fred <code>#0A0E18</code>. Menys "terminal hacker".</p>
+      </div>
+      <div class="change-item">
+        <span class="tag remove">FORA</span>
+        <p><strong>Etiquetes T / E / H / V</strong>: substituïdes per xips amb icona + valor. Legibles sense aprendizatge.</p>
+      </div>
+      <div class="change-item">
+        <span class="tag change">CANVI</span>
+        <p><strong>Pill de nivell</strong>: ara té forma de pastilla real (border-radius 20px) amb fons visible, no flotant invisible.</p>
+      </div>
+      <div class="change-item">
+        <span class="tag add">NOU</span>
+        <p><strong>Pad de números</strong>: botons amb relleu subtil (box-shadow 0 2px), border-radius 7px. Es noten tàctils, no plans.</p>
+      </div>
+      <div class="change-item">
+        <span class="tag change">CANVI</span>
+        <p><strong>Controls de capes</strong>: track arrodonit, "all" → "∞" per estalviar espai, cursor actiu més visible.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SECCIÓ 2: VICTÒRIA ===== -->
+<div class="section">
+  <h2>2 · Pantalla de victòria</h2>
+  <div class="row">
+    <div class="phone-wrap">
+      <div class="phone-label">Actual</div>
+      <div class="phone before" style="min-height:auto">
+        <div class="vic-before">
+          <div class="vic-head">Puzzle resolt</div>
+          <div class="vic-sub">novell</div>
+          <div class="grid">
+            <span class="k">TEMPS</span><span class="v">3:42</span>
+            <span class="k">ERRORS</span><span class="v" style="font-size:22px">02</span>
+            <span class="k">PUNTUACIÓ</span><span class="v" style="color:#c27a25">847</span>
+            <div class="divider"></div>
+            <span class="k">MILLOR TEMPS</span><span class="v" style="font-size:16px;color:#6B7490">3:42</span>
+            <span class="k">MILLOR PUNTUACIÓ</span><span class="v" style="font-size:16px;color:#6B7490">847</span>
+            <span class="k">RATXA</span><span class="v" style="font-size:16px;color:#6B7490">3 dies</span>
+          </div>
+          <div class="cta"><button>Puzzle nou</button></div>
+        </div>
+      </div>
+    </div>
+
+    <div style="align-self:center;color:#555;font-size:24px;">→</div>
+
+    <div class="phone-wrap">
+      <div class="phone-label">Proposta</div>
+      <div class="phone after" style="min-height:auto">
+        <div class="vic-after">
+          <div class="badge"><span class="icon">✓</span> Puzzle resolt!</div>
+          <div class="diff-label">Nivell Novell · 4³</div>
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-label">Temps</div>
+              <div class="stat-val">3:42</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Errors</div>
+              <div class="stat-val" style="color:var(--n-red)">2</div>
+            </div>
+            <div class="stat-card accent-card" style="grid-column:1/-1">
+              <div class="stat-label">Puntuació</div>
+              <div class="stat-val gold">847 <span class="stat-tag">RÈCORD !</span></div>
+            </div>
+          </div>
+          <div class="bests">
+            <div class="best-item">
+              <div class="best-label">Millor temps</div>
+              <div class="best-val">3:42</div>
+            </div>
+            <div class="best-item">
+              <div class="best-label">Millor punts</div>
+              <div class="best-val">847</div>
+            </div>
+          </div>
+          <div class="streak-bar">
+            <span class="streak-icon">🔥</span>
+            <span class="streak-text">Ratxa actual</span>
+            <span class="streak-num">3 dies</span>
+          </div>
+          <div class="cta"><button>Puzzle nou →</button></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="changes">
+      <h3>Canvis aplicats</h3>
+      <div class="change-item">
+        <span class="tag add">NOU</span>
+        <p><strong>Badge de victòria</strong>: pastilla amb color accent, icona ✓ i text exclamatiu. Dona sensació d'assoliment.</p>
+      </div>
+      <div class="change-item">
+        <span class="tag change">CANVI</span>
+        <p><strong>Stats en targetes</strong>: cada mètrica en una targeta arrodonida en lloc d'una graella fred de text/valor.</p>
+      </div>
+      <div class="change-item">
+        <span class="tag add">NOU</span>
+        <p><strong>Barra de ratxa</strong>: emoji 🔥 + text + número. Motiva a continuar jugant.</p>
+      </div>
+      <div class="change-item">
+        <span class="tag remove">FORA</span>
+        <p><strong>Decoració de cantonada</strong> <code>::before/::after</code>: típic truc "AI tech corner", eliminat.</p>
+      </div>
+      <div class="change-item">
+        <span class="tag change">CANVI</span>
+        <p><strong>Botó "Puzzle nou"</strong>: amplada completa, border-radius, tipografia més gran i grassa. Acció principal clara.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SECCIÓ 3: PANELL PREFERÈNCIES ===== -->
+<div class="section">
+  <h2>3 · Panell de preferències</h2>
+  <div class="row">
+    <div class="phone-wrap">
+      <div class="phone-label">Actual</div>
+      <div class="sett-before">
+        <div class="row"><span class="label">mida</span>
+          <div class="size-grp">
+            <button class="size-btn">3³</button>
+            <button class="size-btn active">4³</button>
+            <button class="size-btn">9³</button>
+          </div>
+        </div>
+        <div class="row"><span class="label">efectes</span><input type="range" value="60"/></div>
+        <div class="row"><span class="label">menys moviment</span><input type="checkbox"/></div>
+        <div class="row"><span class="label">mida HUD</span><input type="range" value="50"/></div>
+        <div class="row"><span class="label">alt contrast</span><input type="checkbox"/></div>
+        <div class="sep"></div>
+        <button class="btn">Veure rànquing</button>
+        <div class="row"><span class="label">desbloqueja tots els nivells</span><input type="checkbox"/></div>
+        <button class="btn">Mostra la solució</button>
+        <button class="btn">Comparteix puzzle</button>
+        <button class="btn">Repte del dia</button>
+        <div class="sep"></div>
+        <button class="btn">Exporta dades</button>
+        <button class="btn">Importa dades</button>
+        <button class="btn danger">Reinicia-ho tot</button>
+      </div>
+    </div>
+
+    <div style="align-self:center;color:#555;font-size:24px;">→</div>
+
+    <div class="phone-wrap">
+      <div class="phone-label">Proposta</div>
+      <div class="sett-after">
+        <div class="sect">
+          <div class="sect-label">Mida del cub</div>
+          <div class="size-grp">
+            <button class="size-btn">3³</button>
+            <button class="size-btn active">4³</button>
+            <button class="size-btn">9³</button>
+          </div>
+        </div>
+        <div class="sect">
+          <div class="sect-label">So i moviment</div>
+          <div class="row"><span class="label">Efectes de so</span><input type="range" value="60"/></div>
+          <div class="row"><span class="label">Menys moviment</span><button class="toggle on"></button></div>
+        </div>
+        <div class="sect">
+          <div class="sect-label">Pantalla</div>
+          <div class="row"><span class="label">Mida HUD</span><input type="range" value="50"/></div>
+          <div class="row"><span class="label">Alt contrast</span><button class="toggle"></button></div>
+        </div>
+        <div class="sect">
+          <div class="sect-label">Partida</div>
+          <button class="btn"><span class="icon">🏆</span> Rànquing</button>
+          <button class="btn"><span class="icon">📅</span> Repte del dia</button>
+          <button class="btn"><span class="icon">🔗</span> Comparteix puzzle</button>
+          <button class="btn"><span class="icon">💡</span> Mostra la solució</button>
+        </div>
+        <div class="sect">
+          <div class="sect-label">Dades</div>
+          <button class="btn"><span class="icon">📤</span> Exporta dades</button>
+          <button class="btn"><span class="icon">📥</span> Importa dades</button>
+          <button class="btn danger"><span class="icon">🗑</span> Reinicia-ho tot</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="changes">
+      <h3>Canvis aplicats</h3>
+      <div class="change-item">
+        <span class="tag add">NOU</span>
+        <p><strong>Seccions amb capçalera</strong>: el contingut s'agrupa en "So i moviment", "Pantalla", "Partida", "Dades". Molt més fàcil d'escanejar.</p>
+      </div>
+      <div class="change-item">
+        <span class="tag change">CANVI</span>
+        <p><strong>Checkbox → toggle</strong>: controls d'activació amb toggle visual en lloc de checkboxes natius del sistema operatiu.</p>
+      </div>
+      <div class="change-item">
+        <span class="tag add">NOU</span>
+        <p><strong>Icones als botons</strong>: cada acció té una icona que facilita la identificació ràpida.</p>
+      </div>
+      <div class="change-item">
+        <span class="tag change">CANVI</span>
+        <p><strong>Botons arrodonits</strong>: border-radius 6px + fons superfície, en lloc de botons plans amb vora fina.</p>
+      </div>
+      <div class="change-item">
+        <span class="tag change">CANVI</span>
+        <p><strong>Labels en majúscula/minúscula</strong>: "Efectes de so" en lloc de "efectes" (tot minúscula amb font mono).</p>
+      </div>
+      <div class="change-item">
+        <span class="tag remove">FORA</span>
+        <p><strong>Font monoespaciada en labels</strong>: les etiquetes de preferències tenien font mono, que és innecessari i dóna aire de terminal.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SECCIÓ 4: CUB 3D ===== -->
+<div class="section">
+  <h2>4 · Cub 3D — comparació interactiva</h2>
+  <p style="color:#666;font-size:12px;margin-bottom:20px">Pots arrossegar per girar els cubs. Mostren un 4³ amb valors de mostra.</p>
+  <div class="row" style="align-items:flex-start">
+
+    <div class="phone-wrap">
+      <div class="phone-label">Actual</div>
+      <div style="width:320px;height:380px;border-radius:16px;overflow:hidden;border:1.5px solid #333">
+        <canvas id="cube-before" style="width:100%;height:100%;display:block"></canvas>
+      </div>
+    </div>
+
+    <div style="align-self:center;color:#555;font-size:24px;">→</div>
+
+    <div class="phone-wrap">
+      <div class="phone-label">Proposta</div>
+      <div style="width:320px;height:380px;border-radius:16px;overflow:hidden;border:1.5px solid #333">
+        <canvas id="cube-after" style="width:100%;height:100%;display:block"></canvas>
+      </div>
+    </div>
+
+    <div class="changes">
+      <h3>Canvis al cub 3D</h3>
+      <div class="change-item">
+        <span class="tag change">CANVI</span>
+        <p><strong>Fons de l'escena</strong>: <code>#0f1220</code> (blau fred) → <code>#131109</code> (carbó càlid). El cub ja no flota en un buit tecnològic.</p>
+      </div>
+      <div class="change-item">
+        <span class="tag change">CANVI</span>
+        <p><strong>Color cel·les buides</strong>: blau-gris <code>#1a2040</code> → ambre fosc <code>#1e1912</code>. Menys "matriu de dades".</p>
+      </div>
+      <div class="change-item">
+        <span class="tag change">CANVI</span>
+        <p><strong>Color cel·les fixes</strong>: blau elèctric <code>#3a4a80</code> → índigo càlid <code>#3a3860</code>. Menys saturació, menys neó.</p>
+      </div>
+      <div class="change-item">
+        <span class="tag change">CANVI</span>
+        <p><strong>Color cel·les emplenades</strong>: verd fresc <code>#2d6a55</code> → verd bosc <code>#2a5040</code>. Més apagat, menys cromatisme.</p>
+      </div>
+      <div class="change-item">
+        <span class="tag change">CANVI</span>
+        <p><strong>Arestes</strong>: blau-lila <code>#6a7bc0</code> → ocre suau <code>#706050</code>, opacitat 0.4. Les arestes donen estructura sense cridar l'atenció.</p>
+      </div>
+      <div class="change-item">
+        <span class="tag add">NOU</span>
+        <p><strong>Textura cel·les</strong>: número sobre gradient radial suau (centre lleugerament més brillant) en lloc de fons pla. Dona sensació de material, no de píxel.</p>
+      </div>
+      <div class="change-item">
+        <span class="tag change">CANVI</span>
+        <p><strong>Font dels números</strong>: <code>bold 88px system-ui</code> → <code>bold 80px Nunito, system-ui</code>. Números més arrodonits i llegibles al cub.</p>
+      </div>
+      <div class="change-item">
+        <span class="tag change">CANVI</span>
+        <p><strong>Il·luminació</strong>: ambient blanc neutre → ambient blanc càlid <code>#fff8e8</code>. Reforça la paleta càlida global.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Comparació de textures de cel·la en detall -->
+  <div style="margin-top:28px">
+    <h2 style="margin-bottom:16px">4b · Textures de cel·la en detall (cara × 4)</h2>
+    <div class="row" style="gap:16px;align-items:flex-start">
+      <div>
+        <div class="phone-label">Actual — textura de cara</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;max-width:340px">
+          <canvas id="tex-before-empty"  width="80" height="80" style="border:1px solid #333;border-radius:4px"></canvas>
+          <canvas id="tex-before-fixed"  width="80" height="80" style="border:1px solid #333;border-radius:4px"></canvas>
+          <canvas id="tex-before-filled" width="80" height="80" style="border:1px solid #333;border-radius:4px"></canvas>
+          <canvas id="tex-before-conflict" width="80" height="80" style="border:1px solid #333;border-radius:4px"></canvas>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;max-width:340px;margin-top:6px">
+          <div style="width:80px;font-size:10px;color:#555;text-align:center">Buida</div>
+          <div style="width:80px;font-size:10px;color:#555;text-align:center">Fixa</div>
+          <div style="width:80px;font-size:10px;color:#555;text-align:center">Emplenada</div>
+          <div style="width:80px;font-size:10px;color:#555;text-align:center">Conflicte</div>
+        </div>
+      </div>
+      <div style="align-self:center;color:#555;font-size:20px;">→</div>
+      <div>
+        <div class="phone-label">Proposta — textura de cara</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;max-width:340px">
+          <canvas id="tex-after-empty"  width="80" height="80" style="border:1px solid #333;border-radius:4px"></canvas>
+          <canvas id="tex-after-fixed"  width="80" height="80" style="border:1px solid #333;border-radius:4px"></canvas>
+          <canvas id="tex-after-filled" width="80" height="80" style="border:1px solid #333;border-radius:4px"></canvas>
+          <canvas id="tex-after-conflict" width="80" height="80" style="border:1px solid #333;border-radius:4px"></canvas>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;max-width:340px;margin-top:6px">
+          <div style="width:80px;font-size:10px;color:#555;text-align:center">Buida</div>
+          <div style="width:80px;font-size:10px;color:#555;text-align:center">Fixa</div>
+          <div style="width:80px;font-size:10px;color:#555;text-align:center">Emplenada</div>
+          <div style="width:80px;font-size:10px;color:#555;text-align:center">Conflicte</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== RESUM ===== -->
+<div class="section">
+  <h2>Resum de canvis globals</h2>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;max-width:900px">
+    <div class="changes" style="max-width:none">
+      <h3>🎨 Paleta de colors</h3>
+      <p style="font-size:12px;color:#888;line-height:1.7">
+        Fons <strong style="color:#ccc">#151310</strong> (carbó càlid) → menys "screensaver hacker"<br>
+        Superfície <strong style="color:#ccc">#1e1b16</strong> → tona marró suau<br>
+        Accent ambre <strong style="color:#d4882a">#d4882a</strong> → igual però context de joc<br>
+        Regles <strong style="color:#ccc">#2e2a22</strong> → lleugerament càlides
+      </p>
+    </div>
+    <div class="changes" style="max-width:none">
+      <h3>🔤 Tipografia</h3>
+      <p style="font-size:12px;color:#888;line-height:1.7">
+        Títol: <strong style="color:#ccc">Nunito 900</strong> — bo arrodonit, de joc<br>
+        UI: <strong style="color:#ccc">Inter</strong> — net i modern però no "IA"<br>
+        Números/dades: <strong style="color:#ccc">IBM Plex Mono</strong> (igual que ara)<br>
+        Eliminar font mono de <em>tots</em> els labels d'interfície
+      </p>
+    </div>
+    <div class="changes" style="max-width:none">
+      <h3>📐 Formes</h3>
+      <p style="font-size:12px;color:#888;line-height:1.7">
+        Panells: <strong style="color:#ccc">border-radius 10–14px</strong><br>
+        Botons: <strong style="color:#ccc">border-radius 6–8px</strong><br>
+        Pills/chips: <strong style="color:#ccc">border-radius 20px</strong><br>
+        Pad: botons amb <strong style="color:#ccc">box-shadow 0 2px</strong> (relleu tàctil)
+      </p>
+    </div>
+    <div class="changes" style="max-width:none">
+      <h3>💬 Etiquetes i microcòpia</h3>
+      <p style="font-size:12px;color:#888;line-height:1.7">
+        T → <strong style="color:#ccc">⏱ (temps)</strong><br>
+        E → <strong style="color:#ccc">⚠ (errors)</strong><br>
+        H → <strong style="color:#ccc">💡 (pistes)</strong><br>
+        "all" → <strong style="color:#ccc">∞</strong> als sliders de capes<br>
+        Labels en Inter, no en mono
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SECCIÓ 5: FONS VISUALS ===== -->
+<div class="section">
+  <h2>5 · Propostes de fons visual</h2>
+  <p style="color:#666;font-size:12px;margin-bottom:24px">
+    Quatre opcions de fons que substituirien el fons ple actual.
+    El cub Three.js flotaria per sobre de cadascuna. Totes funcionen sense imatges externes — tot generat amb Canvas o CSS.
+  </p>
+
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:24px;margin-bottom:32px">
+
+    <!-- OPCIÓ A: COSMOS -->
+    <div>
+      <div class="phone-label" style="margin-bottom:8px">A · Cosmos — Estrelles + nebulosa</div>
+      <div style="position:relative;width:100%;aspect-ratio:9/16;border-radius:16px;overflow:hidden;border:1.5px solid #333;max-width:300px">
+        <canvas id="bg-cosmos" style="position:absolute;inset:0;width:100%;height:100%"></canvas>
+        <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none">
+          <div style="font-family:'Nunito',sans-serif;font-weight:900;font-size:20px;color:#f0ead8;letter-spacing:-0.01em;margin-bottom:6px">Sudoku<sup style="font-size:13px;color:#d4882a">3</sup></div>
+          <div style="width:120px;height:120px;border:2px solid rgba(255,255,255,0.08);border-radius:4px;display:flex;align-items:center;justify-content:center">
+            <span style="font-size:48px;opacity:0.25">⬛</span>
+          </div>
+          <div style="margin-top:12px;font-size:11px;color:rgba(255,255,255,0.3);font-family:monospace;letter-spacing:0.1em">CUBI FLOTANT</div>
+        </div>
+      </div>
+      <div style="margin-top:10px;padding:12px;background:#1a1a1a;border-radius:8px;border:1px solid #2a2a2a">
+        <div style="font-size:12px;color:#aaa;line-height:1.6">
+          ✦ Estrelles en 3 capes de paral·laxi<br>
+          ✦ Núvols de nebulosa animats (canvas blur)<br>
+          ✦ Shooting stars ocasionals<br>
+          <span style="color:#666;font-size:11px">→ Evoca "el cub a l'espai" — impactant al primer cop d'ull</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- OPCIÓ B: AURORA -->
+    <div>
+      <div class="phone-label" style="margin-bottom:8px">B · Aurora — Llums del nord animades</div>
+      <div style="position:relative;width:100%;aspect-ratio:9/16;border-radius:16px;overflow:hidden;border:1.5px solid #333;max-width:300px">
+        <canvas id="bg-aurora" style="position:absolute;inset:0;width:100%;height:100%"></canvas>
+        <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none">
+          <div style="font-family:'Nunito',sans-serif;font-weight:900;font-size:20px;color:#f0ead8;letter-spacing:-0.01em;margin-bottom:6px">Sudoku<sup style="font-size:13px;color:#88ddaa">3</sup></div>
+          <div style="width:120px;height:120px;border:2px solid rgba(100,255,160,0.12);border-radius:4px;display:flex;align-items:center;justify-content:center">
+            <span style="font-size:48px;opacity:0.25">⬛</span>
+          </div>
+          <div style="margin-top:12px;font-size:11px;color:rgba(100,255,160,0.3);font-family:monospace;letter-spacing:0.1em">CUBI FLOTANT</div>
+        </div>
+      </div>
+      <div style="margin-top:10px;padding:12px;background:#1a1a1a;border-radius:8px;border:1px solid #2a2a2a">
+        <div style="font-size:12px;color:#aaa;line-height:1.6">
+          ✦ Bandes de color ondejants (verd/lila/cian)<br>
+          ✦ Velocitat molt lenta — meditat, no distractor<br>
+          ✦ Estels fixos al fons<br>
+          <span style="color:#666;font-size:11px">→ Molt fotogènic per a captures de pantalla / stores</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- OPCIÓ C: BRASES (FORGE) -->
+    <div>
+      <div class="phone-label" style="margin-bottom:8px">C · Forja — Brases en moviment</div>
+      <div style="position:relative;width:100%;aspect-ratio:9/16;border-radius:16px;overflow:hidden;border:1.5px solid #333;max-width:300px">
+        <canvas id="bg-forge" style="position:absolute;inset:0;width:100%;height:100%"></canvas>
+        <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none">
+          <div style="font-family:'Nunito',sans-serif;font-weight:900;font-size:20px;color:#f0ead8;letter-spacing:-0.01em;margin-bottom:6px">Sudoku<sup style="font-size:13px;color:#d4882a">3</sup></div>
+          <div style="width:120px;height:120px;border:2px solid rgba(212,136,42,0.15);border-radius:4px;display:flex;align-items:center;justify-content:center">
+            <span style="font-size:48px;opacity:0.25">⬛</span>
+          </div>
+          <div style="margin-top:12px;font-size:11px;color:rgba(212,136,42,0.35);font-family:monospace;letter-spacing:0.1em">CUBI FLOTANT</div>
+        </div>
+      </div>
+      <div style="margin-top:10px;padding:12px;background:#1a1a1a;border-radius:8px;border:1px solid #2a2a2a">
+        <div style="font-size:12px;color:#aaa;line-height:1.6">
+          ✦ Partícules de brasa pujant lentament<br>
+          ✦ Glow ambre que coincideix amb l'accent del joc<br>
+          ✦ Fons carbó fosc — no distreu el cub<br>
+          <span style="color:#666;font-size:11px">→ Coherent amb la paleta càlida proposada al HUD</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- OPCIÓ D: GEOMETRIC DEPTH -->
+    <div>
+      <div class="phone-label" style="margin-bottom:8px">D · Geometria — Poliedres flotants</div>
+      <div style="position:relative;width:100%;aspect-ratio:9/16;border-radius:16px;overflow:hidden;border:1.5px solid #333;max-width:300px">
+        <canvas id="bg-geo" style="position:absolute;inset:0;width:100%;height:100%"></canvas>
+        <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none">
+          <div style="font-family:'Nunito',sans-serif;font-weight:900;font-size:20px;color:#f0ead8;letter-spacing:-0.01em;margin-bottom:6px">Sudoku<sup style="font-size:13px;color:#d4882a">3</sup></div>
+          <div style="width:120px;height:120px;border:2px solid rgba(255,255,255,0.07);border-radius:4px;display:flex;align-items:center;justify-content:center">
+            <span style="font-size:48px;opacity:0.25">⬛</span>
+          </div>
+          <div style="margin-top:12px;font-size:11px;color:rgba(255,255,255,0.25);font-family:monospace;letter-spacing:0.1em">CUBI FLOTANT</div>
+        </div>
+      </div>
+      <div style="margin-top:10px;padding:12px;background:#1a1a1a;border-radius:8px;border:1px solid #2a2a2a">
+        <div style="font-size:12px;color:#aaa;line-height:1.6">
+          ✦ Cubs i octàedres petits flotant al fons<br>
+          ✦ Wireframe translúcid — molt subtil<br>
+          ✦ Relacionat temàticament amb el joc<br>
+          <span style="color:#666;font-size:11px">→ Explica el joc visualment sense paraules</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Comparativa ràpida -->
+  <div style="background:#1a1a1a;border:1px solid #2a2a2a;border-radius:10px;padding:16px 20px;max-width:700px">
+    <div style="font-size:13px;color:#ddd;margin-bottom:12px;font-weight:500">Comparativa d'opcions</div>
+    <table style="width:100%;border-collapse:collapse;font-size:12px">
+      <thead>
+        <tr style="color:#555;font-size:10px;letter-spacing:0.08em;text-transform:uppercase">
+          <th style="text-align:left;padding:0 8px 8px 0;font-weight:400">Opció</th>
+          <th style="text-align:center;padding:0 8px 8px;font-weight:400">Impacte visual</th>
+          <th style="text-align:center;padding:0 8px 8px;font-weight:400">CPU/bateria</th>
+          <th style="text-align:center;padding:0 8px 8px;font-weight:400">Coherència tema</th>
+          <th style="text-align:left;padding:0 0 8px 8px;font-weight:400">Millor per a</th>
+        </tr>
+      </thead>
+      <tbody style="color:#888">
+        <tr style="border-top:1px solid #2a2a2a">
+          <td style="padding:7px 8px 7px 0;color:#ccc;font-weight:500">A · Cosmos</td>
+          <td style="text-align:center;padding:7px 8px">★★★★★</td>
+          <td style="text-align:center;padding:7px 8px">Baix</td>
+          <td style="text-align:center;padding:7px 8px">★★★☆☆</td>
+          <td style="padding:7px 0 7px 8px">Captures de pantalla, WOW factor</td>
+        </tr>
+        <tr style="border-top:1px solid #2a2a2a">
+          <td style="padding:7px 8px 7px 0;color:#ccc;font-weight:500">B · Aurora</td>
+          <td style="text-align:center;padding:7px 8px">★★★★★</td>
+          <td style="text-align:center;padding:7px 8px">Mig</td>
+          <td style="text-align:center;padding:7px 8px">★★★☆☆</td>
+          <td style="padding:7px 0 7px 8px">Imatge de marca, difusió a xarxes</td>
+        </tr>
+        <tr style="border-top:1px solid #2a2a2a">
+          <td style="padding:7px 8px 7px 0;color:#ccc;font-weight:500">C · Forja</td>
+          <td style="text-align:center;padding:7px 8px">★★★★☆</td>
+          <td style="text-align:center;padding:7px 8px">Molt baix</td>
+          <td style="text-align:center;padding:7px 8px">★★★★★</td>
+          <td style="padding:7px 0 7px 8px">Ús diari — no distreu, però és viu</td>
+        </tr>
+        <tr style="border-top:1px solid #2a2a2a">
+          <td style="padding:7px 8px 7px 0;color:#ccc;font-weight:500">D · Geometria</td>
+          <td style="text-align:center;padding:7px 8px">★★★☆☆</td>
+          <td style="text-align:center;padding:7px 8px">Mig</td>
+          <td style="text-align:center;padding:7px 8px">★★★★★</td>
+          <td style="padding:7px 0 7px 8px">Lògica de marca, "explica el joc"</td>
+        </tr>
+      </tbody>
+    </table>
+    <div style="margin-top:12px;font-size:11px;color:#555;border-top:1px solid #2a2a2a;padding-top:10px">
+      💡 <strong style="color:#777">Recomanació</strong>: A (Cosmos) per defecte + C (Forja) com a opció de baix consum per a "menys moviment". Donaria una diferència visual enorme respecte qualsevol altra app de sudoku.
+    </div>
+  </div>
+</div>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.167.1/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.167.1/examples/jsm/"
+  }
+}
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+// ─── Dades de mostra ──────────────────────────────────────────────────────────
+// Cub 4×4×4 parcialment omplert per al mockup
+const SAMPLE = [
+  [[3,0,0,2],[0,1,0,0],[0,0,4,0],[1,0,0,3]],
+  [[0,4,0,0],[2,0,3,0],[0,0,0,1],[0,2,0,0]],
+  [[0,0,1,0],[0,3,0,4],[1,0,0,0],[0,0,2,0]],
+  [[1,0,4,0],[0,0,0,2],[0,3,0,0],[4,0,0,1]],
+];
+const FIXED = [
+  [[1,0,0,1],[0,1,0,0],[0,0,1,0],[1,0,0,1]],
+  [[0,1,0,0],[1,0,1,0],[0,0,0,1],[0,1,0,0]],
+  [[0,0,1,0],[0,1,0,1],[1,0,0,0],[0,0,1,0]],
+  [[1,0,1,0],[0,0,0,1],[0,1,0,0],[1,0,0,1]],
+];
+
+// ─── Textures de cara ─────────────────────────────────────────────────────────
+function makeTexBefore(value, state) {
+  const c = document.createElement('canvas');
+  c.width = 128; c.height = 128;
+  const ctx = c.getContext('2d');
+  const bg = state === 'empty' ? '#1a2040'
+           : state === 'fixed' ? '#3a4a80'
+           : state === 'conflict' ? '#8a2a2a'
+           : '#2d6a55';
+  ctx.fillStyle = bg;
+  ctx.fillRect(0,0,128,128);
+  ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+  ctx.lineWidth = 4;
+  ctx.strokeRect(2,2,124,124);
+  if (value > 0) {
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 88px system-ui';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(String(value), 64, 68);
+  }
+  if (state === 'conflict' && value > 0) {
+    ctx.fillStyle = '#ff5555';
+    ctx.font = 'bold 30px system-ui';
+    ctx.textAlign = 'right';
+    ctx.textBaseline = 'top';
+    ctx.fillText('!', 120, 6);
+  }
+  return new THREE.CanvasTexture(c);
+}
+
+function makeTexAfter(value, state) {
+  const c = document.createElement('canvas');
+  c.width = 128; c.height = 128;
+  const ctx = c.getContext('2d');
+  const bg = state === 'empty' ? '#1e1912'
+           : state === 'fixed' ? '#3a3860'
+           : state === 'conflict' ? '#7a2a28'
+           : '#2a5040';
+  ctx.fillStyle = bg;
+  ctx.fillRect(0,0,128,128);
+  // Gradient radial suau — dona profunditat
+  const grad = ctx.createRadialGradient(64,52,8,64,52,80);
+  grad.addColorStop(0, 'rgba(255,255,255,0.09)');
+  grad.addColorStop(1, 'rgba(0,0,0,0.18)');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0,0,128,128);
+  if (value > 0) {
+    ctx.shadowColor = 'rgba(0,0,0,0.55)';
+    ctx.shadowBlur = 6;
+    ctx.shadowOffsetY = 3;
+    ctx.fillStyle = 'rgba(255,255,255,0.92)';
+    ctx.font = "bold 80px 'Nunito', system-ui, sans-serif";
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(String(value), 64, 66);
+    ctx.shadowColor = 'transparent';
+  }
+  if (state === 'conflict' && value > 0) {
+    ctx.fillStyle = '#ff7070';
+    ctx.font = 'bold 26px system-ui';
+    ctx.textAlign = 'right';
+    ctx.textBaseline = 'top';
+    ctx.fillText('!', 118, 6);
+  }
+  return new THREE.CanvasTexture(c);
+}
+
+// ─── Constructor de mini-escena ────────────────────────────────────────────────
+function buildCubeScene(canvasEl, style) {
+  const isBefore = style === 'before';
+  const W = 320, H = 380;
+  canvasEl.width = W * devicePixelRatio;
+  canvasEl.height = H * devicePixelRatio;
+
+  const renderer = new THREE.WebGLRenderer({ canvas: canvasEl, antialias: true });
+  renderer.setSize(W, H, false);
+  renderer.setPixelRatio(devicePixelRatio);
+
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color(isBefore ? 0x0f1220 : 0x131109);
+
+  const camera = new THREE.PerspectiveCamera(45, W/H, 0.1, 100);
+  camera.position.set(7, 6, 8);
+
+  const controls = new OrbitControls(camera, canvasEl);
+  controls.enableDamping = true;
+  controls.autoRotate = true;
+  controls.autoRotateSpeed = 1.2;
+  controls.enableZoom = false;
+
+  const ambColor = isBefore ? 0xffffff : 0xfff8e8;
+  scene.add(new THREE.AmbientLight(ambColor, 0.55));
+  const dir = new THREE.DirectionalLight(0xffffff, 0.9);
+  dir.position.set(5, 8, 6);
+  scene.add(dir);
+
+  const cellGeom = new THREE.BoxGeometry(0.95, 0.95, 0.95);
+  const edgeGeom = new THREE.EdgesGeometry(cellGeom);
+  const N = 4, SPACING = 1.15;
+  const offset = (N-1)*SPACING/2;
+  const edgeColor   = isBefore ? 0x6a7bc0 : 0x706050;
+  const edgeOpacity = isBefore ? 0.5      : 0.4;
+  const makeTex = isBefore ? makeTexBefore : makeTexAfter;
+
+  for (let x = 0; x < N; x++) {
+    for (let y = 0; y < N; y++) {
+      for (let z = 0; z < N; z++) {
+        const val    = SAMPLE[x][y][z];
+        const isFixed = !!FIXED[x][y][z];
+        const state   = val === 0 ? 'empty' : isFixed ? 'fixed' : 'filled';
+
+        let mat;
+        if (val === 0) {
+          const emptyColor   = isBefore ? 0x1a2040 : 0x1e1912;
+          const emptyOpacity = isBefore ? 0.25     : 0.30;
+          mat = new THREE.MeshStandardMaterial({
+            color: emptyColor, transparent: true, opacity: emptyOpacity, roughness: 0.4
+          });
+        } else {
+          const tex = makeTex(val, state);
+          mat = [0,1,2,3,4,5].map(() => new THREE.MeshStandardMaterial({
+            map: tex, roughness: isBefore ? 0.5 : 0.45, metalness: isBefore ? 0 : 0.05,
+          }));
+        }
+
+        const mesh = new THREE.Mesh(cellGeom, mat);
+        mesh.position.set(x*SPACING - offset, y*SPACING - offset, z*SPACING - offset);
+        const edgeMat = new THREE.LineBasicMaterial({
+          color: edgeColor, transparent: true, opacity: edgeOpacity
+        });
+        mesh.add(new THREE.LineSegments(edgeGeom, edgeMat));
+        scene.add(mesh);
+      }
+    }
+  }
+  return { renderer, scene, camera, controls };
+}
+
+// ─── Textures de detall (2D) ──────────────────────────────────────────────────
+function drawDetailTex(canvasId, texFn, value, state) {
+  const el = document.getElementById(canvasId);
+  if (!el) return;
+  const tex = texFn(value, state);
+  el.getContext('2d').drawImage(tex.image, 0, 0, 80, 80);
+}
+
+drawDetailTex('tex-before-empty',    makeTexBefore, 0, 'empty');
+drawDetailTex('tex-before-fixed',    makeTexBefore, 3, 'fixed');
+drawDetailTex('tex-before-filled',   makeTexBefore, 2, 'filled');
+drawDetailTex('tex-before-conflict', makeTexBefore, 4, 'conflict');
+
+drawDetailTex('tex-after-empty',     makeTexAfter,  0, 'empty');
+drawDetailTex('tex-after-fixed',     makeTexAfter,  3, 'fixed');
+drawDetailTex('tex-after-filled',    makeTexAfter,  2, 'filled');
+drawDetailTex('tex-after-conflict',  makeTexAfter,  4, 'conflict');
+
+// ─── Bucle de render ──────────────────────────────────────────────────────────
+const scBefore = buildCubeScene(document.getElementById('cube-before'), 'before');
+const scAfter  = buildCubeScene(document.getElementById('cube-after'),  'after');
+
+function loop() {
+  requestAnimationFrame(loop);
+  scBefore.controls.update();
+  scAfter.controls.update();
+  scBefore.renderer.render(scBefore.scene, scBefore.camera);
+  scAfter.renderer.render(scAfter.scene,  scAfter.camera);
+}
+loop();
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// FONS ANIMATS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+function resizeCanvas(el) {
+  const rect = el.parentElement.getBoundingClientRect();
+  el.width  = rect.width  * devicePixelRatio;
+  el.height = rect.height * devicePixelRatio;
+  el.style.width  = rect.width  + 'px';
+  el.style.height = rect.height + 'px';
+}
+
+// ─── A · COSMOS ───────────────────────────────────────────────────────────────
+{
+  const el = document.getElementById('bg-cosmos');
+  resizeCanvas(el);
+  const ctx = el.getContext('2d');
+  const W = el.width, H = el.height;
+
+  // Estrelles en 3 capes
+  const layers = [40, 80, 60].map((count, li) => {
+    const stars = [];
+    for (let i = 0; i < count; i++) stars.push({
+      x: Math.random() * W, y: Math.random() * H,
+      r: (0.4 + Math.random() * (li * 0.5 + 0.6)) * devicePixelRatio,
+      a: 0.3 + Math.random() * 0.7,
+      speed: (li + 1) * 0.008 * devicePixelRatio,
+      twinkle: Math.random() * Math.PI * 2,
+    });
+    return stars;
+  });
+
+  // Nebulosa: blobs de color
+  const blobs = [
+    { x: W*0.2, y: H*0.25, r: W*0.55, c: [60,30,120],  a: 0.18, dx: 0.08, dy: 0.04 },
+    { x: W*0.75,y: H*0.55, r: W*0.45, c: [30,60,110],  a: 0.15, dx:-0.06, dy: 0.05 },
+    { x: W*0.5, y: H*0.75, r: W*0.40, c: [90,20,100],  a: 0.12, dx: 0.05, dy:-0.06 },
+    { x: W*0.3, y: H*0.6,  r: W*0.35, c: [20,80,140],  a: 0.10, dx:-0.04, dy: 0.07 },
+  ];
+
+  // Shooting stars
+  const shoots = [];
+  function spawnShoot() {
+    if (shoots.length < 3) shoots.push({
+      x: Math.random() * W * 0.7, y: Math.random() * H * 0.4,
+      len: 60 + Math.random() * 80, angle: Math.PI/6 + Math.random()*0.3,
+      life: 1.0, decay: 0.018 + Math.random() * 0.015,
+    });
+  }
+  setInterval(spawnShoot, 2800);
+
+  let t = 0;
+  function drawCosmos() {
+    requestAnimationFrame(drawCosmos);
+    t += 0.012;
+
+    // Fons
+    ctx.fillStyle = '#070a14';
+    ctx.fillRect(0, 0, W, H);
+
+    // Nebulosa
+    for (const b of blobs) {
+      b.x += b.dx * devicePixelRatio;
+      b.y += b.dy * devicePixelRatio;
+      if (b.x < -b.r || b.x > W + b.r) b.dx *= -1;
+      if (b.y < -b.r || b.y > H + b.r) b.dy *= -1;
+      const g = ctx.createRadialGradient(b.x, b.y, 0, b.x, b.y, b.r);
+      g.addColorStop(0, `rgba(${b.c[0]},${b.c[1]},${b.c[2]},${b.a})`);
+      g.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = g;
+      ctx.fillRect(0, 0, W, H);
+    }
+
+    // Estrelles
+    for (let li = 0; li < layers.length; li++) {
+      for (const s of layers[li]) {
+        s.twinkle += 0.04;
+        const alpha = s.a * (0.65 + 0.35 * Math.sin(s.twinkle));
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.r, 0, Math.PI*2);
+        ctx.fillStyle = `rgba(200,220,255,${alpha})`;
+        ctx.fill();
+        s.x -= s.speed * (li === 2 ? 0.3 : 0.15);
+        if (s.x < 0) s.x = W;
+      }
+    }
+
+    // Shooting stars
+    for (let i = shoots.length - 1; i >= 0; i--) {
+      const s = shoots[i];
+      s.life -= s.decay;
+      if (s.life <= 0) { shoots.splice(i, 1); continue; }
+      const ex = s.x + Math.cos(s.angle) * s.len;
+      const ey = s.y + Math.sin(s.angle) * s.len;
+      const g = ctx.createLinearGradient(s.x, s.y, ex, ey);
+      g.addColorStop(0, `rgba(255,255,255,0)`);
+      g.addColorStop(0.5, `rgba(220,230,255,${s.life * 0.9})`);
+      g.addColorStop(1, `rgba(255,255,255,0)`);
+      ctx.beginPath();
+      ctx.moveTo(s.x, s.y);
+      ctx.lineTo(ex, ey);
+      ctx.strokeStyle = g;
+      ctx.lineWidth = 1.5 * devicePixelRatio;
+      ctx.stroke();
+      s.x += Math.cos(s.angle) * 4 * devicePixelRatio;
+      s.y += Math.sin(s.angle) * 4 * devicePixelRatio;
+    }
+  }
+  drawCosmos();
+}
+
+// ─── B · AURORA ───────────────────────────────────────────────────────────────
+{
+  const el = document.getElementById('bg-aurora');
+  resizeCanvas(el);
+  const ctx = el.getContext('2d');
+  const W = el.width, H = el.height;
+
+  // Estels de fons (estàtics)
+  const stars = Array.from({length:120}, () => ({
+    x: Math.random()*W, y: Math.random()*H*0.7,
+    r: (0.5 + Math.random()*1.2)*devicePixelRatio,
+    a: 0.15 + Math.random()*0.5,
+  }));
+
+  // Bandes d'aurora: múltiples línies ondejants
+  const bands = [
+    { color:[80,220,140],  amp:0.07, freq:0.9,  phase:0.0,  yBase:0.40, width:0.22, speed:0.004 },
+    { color:[120,80,200],  amp:0.06, freq:1.1,  phase:1.8,  yBase:0.48, width:0.18, speed:0.003 },
+    { color:[60,180,200],  amp:0.08, freq:0.8,  phase:0.9,  yBase:0.36, width:0.14, speed:0.005 },
+    { color:[160,60,180],  amp:0.05, freq:1.3,  phase:3.1,  yBase:0.55, width:0.12, speed:0.0035 },
+    { color:[80,240,160],  amp:0.04, freq:1.5,  phase:2.0,  yBase:0.32, width:0.10, speed:0.006 },
+  ];
+
+  let t = 0;
+  function drawAurora() {
+    requestAnimationFrame(drawAurora);
+    t += 0.008;
+
+    ctx.fillStyle = '#060d10';
+    ctx.fillRect(0, 0, W, H);
+
+    // Estels
+    for (const s of stars) {
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.r, 0, Math.PI*2);
+      ctx.fillStyle = `rgba(200,230,220,${s.a})`;
+      ctx.fill();
+    }
+
+    // Cada banda: dibuixem una franja ondejant per steps
+    const steps = 80;
+    for (const b of bands) {
+      ctx.save();
+      ctx.globalCompositeOperation = 'lighter';
+      for (let i = 0; i <= steps; i++) {
+        const px = (i / steps) * W;
+        const wave  = Math.sin(t * b.speed * 400 + i * b.freq + b.phase);
+        const wave2 = Math.sin(t * b.speed * 200 + i * b.freq * 1.7 + b.phase + 1.2);
+        const cy = H * (b.yBase + wave * b.amp + wave2 * b.amp * 0.5);
+        const half = H * b.width * (0.7 + 0.3 * Math.sin(t*0.8 + i*0.4));
+        const alpha = 0.04 + 0.03 * Math.abs(wave);
+
+        const g = ctx.createLinearGradient(px, cy - half, px, cy + half);
+        g.addColorStop(0,   `rgba(${b.color},0)`);
+        g.addColorStop(0.3, `rgba(${b.color},${alpha})`);
+        g.addColorStop(0.5, `rgba(${b.color},${alpha*1.8})`);
+        g.addColorStop(0.7, `rgba(${b.color},${alpha})`);
+        g.addColorStop(1,   `rgba(${b.color},0)`);
+        ctx.fillStyle = g;
+        ctx.fillRect(px - W/steps*0.6, cy - half, W/steps*1.2, half*2);
+      }
+      ctx.restore();
+    }
+
+    // Capa de neblina baixa
+    const groundFog = ctx.createLinearGradient(0, H*0.78, 0, H);
+    groundFog.addColorStop(0, 'rgba(6,13,16,0)');
+    groundFog.addColorStop(1, 'rgba(6,13,16,0.85)');
+    ctx.fillStyle = groundFog;
+    ctx.fillRect(0, H*0.78, W, H*0.22);
+  }
+  drawAurora();
+}
+
+// ─── C · FORJA (BRASES) ───────────────────────────────────────────────────────
+{
+  const el = document.getElementById('bg-forge');
+  resizeCanvas(el);
+  const ctx = el.getContext('2d');
+  const W = el.width, H = el.height;
+
+  const particles = [];
+  function spawnEmber() {
+    if (particles.length > 180) return;
+    const col = Math.random() < 0.6
+      ? [212, 100 + Math.random()*80, 20]   // ambre/taronja
+      : [255, 60 + Math.random()*40, 10];    // vermell viu
+    particles.push({
+      x: W * 0.1 + Math.random() * W * 0.8,
+      y: H + 4 * devicePixelRatio,
+      r: (0.8 + Math.random() * 1.8) * devicePixelRatio,
+      vx: (Math.random() - 0.5) * 0.6 * devicePixelRatio,
+      vy: -(0.8 + Math.random() * 1.8) * devicePixelRatio,
+      life: 0.7 + Math.random() * 0.3,
+      decay: 0.004 + Math.random() * 0.006,
+      col,
+      drift: (Math.random()-0.5)*0.015,
+    });
+  }
+
+  // Línies de calor al fons (shimmer)
+  const heatLines = Array.from({length:8}, () => ({
+    x: Math.random()*W, amp: 3+Math.random()*5, phase: Math.random()*Math.PI*2, speed: 0.02+Math.random()*0.02
+  }));
+
+  let t = 0;
+  function drawForge() {
+    requestAnimationFrame(drawForge);
+    t += 0.01;
+
+    // Emissió de brases
+    if (Math.random() < 0.35) spawnEmber();
+
+    // Fons fosc
+    ctx.fillStyle = '#100d08';
+    ctx.fillRect(0, 0, W, H);
+
+    // Glow ambre difús al baix
+    const glowH = ctx.createRadialGradient(W/2, H*1.1, 0, W/2, H*1.1, W*0.9);
+    glowH.addColorStop(0, 'rgba(160,60,8,0.35)');
+    glowH.addColorStop(0.5,'rgba(80,20,4,0.18)');
+    glowH.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = glowH;
+    ctx.fillRect(0, 0, W, H);
+
+    // Shimmer / distorsió de calor (línies verticals lleugerament ondejants)
+    ctx.save();
+    ctx.globalAlpha = 0.03;
+    for (const hl of heatLines) {
+      hl.phase += hl.speed;
+      const x = hl.x + Math.sin(hl.phase)*hl.amp;
+      const g = ctx.createLinearGradient(x, 0, x, H);
+      g.addColorStop(0, 'rgba(255,160,40,0)');
+      g.addColorStop(0.4,'rgba(255,160,40,0.8)');
+      g.addColorStop(0.7,'rgba(255,100,20,0.4)');
+      g.addColorStop(1, 'rgba(255,80,10,0)');
+      ctx.fillStyle = g;
+      ctx.fillRect(x-1, 0, 2, H);
+    }
+    ctx.restore();
+
+    // Partícules de brasa
+    for (let i = particles.length - 1; i >= 0; i--) {
+      const p = particles[i];
+      p.life -= p.decay;
+      if (p.life <= 0) { particles.splice(i, 1); continue; }
+      p.x += p.vx + Math.sin(t*2 + i)*p.drift;
+      p.y += p.vy;
+      p.vy *= 0.998;
+      const a = Math.min(p.life, 0.9);
+      // Glow gran
+      const gp = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r*5);
+      gp.addColorStop(0, `rgba(${p.col[0]},${p.col[1]},${p.col[2]},${a*0.4})`);
+      gp.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = gp;
+      ctx.fillRect(p.x - p.r*5, p.y - p.r*5, p.r*10, p.r*10);
+      // Nucli brillant
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+      ctx.fillStyle = `rgba(255,240,200,${a})`;
+      ctx.fill();
+    }
+  }
+  drawForge();
+}
+
+// ─── D · GEOMETRIA FLOTANT ────────────────────────────────────────────────────
+{
+  const el = document.getElementById('bg-geo');
+  resizeCanvas(el);
+  const ctx = el.getContext('2d');
+  const W = el.width, H = el.height;
+
+  // Genera cubs 2D wireframe flotants (projeccions isomètriques de cub)
+  function cubeVerts(cx, cy, s) {
+    // Projeccio isometrica simple d'un cub de costat s
+    const a = s * 0.5, b = s * 0.28;
+    return [
+      // cara frontal (quadrat)
+      { x: cx-a, y: cy-a }, { x: cx+a, y: cy-a },
+      { x: cx+a, y: cy+a }, { x: cx-a, y: cy+a },
+      // cara posterior (decalada)
+      { x: cx-a+b, y: cy-a-b }, { x: cx+a+b, y: cy-a-b },
+      { x: cx+a+b, y: cy+a-b }, { x: cx-a+b, y: cy+a-b },
+    ];
+  }
+  const cubeEdges = [
+    [0,1],[1,2],[2,3],[3,0],     // cara front
+    [4,5],[5,6],[6,7],[7,4],     // cara back
+    [0,4],[1,5],[2,6],[3,7],     // connexions
+  ];
+
+  const geoShapes = Array.from({length:18}, () => ({
+    x: Math.random()*W, y: Math.random()*H,
+    s: (12 + Math.random()*30) * devicePixelRatio,
+    vx: (Math.random()-0.5)*0.25*devicePixelRatio,
+    vy: (Math.random()-0.5)*0.25*devicePixelRatio,
+    rot: Math.random()*Math.PI*2,
+    rotSpeed: (Math.random()-0.5)*0.008,
+    a: 0.04 + Math.random()*0.09,
+    type: Math.random() < 0.7 ? 'cube' : 'tri',
+    col: Math.random() < 0.5 ? [180,140,80] : [140,120,200],
+  }));
+
+  function drawTri(ctx, cx, cy, s, rot, a, col) {
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(rot);
+    ctx.beginPath();
+    for (let i = 0; i < 3; i++) {
+      const angle = (i/3)*Math.PI*2 - Math.PI/2;
+      const px = Math.cos(angle)*s, py = Math.sin(angle)*s;
+      i === 0 ? ctx.moveTo(px,py) : ctx.lineTo(px,py);
+    }
+    ctx.closePath();
+    ctx.strokeStyle = `rgba(${col},${a})`;
+    ctx.lineWidth = devicePixelRatio * 0.8;
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function drawCubeWire(ctx, cx, cy, s, rot, a, col) {
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(rot);
+    const v = cubeVerts(0, 0, s);
+    ctx.strokeStyle = `rgba(${col},${a})`;
+    ctx.lineWidth = devicePixelRatio * 0.7;
+    ctx.beginPath();
+    for (const [i,j] of cubeEdges) {
+      ctx.moveTo(v[i].x, v[i].y);
+      ctx.lineTo(v[j].x, v[j].y);
+    }
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  // Grid de punts de fons subtil
+  const dotGrid = [];
+  const GRID_SPACING = 28 * devicePixelRatio;
+  for (let gx = 0; gx < W; gx += GRID_SPACING)
+    for (let gy = 0; gy < H; gy += GRID_SPACING)
+      dotGrid.push({ x: gx, y: gy, a: 0.03 + Math.random()*0.06 });
+
+  function drawGeo() {
+    requestAnimationFrame(drawGeo);
+
+    ctx.fillStyle = '#0e0c14';
+    ctx.fillRect(0, 0, W, H);
+
+    // Gradient fosc al centre (vinyeting)
+    const vig = ctx.createRadialGradient(W/2,H/2,H*0.2,W/2,H/2,H*0.8);
+    vig.addColorStop(0,'rgba(20,16,32,0)');
+    vig.addColorStop(1,'rgba(4,2,10,0.6)');
+    ctx.fillStyle = vig;
+    ctx.fillRect(0,0,W,H);
+
+    // Dots grid
+    for (const d of dotGrid) {
+      ctx.beginPath();
+      ctx.arc(d.x, d.y, 0.9*devicePixelRatio, 0, Math.PI*2);
+      ctx.fillStyle = `rgba(160,140,200,${d.a})`;
+      ctx.fill();
+    }
+
+    // Shapes
+    for (const s of geoShapes) {
+      s.x += s.vx; s.y += s.vy; s.rot += s.rotSpeed;
+      if (s.x < -s.s*2) s.x = W + s.s;
+      if (s.x > W+s.s*2) s.x = -s.s;
+      if (s.y < -s.s*2) s.y = H + s.s;
+      if (s.y > H+s.s*2) s.y = -s.s;
+      if (s.type === 'cube')
+        drawCubeWire(ctx, s.x, s.y, s.s, s.rot, s.a, s.col.join(','));
+      else
+        drawTri(ctx, s.x, s.y, s.s*0.7, s.rot, s.a, s.col.join(','));
+    }
+  }
+  drawGeo();
+}
+</script>
+
+<!-- ===== SECCIÓ 6: COM ES JUGA ===== -->
+<div class="section">
+  <h2>6 · "Com es juga" — panell d'ajuda</h2>
+  <p style="color:#666;font-size:12px;margin-bottom:24px">
+    Actual: un link "? com es juga" en font mono de 11px, mig invisible. Proposta: un tutorial pas a pas amb il·lustracions, llegible i navegable.
+  </p>
+  <div class="row">
+
+    <!-- BEFORE: link invisible -->
+    <div class="phone-wrap">
+      <div class="phone-label">Actual — el link</div>
+      <div class="phone before" style="min-height:auto">
+        <div style="padding:20px 16px 12px;display:flex;justify-content:space-between;align-items:flex-start">
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <div style="font-size:15px;font-weight:500;color:#DDE3F0;font-family:'Inter',sans-serif;letter-spacing:0.04em">Sudoku<sup style="font-size:10px;color:#6B7490">3</sup></div>
+            <div style="font-size:11px;color:#6B7490;display:flex;align-items:center;gap:6px;background:none;border:none">
+              <span style="width:6px;height:6px;border-radius:50%;background:#c27a25;box-shadow:0 0 6px #c27a25;display:inline-block"></span>
+              <span style="color:#DDE3F0;font-weight:500;font-size:12px">Novell</span>
+            </div>
+            <div style="color:#434B64;font-size:11px;font-family:'IBM Plex Mono',monospace;margin-top:2px">? com es juga</div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-family:'IBM Plex Mono',monospace;line-height:1.8">
+              <span style="color:#434B64;font-size:10px;letter-spacing:0.14em">T </span><span style="color:#DDE3F0;font-size:14px">3:42</span>
+            </div>
+          </div>
+        </div>
+        <div style="height:200px;background:linear-gradient(135deg,#0f1420 0%,#141926 100%);display:flex;align-items:center;justify-content:center;color:#2a3558;font-size:64px">⬛</div>
+        <div style="padding:16px;background:#0A0E18">
+          <div style="background:#1a2030;border:1px solid #232A3D;border-radius:4px;padding:10px 12px">
+            <p style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:#434B64;letter-spacing:0.08em;line-height:1.8">
+              REGLES: Omple el cub de NxNxN de manera que cada fila,<br>
+              columna i columna vertical contingui tots els números de l'1 al N<br>
+              sense repeticions.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="align-self:center;color:#555;font-size:24px;">→</div>
+
+    <!-- AFTER: tutorial modal pas a pas -->
+    <div class="phone-wrap">
+      <div class="phone-label">Proposta — tutorial pas a pas</div>
+      <div class="phone after" style="min-height:560px;background:var(--n-bg);display:flex;flex-direction:column">
+        <!-- Capçalera -->
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 16px 12px">
+          <div>
+            <div style="font-family:'Nunito',sans-serif;font-weight:900;font-size:18px;color:var(--n-text)">Com es juga</div>
+            <div style="font-size:11px;color:var(--n-muted);margin-top:2px">Sudoku³ — Guia ràpida</div>
+          </div>
+          <button style="background:var(--n-surf);border:1px solid var(--n-rule2);border-radius:20px;color:var(--n-muted);font-size:11px;padding:5px 12px;cursor:pointer">✕ Tanca</button>
+        </div>
+
+        <!-- Indicador de passos -->
+        <div style="display:flex;gap:6px;justify-content:center;padding:0 16px 16px">
+          <div style="height:4px;border-radius:2px;background:var(--n-accent);flex:1"></div>
+          <div style="height:4px;border-radius:2px;background:var(--n-rule2);flex:1"></div>
+          <div style="height:4px;border-radius:2px;background:var(--n-rule2);flex:1"></div>
+          <div style="height:4px;border-radius:2px;background:var(--n-rule2);flex:1"></div>
+        </div>
+
+        <!-- Pas 1 -->
+        <div style="padding:0 16px;flex:1">
+          <div style="background:var(--n-surf);border:1px solid var(--n-rule2);border-radius:12px;padding:16px;margin-bottom:12px">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+              <div style="width:32px;height:32px;border-radius:8px;background:rgba(212,136,42,0.15);border:1px solid rgba(212,136,42,0.3);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">🎯</div>
+              <div>
+                <div style="font-size:13px;font-weight:600;color:var(--n-text)">Pas 1 de 4 · L'objectiu</div>
+                <div style="font-size:11px;color:var(--n-muted)">Entén el repte</div>
+              </div>
+            </div>
+            <p style="font-size:13px;color:var(--n-text);line-height:1.7;margin-bottom:10px">
+              Omple cada cel·la del cub de manera que <strong style="color:var(--n-accent)">cap número es repeteixi</strong> en la mateixa fila, columna o columna vertical.
+            </p>
+            <!-- Mini-il·lustració: cub 2D amb files destacades -->
+            <div style="background:var(--n-bg);border-radius:8px;padding:10px;display:flex;gap:4px;flex-direction:column;align-items:center">
+              <div style="display:flex;gap:3px">
+                <div style="width:28px;height:28px;background:rgba(212,136,42,0.25);border:1px solid rgba(212,136,42,0.5);border-radius:4px;display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600;color:var(--n-accent)">1</div>
+                <div style="width:28px;height:28px;background:rgba(212,136,42,0.25);border:1px solid rgba(212,136,42,0.5);border-radius:4px;display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600;color:var(--n-accent)">2</div>
+                <div style="width:28px;height:28px;background:rgba(212,136,42,0.25);border:1px solid rgba(212,136,42,0.5);border-radius:4px;display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600;color:var(--n-accent)">3</div>
+                <div style="width:28px;height:28px;background:rgba(212,136,42,0.25);border:1px solid rgba(212,136,42,0.5);border-radius:4px;display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600;color:var(--n-accent)">4</div>
+              </div>
+              <div style="display:flex;gap:3px">
+                <div style="width:28px;height:28px;background:var(--n-surf2);border:1px solid var(--n-rule2);border-radius:4px;display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--n-muted)">3</div>
+                <div style="width:28px;height:28px;background:var(--n-surf2);border:1px solid var(--n-rule2);border-radius:4px;display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--n-muted)">4</div>
+                <div style="width:28px;height:28px;background:var(--n-surf2);border:1px solid var(--n-rule2);border-radius:4px;display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--n-muted)">1</div>
+                <div style="width:28px;height:28px;background:var(--n-surf2);border:1px solid var(--n-rule2);border-radius:4px;display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--n-muted)">2</div>
+              </div>
+              <div style="font-size:10px;color:var(--n-muted);margin-top:4px;text-align:center">Cada fila té 1·2·3·4, sense repeticions ✓</div>
+            </div>
+          </div>
+
+          <!-- Pas 2 compacte (els altres passos) -->
+          <div style="background:var(--n-surf);border:1px solid var(--n-rule);border-radius:10px;padding:12px;margin-bottom:8px;display:flex;align-items:center;gap:10px;opacity:0.5">
+            <div style="width:28px;height:28px;border-radius:6px;background:var(--n-surf2);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0">🔄</div>
+            <div>
+              <div style="font-size:12px;font-weight:600;color:var(--n-text)">Pas 2 · Gira el cub</div>
+              <div style="font-size:11px;color:var(--n-muted)">Arrossega per veure totes les cares</div>
+            </div>
+          </div>
+          <div style="background:var(--n-surf);border:1px solid var(--n-rule);border-radius:10px;padding:12px;margin-bottom:8px;display:flex;align-items:center;gap:10px;opacity:0.5">
+            <div style="width:28px;height:28px;border-radius:6px;background:var(--n-surf2);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0">👆</div>
+            <div>
+              <div style="font-size:12px;font-weight:600;color:var(--n-text)">Pas 3 · Introdueix números</div>
+              <div style="font-size:11px;color:var(--n-muted)">Toca cel·la, després tria número</div>
+            </div>
+          </div>
+          <div style="background:var(--n-surf);border:1px solid var(--n-rule);border-radius:10px;padding:12px;margin-bottom:16px;display:flex;align-items:center;gap:10px;opacity:0.5">
+            <div style="width:28px;height:28px;border-radius:6px;background:var(--n-surf2);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0">⚠️</div>
+            <div>
+              <div style="font-size:12px;font-weight:600;color:var(--n-text)">Pas 4 · Errors i pistes</div>
+              <div style="font-size:11px;color:var(--n-muted)">El cub et marca conflictes en vermell</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Botons navegació -->
+        <div style="display:flex;gap:8px;padding:12px 16px 20px">
+          <button style="flex:1;padding:12px;background:var(--n-surf);border:1px solid var(--n-rule2);border-radius:8px;color:var(--n-muted);font-size:13px;font-weight:600;cursor:pointer">← Enrere</button>
+          <button style="flex:2;padding:12px;background:var(--n-accent);border:none;border-radius:8px;color:var(--n-bg);font-size:14px;font-weight:700;cursor:pointer">Pas 2 · Gira el cub →</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="changes">
+      <h3>Canvis aplicats</h3>
+      <div class="change-item">
+        <span class="tag remove">FORA</span>
+        <p><strong>Link "? com es juga"</strong>: text de 11px en mono, color #434B64 sobre fons fosc. Pràcticament invisible, cap jugador el veu.</p>
+      </div>
+      <div class="change-item">
+        <span class="tag remove">FORA</span>
+        <p><strong>Explicació text pur</strong>: bloc de text dens amb regles en font mono, sense estructura visual. El jugador l'ignora o s'aclapara.</p>
+      </div>
+      <div class="change-item">
+        <span class="tag add">NOU</span>
+        <p><strong>Pantalla de tutorial completa</strong>: modal dedicat amb barra de progrés "Pas X de 4", títol gran, botó de tancament visible.</p>
+      </div>
+      <div class="change-item">
+        <span class="tag add">NOU</span>
+        <p><strong>Passos acordió</strong>: el pas actiu s'expandeix amb il·lustració; els passos futurs es mostren compactes i mig transparents. L'usuari veu el progrés sense saturar-se.</p>
+      </div>
+      <div class="change-item">
+        <span class="tag add">NOU</span>
+        <p><strong>Il·lustración visual per a cada pas</strong>: mini-graella interactiva al Pas 1, diagrama de rotació al Pas 2, etc. L'explicació es mostra, no es diu.</p>
+      </div>
+      <div class="change-item">
+        <span class="tag add">NOU</span>
+        <p><strong>Navegació Enrere / Pas N →</strong>: el botó principal diu exactament a quin pas porta. "Comença a jugar" al darrer pas.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SECCIÓ 7: PREFERÈNCIES PER A PRINCIPIANTS ===== -->
+<div class="section">
+  <h2>7 · Preferències — versió accessible per a principiants</h2>
+  <p style="color:#666;font-size:12px;margin-bottom:24px">
+    El panell de preferències actual (seccions 3) agrupa bé les opcions però no orienta el jugador nou sobre quin mode triar ni qu<br>
+    significa cada opció. Aquí es proposa afegir descripcions curtes i recomanacions per nivell.
+  </p>
+  <div class="row">
+
+    <!-- BEFORE: preferències actual sense context -->
+    <div class="phone-wrap">
+      <div class="phone-label">Actual — sense guia</div>
+      <div style="background:#141926;border:1px solid #232A3D;padding:14px 16px;width:260px">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0">
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:#6B7490;letter-spacing:0.06em">dificultat</span>
+          <div style="display:flex;border:1px solid #232A3D">
+            <button style="background:none;border:none;border-right:1px solid #232A3D;color:#6B7490;font-family:'IBM Plex Mono',monospace;font-size:11px;padding:5px 10px;cursor:pointer">nov</button>
+            <button style="background:#c27a25;border:none;color:#0A0E18;font-family:'IBM Plex Mono',monospace;font-size:11px;padding:5px 10px;cursor:pointer;border-right:1px solid #232A3D">int</button>
+            <button style="background:none;border:none;color:#6B7490;font-family:'IBM Plex Mono',monospace;font-size:11px;padding:5px 10px;cursor:pointer">exp</button>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0">
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:#6B7490;letter-spacing:0.06em">mida</span>
+          <div style="display:flex;border:1px solid #232A3D">
+            <button style="background:none;border:none;border-right:1px solid #232A3D;color:#6B7490;font-family:'IBM Plex Mono',monospace;font-size:11px;padding:5px 10px;cursor:pointer">3³</button>
+            <button style="background:#c27a25;border:none;color:#0A0E18;font-family:'IBM Plex Mono',monospace;font-size:11px;padding:5px 10px;cursor:pointer;border-right:1px solid #232A3D">4³</button>
+            <button style="background:none;border:none;color:#6B7490;font-family:'IBM Plex Mono',monospace;font-size:11px;padding:5px 10px;cursor:pointer">9³</button>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0">
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:#6B7490;letter-spacing:0.06em">pistes</span>
+          <input type="checkbox" checked style="accent-color:#c27a25"/>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0">
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:#6B7490;letter-spacing:0.06em">resaltar errors</span>
+          <input type="checkbox" style="accent-color:#c27a25"/>
+        </div>
+        <div style="height:1px;background:#232A3D;margin:4px 0"></div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0">
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:#6B7490;letter-spacing:0.06em">límit d'errors</span>
+          <input type="range" value="60" style="width:80px;height:2px;accent-color:#c27a25"/>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0">
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:#6B7490;letter-spacing:0.06em">temporitzador visible</span>
+          <input type="checkbox" checked style="accent-color:#c27a25"/>
+        </div>
+        <div style="height:1px;background:#232A3D;margin:4px 0"></div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0">
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:#6B7490;letter-spacing:0.06em">efectes de so</span>
+          <input type="range" value="70" style="width:80px;height:2px;accent-color:#c27a25"/>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0">
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:#6B7490;letter-spacing:0.06em">menys moviment</span>
+          <input type="checkbox" style="accent-color:#c27a25"/>
+        </div>
+      </div>
+    </div>
+
+    <div style="align-self:center;color:#555;font-size:24px;">→</div>
+
+    <!-- AFTER: preferències amb guia per a principiants -->
+    <div class="phone-wrap">
+      <div class="phone-label">Proposta — guiada per a principiants</div>
+      <div style="background:var(--n-surf);border:1px solid var(--n-rule2);border-radius:14px;padding:16px;width:280px;font-family:'Inter',sans-serif">
+
+        <!-- Dificultat amb descripcions -->
+        <div style="margin-bottom:16px">
+          <div style="font-size:10px;color:var(--n-muted);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:10px;padding-bottom:4px;border-bottom:1px solid var(--n-rule)">Dificultat</div>
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <button style="background:var(--n-surf2);border:1px solid var(--n-rule2);border-radius:8px;padding:10px 12px;cursor:pointer;text-align:left;width:100%;display:flex;justify-content:space-between;align-items:center">
+              <div>
+                <div style="font-size:13px;font-weight:600;color:var(--n-text)">Novell</div>
+                <div style="font-size:11px;color:var(--n-muted);margin-top:2px">Pistes activades · sense límit d'errors</div>
+              </div>
+              <div style="font-size:10px;background:rgba(80,200,80,0.12);color:#5cb860;border:1px solid rgba(80,200,80,0.25);border-radius:10px;padding:2px 8px;white-space:nowrap">Recomanat</div>
+            </button>
+            <button style="background:rgba(212,136,42,0.12);border:1.5px solid var(--n-accent);border-radius:8px;padding:10px 12px;cursor:pointer;text-align:left;width:100%;display:flex;justify-content:space-between;align-items:center">
+              <div>
+                <div style="font-size:13px;font-weight:700;color:var(--n-accent)">Intermedi ✓</div>
+                <div style="font-size:11px;color:var(--n-muted);margin-top:2px">Pistes limitades · 5 errors màxim</div>
+              </div>
+            </button>
+            <button style="background:var(--n-surf2);border:1px solid var(--n-rule2);border-radius:8px;padding:10px 12px;cursor:pointer;text-align:left;width:100%;display:flex;justify-content:space-between;align-items:center">
+              <div>
+                <div style="font-size:13px;font-weight:600;color:var(--n-text)">Expert</div>
+                <div style="font-size:11px;color:var(--n-muted);margin-top:2px">Sense pistes · 3 errors i perdus</div>
+              </div>
+              <div style="font-size:10px;background:rgba(200,80,80,0.12);color:#c86060;border:1px solid rgba(200,80,80,0.25);border-radius:10px;padding:2px 8px;white-space:nowrap">Difícil</div>
+            </button>
+          </div>
+        </div>
+
+        <!-- Mida amb descripció -->
+        <div style="margin-bottom:16px">
+          <div style="font-size:10px;color:var(--n-muted);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:8px;padding-bottom:4px;border-bottom:1px solid var(--n-rule)">Mida del cub</div>
+          <div style="display:flex;gap:6px">
+            <button style="flex:1;background:var(--n-surf2);border:1px solid var(--n-rule2);border-radius:8px;padding:8px 4px;cursor:pointer;text-align:center">
+              <div style="font-size:14px;font-weight:700;color:var(--n-muted)">3³</div>
+              <div style="font-size:9px;color:var(--n-dim);margin-top:2px">27 cel·les</div>
+            </button>
+            <button style="flex:1;background:rgba(212,136,42,0.12);border:1.5px solid var(--n-accent);border-radius:8px;padding:8px 4px;cursor:pointer;text-align:center">
+              <div style="font-size:14px;font-weight:700;color:var(--n-accent)">4³</div>
+              <div style="font-size:9px;color:var(--n-muted);margin-top:2px">64 cel·les ✓</div>
+            </button>
+            <button style="flex:1;background:var(--n-surf2);border:1px solid var(--n-rule2);border-radius:8px;padding:8px 4px;cursor:pointer;text-align:center">
+              <div style="font-size:14px;font-weight:700;color:var(--n-muted)">9³</div>
+              <div style="font-size:9px;color:var(--n-dim);margin-top:2px">729 cel·les</div>
+            </button>
+          </div>
+        </div>
+
+        <!-- Opcions de joc amb descripció -->
+        <div style="margin-bottom:14px">
+          <div style="font-size:10px;color:var(--n-muted);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:8px;padding-bottom:4px;border-bottom:1px solid var(--n-rule)">Opcions de joc</div>
+
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;padding:7px 0;border-bottom:1px solid var(--n-rule)">
+            <div>
+              <div style="font-size:12px;color:var(--n-text);font-weight:500">Mostrar pistes</div>
+              <div style="font-size:11px;color:var(--n-muted);margin-top:1px">Ressalta les cel·les que podrien ser error</div>
+            </div>
+            <button style="width:36px;height:20px;background:rgba(212,136,42,0.3);border-radius:10px;position:relative;cursor:pointer;transition:background 200ms;border:none;flex-shrink:0;margin-top:2px">
+              <span style="content:'';position:absolute;width:14px;height:14px;background:var(--n-accent);border-radius:50%;top:3px;left:19px"></span>
+            </button>
+          </div>
+
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;padding:7px 0;border-bottom:1px solid var(--n-rule)">
+            <div>
+              <div style="font-size:12px;color:var(--n-text);font-weight:500">Ressaltar errors</div>
+              <div style="font-size:11px;color:var(--n-muted);margin-top:1px">Mostra en vermell les cel·les en conflicte</div>
+            </div>
+            <button style="width:36px;height:20px;background:var(--n-rule2);border-radius:10px;position:relative;cursor:pointer;border:none;flex-shrink:0;margin-top:2px">
+              <span style="content:'';position:absolute;width:14px;height:14px;background:var(--n-muted);border-radius:50%;top:3px;left:3px"></span>
+            </button>
+          </div>
+
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;padding:7px 0">
+            <div>
+              <div style="font-size:12px;color:var(--n-text);font-weight:500">Temporitzador visible</div>
+              <div style="font-size:11px;color:var(--n-muted);margin-top:1px">Amaga el temps si et genera pressió</div>
+            </div>
+            <button style="width:36px;height:20px;background:rgba(212,136,42,0.3);border-radius:10px;position:relative;cursor:pointer;border:none;flex-shrink:0;margin-top:2px">
+              <span style="content:'';position:absolute;width:14px;height:14px;background:var(--n-accent);border-radius:50%;top:3px;left:19px"></span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Banner recomanació per a principiants -->
+        <div style="background:rgba(80,200,100,0.07);border:1px solid rgba(80,200,100,0.2);border-radius:8px;padding:10px 12px;display:flex;gap:10px;align-items:flex-start">
+          <div style="font-size:16px;flex-shrink:0">💡</div>
+          <div>
+            <div style="font-size:11px;font-weight:600;color:#5cb860;margin-bottom:3px">Per a principiants recomanem:</div>
+            <div style="font-size:11px;color:var(--n-muted);line-height:1.6">Novell + 3³ + Pistes activades + Errors ressaltats. Pots canviar-ho en qualsevol moment.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="changes">
+      <h3>Canvis aplicats</h3>
+      <div class="change-item">
+        <span class="tag remove">FORA</span>
+        <p><strong>Labels críptics en mono</strong>: "nov / int / exp" i "dificultat" en font mono de 10px. El jugador no sap la diferència entre modes.</p>
+      </div>
+      <div class="change-item">
+        <span class="tag add">NOU</span>
+        <p><strong>Targetes de dificultat expandibles</strong>: cada mode mostra una descripció breu ("Pistes activades · sense límit d'errors"). El jugador pren una decisió informada.</p>
+      </div>
+      <div class="change-item">
+        <span class="tag add">NOU</span>
+        <p><strong>Badges "Recomanat" / "Difícil"</strong>: orientació visual immediata per a jugadors nous sense forçar cap elecció.</p>
+      </div>
+      <div class="change-item">
+        <span class="tag add">NOU</span>
+        <p><strong>Mida del cub amb cel·les comptades</strong>: "3³ — 27 cel·les", "4³ — 64 cel·les". Quantifica el repte de manera concreta.</p>
+      </div>
+      <div class="change-item">
+        <span class="tag add">NOU</span>
+        <p><strong>Descripcions sota cada toggle</strong>: "Amaga el temps si et genera pressió" en lloc de simplement "temporitzador visible". El jugador entén l'impacte de cada opció.</p>
+      </div>
+      <div class="change-item">
+        <span class="tag add">NOU</span>
+        <p><strong>Banner de recomanació per a principiants</strong>: caixa verda subtil al final que suggereix la configuració òptima d'entrada. No obstrusiva, però molt útil el primer cop.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h2>8 · Mode Kakuro — tauler i cel·les</h2>
+  <p class="intro">
+    El Kakuro és el tercer mode de joc de la plataforma, accessible des del botó <strong>KK</strong> del selector de mode.
+    El jugador omple cel·les blanques (1–9) seguint les pistes numèriques de les cel·les negres:
+    la xifra a dalt-dreta és la suma de la seqüència horitzontal; la xifra a baix-esquerra, la suma de la vertical.
+    No es pot repetir cap dígit dins d'una mateixa seqüència.
+  </p>
+  <div class="row">
+    <!-- Mockup tauler Kakuro -->
+    <div class="phone-wrap">
+      <div class="phone-label">Tauler Kakuro 9×9 — estat de joc</div>
+      <div class="phone" style="background:#100d0a;min-height:580px;display:flex;flex-direction:column;">
+        <!-- Brand / HUD -->
+        <div style="padding:16px 14px 8px;display:flex;justify-content:space-between;align-items:flex-start">
+          <div>
+            <div style="font-family:'Nunito',sans-serif;font-weight:900;font-size:20px;color:#f0ead8;line-height:1">Sudoku<sup style="font-size:13px;color:#d4882a">3</sup></div>
+            <div style="margin-top:6px;display:inline-flex;align-items:center;gap:6px;background:rgba(29,25,18,.82);border:1px solid #3d3830;border-radius:20px;padding:4px 10px 4px 8px">
+              <span style="width:7px;height:7px;border-radius:50%;background:#d4882a;display:inline-block;box-shadow:0 0 7px #d4882a"></span>
+              <span style="color:#f0ead8;font-weight:600;font-size:11px">Beginner</span>
+            </div>
+          </div>
+          <div style="text-align:right;font-family:'IBM Plex Mono',monospace;font-size:11px;color:#8a8070;line-height:2">
+            <div><span style="font-size:9px;letter-spacing:.12em">TIME</span> <span style="color:#f0ead8;font-size:13px">4:22</span></div>
+            <div><span style="font-size:9px;letter-spacing:.12em">ERR</span> <span style="color:#f0ead8;font-size:13px">1</span></div>
+          </div>
+        </div>
+
+        <!-- Tauler Kakuro (9×9 simplificat) -->
+        <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:8px">
+          <div id="kk-demo" style="display:grid;grid-template-columns:repeat(9,1fr);grid-template-rows:repeat(9,1fr);width:272px;height:272px;box-sizing:border-box">
+          </div>
+        </div>
+
+        <!-- Pad de números -->
+        <div style="margin:0 10px 14px;display:flex;border:1px solid #2a2520;background:#161310">
+          <button style="flex:1;height:38px;background:none;border:none;border-right:1px solid #2a2520;color:#f0ead8;font-family:'IBM Plex Mono',monospace;font-size:14px;cursor:pointer">1</button>
+          <button style="flex:1;height:38px;background:none;border:none;border-right:1px solid #2a2520;color:#f0ead8;font-family:'IBM Plex Mono',monospace;font-size:14px;cursor:pointer">2</button>
+          <button style="flex:1;height:38px;background:none;border:none;border-right:1px solid #2a2520;color:#f0ead8;font-family:'IBM Plex Mono',monospace;font-size:14px;cursor:pointer">3</button>
+          <button style="flex:1;height:38px;background:none;border:none;border-right:1px solid #2a2520;color:#d4882a;font-family:'IBM Plex Mono',monospace;font-size:16px;cursor:pointer">⌫</button>
+          <div style="width:1px;background:#3d3830"></div>
+          <button style="flex:1;height:38px;background:none;border:none;border-right:1px solid #2a2520;color:#8a8070;font-family:'IBM Plex Mono',monospace;font-size:15px;cursor:pointer">↶</button>
+          <button style="flex:1;height:38px;background:none;border:none;color:#8a8070;font-family:'IBM Plex Mono',monospace;font-size:15px;cursor:pointer">⟳</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Detall: anatomia d'una cel·la pista -->
+    <div class="changes" style="max-width:340px">
+      <h3>Anatomia d'una cel·la pista</h3>
+      <div style="margin-bottom:20px">
+        <div style="width:80px;height:80px;background:#100d0a;border:1px solid #333;position:relative;overflow:hidden;display:inline-flex">
+          <svg style="position:absolute;inset:0;width:100%;height:100%" viewBox="0 0 40 40" preserveAspectRatio="none">
+            <line x1="2" y1="2" x2="38" y2="38" stroke="#555" stroke-width="1.5"/>
+          </svg>
+          <span style="position:absolute;bottom:4px;left:5px;font-family:'IBM Plex Mono',monospace;font-size:12px;color:#8a8070;font-weight:500">17</span>
+          <span style="position:absolute;top:4px;right:5px;font-family:'IBM Plex Mono',monospace;font-size:12px;color:#8a8070;font-weight:500">23</span>
+        </div>
+        <p style="color:#8a8070;font-size:12px;margin-top:10px;line-height:1.6">
+          <strong style="color:#ddd">Dalt-dreta (23)</strong>: suma de la seqüència horitzontal que comença a la dreta d'aquesta cel·la.<br>
+          <strong style="color:#ddd">Baix-esquerra (17)</strong>: suma de la seqüència vertical que comença a sota.
+        </p>
+      </div>
+
+      <h3 style="margin-top:16px">Estats de les cel·les blanques</h3>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px">
+        <div style="text-align:center">
+          <div style="width:44px;height:44px;background:#1d1912;border:1px solid #2a2520;display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;font-size:18px;color:#f0ead8;font-weight:600"></div>
+          <div style="font-size:10px;color:#555;margin-top:4px">Buida</div>
+        </div>
+        <div style="text-align:center">
+          <div style="width:44px;height:44px;background:#d4882a;border:1px solid #d4882a;display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;font-size:18px;color:#100d0a;font-weight:600">7</div>
+          <div style="font-size:10px;color:#555;margin-top:4px">Seleccionada</div>
+        </div>
+        <div style="text-align:center">
+          <div style="width:44px;height:44px;background:rgba(192,60,60,.22);border:1px solid #2a2520;display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;font-size:18px;color:#e07070;font-weight:600">5</div>
+          <div style="font-size:10px;color:#555;margin-top:4px">Conflicte</div>
+        </div>
+        <div style="text-align:center">
+          <div style="width:44px;height:44px;background:#1d1912;border:1px solid #2a2520;display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;font-size:18px;color:#f0ead8;font-weight:600">3</div>
+          <div style="font-size:10px;color:#555;margin-top:4px">Correcta</div>
+        </div>
+      </div>
+
+      <h3>Canvis aplicats</h3>
+      <div class="change-item">
+        <span class="tag add">NOU</span>
+        <p><strong>Selector de mode sempre visible</strong>: fila de botons <strong>3D · 2D · KK</strong> dins el bloc de marca (dalt-esquerra), visible sense obrir el panell de configuració. El botó actiu es ressalta en ambre. Permet canviar de joc amb un sol toc des de qualsevol pantalla.</p>
+      </div>
+      <div class="change-item">
+        <span class="tag add">NOU</span>
+        <p><strong>Mode KK també al panell de configuració</strong>: el selector de mida existent (3³/4³/9³/2D) inclou ara el botó KK com a opció addicional per als usuaris que prefereixin canviar des d'allà.</p>
+      </div>
+      <div class="change-item">
+        <span class="tag add">NOU</span>
+        <p><strong>Tauler 7×7 (Beginner/Intermediate) i 9×9 (Advanced/Expert)</strong>: la mida s'adapta a la dificultat seleccionada.</p>
+      </div>
+      <div class="change-item">
+        <span class="tag add">NOU</span>
+        <p><strong>Cel·les pista amb línia diagonal SVG</strong>: disseny net que segueix la convenció estàndard del Kakuro. Font mono, mida adaptativa.</p>
+      </div>
+      <div class="change-item">
+        <span class="tag add">NOU</span>
+        <p><strong>Validació de sumes completes</strong>: quan totes les cel·les d'una seqüència estan plenes, es comprova si la suma coincideix amb la pista. Les cel·les en vermell si no coincideix.</p>
+      </div>
+      <div class="change-item">
+        <span class="tag add">NOU</span>
+        <p><strong>Generació per Worker</strong>: el puzzle es genera en un web worker separat (backtracking + seed aleatori) per no bloquejar la UI.</p>
+      </div>
+      <div class="change-item">
+        <span class="tag">IGUAL</span>
+        <p><strong>Historial d'accions, puntuació, pistes i rànquing</strong>: el Kakuro reutilitza completament el sistema existent (undo/redo, scoring, victory screen, streak).</p>
+      </div>
+      <div class="change-item">
+        <span class="tag add">NOU</span>
+        <p><strong>Panell d'ajuda context-aware</strong>: el botó "💡 how to play" mostra contingut diferent segons el mode actiu. En mode Kakuro apareix un tutorial de 3 passos específic: <em>Llegir les cel·les pista → Les regles (sumes i no repeticions) → Estratègia i controls</em>. En mode Sudoku 3D/2D es mostra el tutorial existent de 4 passos.</p>
+      </div>
+      <div class="change-item">
+        <span class="tag add">NOU</span>
+        <p><strong>Contrast de les pistes millorat</strong>: les xifres de les cel·les pista passen de color <code>#8a8070</code> (gris, contrast ~2.5:1) a <code>#c8b89a</code> (beix clar, contrast ~6:1), complint WCAG AA. Pes tipogràfic augmentat a 600.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// Generem el tauler Kakuro de demo amb JavaScript inline
+(function() {
+  const T = [
+    [0,0,0,0,0,0,0,0,0],
+    [0,0,0,1,1,0,1,1,0],
+    [0,0,1,1,1,1,1,1,0],
+    [0,1,1,0,1,1,1,1,0],
+    [0,1,1,1,1,0,1,1,0],
+    [0,0,1,1,1,1,0,0,0],
+    [0,0,1,1,1,1,1,0,0],
+    [0,0,1,1,0,1,1,0,0],
+    [0,0,0,0,0,0,0,0,0],
+  ];
+  // right clue at (r,c) → value to show top-right of cell (r,c)
+  // down clue at (r,c) → value to show bottom-left of cell (r,c)
+  const rightC = {'0,2':16,'0,5':23,'1,0':4,'1,2':11,'1,5':30,'2,0':6,'3,0':7,'3,3':8,'4,1':9,'5,1':17,'5,5':15,'6,1':14,'7,1':8,'7,4':11};
+  const downC  = {'0,3':17,'0,4':24,'0,6':12,'0,7':7,'1,1':23,'1,5':9,'2,0':14,'2,3':16,'3,1':12,'4,0':8,'5,2':18,'5,3':11,'5,5':16,'6,1':9};
+  // sample filled values for demo
+  const vals = {
+    '1,3':8,'1,4':9,'1,6':4,'1,7':3,
+    '2,2':7,'2,3':5,'2,4':0,'2,5':0,'2,6':8,'2,7':0,
+    '3,1':0,'3,2':0,'3,4':0,'3,5':0,'3,6':0,'3,7':0,
+    '4,1':0,'4,2':0,'4,3':0,'4,4':0,'4,6':0,'4,7':0,
+    '5,2':0,'5,3':0,'5,4':0,'5,5':0,
+    '6,2':0,'6,3':0,'6,4':0,'6,5':0,'6,6':0,
+    '7,2':0,'7,3':0,'7,5':0,'7,6':0,
+  };
+  const container = document.getElementById('kk-demo');
+  if (!container) return;
+  for (let r = 0; r < 9; r++) {
+    for (let c = 0; c < 9; c++) {
+      const key = `${r},${c}`;
+      const isW = T[r][c] === 1;
+      const rc = rightC[key];
+      const dc = downC[key];
+      const isClue = !isW && (rc !== undefined || dc !== undefined);
+      const cell = document.createElement('div');
+      cell.style.cssText = 'box-sizing:border-box;border:1px solid #2a2520;';
+      if (isW) {
+        const v = vals[key];
+        cell.style.background = key === '1,3' ? '#d4882a' : '#1d1912';
+        cell.style.color = key === '1,3' ? '#100d0a' : '#f0ead8';
+        cell.style.fontFamily = "'IBM Plex Mono',monospace";
+        cell.style.fontSize = '14px';
+        cell.style.fontWeight = '600';
+        cell.style.display = 'flex';
+        cell.style.alignItems = 'center';
+        cell.style.justifyContent = 'center';
+        cell.textContent = (v && v > 0) ? v : (key === '1,3' ? '8' : '');
+      } else if (isClue) {
+        cell.style.background = '#100d0a';
+        cell.style.position = 'relative';
+        cell.style.overflow = 'hidden';
+        cell.innerHTML = `<svg style="position:absolute;inset:0;width:100%;height:100%" viewBox="0 0 30 30" preserveAspectRatio="none"><line x1="1" y1="1" x2="29" y2="29" stroke="#444" stroke-width="1.2"/></svg>`
+          + (dc !== undefined ? `<span style="position:absolute;bottom:1px;left:2px;font-family:'IBM Plex Mono',monospace;font-size:9px;color:#8a8070;font-weight:500;line-height:1">${dc}</span>` : '')
+          + (rc !== undefined ? `<span style="position:absolute;top:1px;right:2px;font-family:'IBM Plex Mono',monospace;font-size:9px;color:#8a8070;font-weight:500;line-height:1">${rc}</span>` : '');
+      } else {
+        cell.style.background = '#100d0a';
+      }
+      container.appendChild(cell);
+    }
+  }
+})();
+</script>
+
+</body>
+</html>

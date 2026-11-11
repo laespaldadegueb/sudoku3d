@@ -1,0 +1,2954 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Sudoku³</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:           #faf8f5;
+    --ink:          #1a1714;
+    --surface:      #f0ece6;
+    --surface-2:    #e8e4de;
+    --rule:         #d8d0c8;
+    --rule-strong:  #c8bdb2;
+    --text:         #1a1714;
+    --muted:        #8a7a6a;
+    --dim:          #c0b0a0;
+    --accent:       #c06040;
+    --glass-bg:     rgba(250,248,245,0.85);
+    --glass-border: rgba(200,189,176,0.5);
+    --sans:   'Inter', system-ui, sans-serif;
+    --mono:   'IBM Plex Mono', ui-monospace, monospace;
+    --display:'Space Grotesk', 'Inter', system-ui, sans-serif;
+    --hud-scale: 1;
+  }
+  body.mode-2d     { --accent: #5090b0; }
+  body.mode-kakuro    { --accent: #508050; }
+  body.page-hidden * { animation-play-state: paused !important; }
+  body.mode-futoshiki { --accent: #9060b0; }
+  body.mode-binairo   { --accent: #408878; }
+
+  html, body {
+    margin: 0; height: 100%; background: var(--bg); color: var(--text);
+    font-family: var(--sans); font-size: 13px; overflow: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+  button { font-family: inherit; }
+
+  /* --- Brand lockup --- */
+  #brand {
+    position: absolute; top: calc(18px + env(safe-area-inset-top)); left: 18px; z-index: 10;
+    display: flex; flex-direction: column; gap: 8px; align-items: flex-start;
+  }
+  .wordmark {
+    font-family: var(--display); font-weight: 900; font-size: 22px;
+    letter-spacing: -0.01em; color: var(--text); line-height: 1;
+  }
+  .wordmark sup { font-size: 14px; font-weight: 900; color: var(--accent); vertical-align: super; margin-left: 1px; }
+
+  .mode-name {
+    font-family: var(--mono); font-size: 9px;
+    letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--accent); line-height: 1;
+  }
+
+  .level-pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--glass-bg); backdrop-filter: blur(12px);
+    border: 1px solid var(--glass-border); border-radius: 20px;
+    padding: 5px 10px 5px 8px;
+    color: var(--muted); font-size: 11px; cursor: pointer;
+  }
+  .level-pill .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 6px color-mix(in srgb, var(--accent) 50%, transparent); }
+  .level-pill .name { color: var(--text); font-weight: 600; font-size: 12px; }
+  .level-pill .caret { color: var(--dim); font-size: 9px; }
+
+  /* ======================================================
+     HOME SCREEN — Cube Splash · Cub Tinta
+     ====================================================== */
+  #home-screen {
+    position: absolute; inset: 0; z-index: 50;
+    background: var(--bg);
+    display: flex; flex-direction: column;
+    font-family: var(--sans);
+    transition: opacity 280ms ease, transform 280ms ease;
+  }
+  #home-screen.hs-hiding {
+    opacity: 0; transform: translateY(-12px); pointer-events: none;
+  }
+  #home-screen.hs-hidden { display: none; }
+  .hs-top-row {
+    display: flex; align-items: flex-start; justify-content: space-between;
+  }
+  #btn-settings-home {
+    width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0;
+    background: var(--surface-2); border: 1px solid var(--rule);
+    color: var(--muted); font-size: 16px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 140ms, color 140ms;
+    -webkit-tap-highlight-color: transparent;
+    margin-top: 2px;
+  }
+  #btn-settings-home:hover { background: var(--surface); color: var(--text); }
+  #btn-settings-home { position: relative; }
+  #btn-settings-home[data-badge]:not([data-badge=""])::after {
+    content: attr(data-badge);
+    position: absolute; top: -4px; right: -4px;
+    background: var(--accent); color: white;
+    border-radius: 50%; width: 16px; height: 16px;
+    font-size: 9px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    line-height: 1;
+  }
+
+  /* ── Zona hero (cub): alçada fixa, 340px com al mockup ── */
+  .hs-hero {
+    flex: 0 0 340px;
+    position: relative;
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
+    background: radial-gradient(ellipse 70% 60% at 50% 55%, #f5f0e8, #e8e0d4 70%, #d8d0c4);
+  }
+  .hs-hero::before {
+    content: ''; position: absolute; inset: 0; pointer-events: none;
+    background-image:
+      repeating-linear-gradient(0deg,  transparent, transparent 22px, rgba(192,96,64,.06) 22px, rgba(192,96,64,.06) 23px),
+      repeating-linear-gradient(90deg, transparent, transparent 22px, rgba(192,96,64,.06) 22px, rgba(192,96,64,.06) 23px);
+  }
+
+  /* Partícules de números flotants */
+  .hs-particle {
+    position: absolute;
+    font-family: var(--mono); font-size: 11px; font-weight: 500;
+    color: rgba(192,96,64,.40);
+    animation: hsFloatNum linear infinite;
+    user-select: none; pointer-events: none; z-index: 1;
+  }
+  @keyframes hsFloatNum {
+    from { transform: translateY(30px); opacity: 0; }
+    15%  { opacity: 1; }
+    85%  { opacity: 1; }
+    to   { transform: translateY(-300px); opacity: 0; }
+  }
+
+  /* ── Carrusel: panels de jocs ── */
+  .hs-panel {
+    position: absolute; inset: 0; z-index: 2;
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none;
+  }
+
+  /* Cub 3D dins el panel (flotació) */
+  .hs-panel-cube {
+    width: 200px; height: 200px;
+    filter: drop-shadow(0 12px 24px rgba(26,23,20,.12)) drop-shadow(0 3px 6px rgba(26,23,20,.08));
+    animation: hsCubeBob 3.5s ease-in-out infinite;
+    overflow: visible;
+  }
+  @keyframes hsCubeBob {
+    0%, 100% { transform: translateY(0); }
+    50%       { transform: translateY(-8px); }
+  }
+
+  /* Ombra sota el cub (dins panel 3D) */
+  .hs-cube-shadow {
+    position: absolute; z-index: 1;
+    bottom: 24px; left: 50%; transform: translateX(-50%);
+    width: 140px; height: 20px;
+    background: radial-gradient(ellipse, rgba(192,96,64,.25) 0%, transparent 70%);
+    border-radius: 50%;
+    animation: hsShadowPulse 3.5s ease-in-out infinite;
+  }
+  @keyframes hsShadowPulse {
+    0%, 100% { opacity: 1; transform: translateX(-50%) scaleX(1); }
+    50%       { opacity: .6; transform: translateX(-50%) scaleX(.85); }
+  }
+
+  /* Animacions de panel: cicle 16s
+     3D: 0s→6s | 2D: 6s→8.5s | Kakuro: 8.5s→11s | Futo: 11s→13.5s | Bin: 13.5s→16s */
+  @keyframes hsPanelShow3d {
+    0%      { opacity: 0; }
+    3%      { opacity: 1; }
+    37.5%   { opacity: 1; }
+    40.5%   { opacity: 0; }
+    100%    { opacity: 0; }
+  }
+  @keyframes hsPanelShow2d {
+    0%      { opacity: 0; }
+    37.5%   { opacity: 0; }
+    40.5%   { opacity: 1; }
+    53.1%   { opacity: 1; }
+    56.25%  { opacity: 0; }
+    100%    { opacity: 0; }
+  }
+  @keyframes hsPanelShowKakuro {
+    0%      { opacity: 0; }
+    53.1%   { opacity: 0; }
+    56.25%  { opacity: 1; }
+    68.75%  { opacity: 1; }
+    71.9%   { opacity: 0; }
+    100%    { opacity: 0; }
+  }
+  @keyframes hsPanelShowFuto {
+    0%      { opacity: 0; }
+    68.75%  { opacity: 0; }
+    71.9%   { opacity: 1; }
+    84.4%   { opacity: 1; }
+    87.5%   { opacity: 0; }
+    100%    { opacity: 0; }
+  }
+  @keyframes hsPanelShowBin {
+    0%      { opacity: 0; }
+    84.4%   { opacity: 0; }
+    87.5%   { opacity: 1; }
+    96.9%   { opacity: 1; }
+    100%    { opacity: 0; }
+  }
+  .hs-panel-3d     { animation: hsPanelShow3d     16s linear infinite; }
+  .hs-panel-2d     { animation: hsPanelShow2d     16s linear infinite; }
+  .hs-panel-kakuro { animation: hsPanelShowKakuro 16s linear infinite; }
+  .hs-panel-futo   { animation: hsPanelShowFuto   16s linear infinite; }
+  .hs-panel-bin    { animation: hsPanelShowBin    16s linear infinite; }
+
+  /* Etiqueta del joc dins el panel */
+  .hs-panel-label {
+    position: absolute; bottom: 38px; left: 50%; transform: translateX(-50%);
+    background: rgba(250,248,245,.85); backdrop-filter: blur(8px);
+    border: 1px solid rgba(200,189,176,.6);
+    font-family: var(--mono); font-size: 8px; font-weight: 500;
+    letter-spacing: .12em; text-transform: uppercase; color: #8a7a6a;
+    padding: 4px 12px; border-radius: 20px; white-space: nowrap;
+  }
+  .hs-panel-label b { color: var(--accent); }
+
+  /* Indicadors de punt */
+  .hs-panel-dots {
+    position: absolute; bottom: 16px; left: 50%; transform: translateX(-50%);
+    display: flex; gap: 5px; z-index: 30;
+  }
+  .hs-pdot { width: 5px; height: 5px; border-radius: 50%; background: rgba(192,96,64,.2); }
+  @keyframes hsDotActive3d {
+    0%      { background: rgba(192,96,64,.9); transform: scale(1.4); }
+    37.5%   { background: rgba(192,96,64,.9); transform: scale(1.4); }
+    40.5%   { background: rgba(192,96,64,.2); transform: scale(1); }
+    100%    { background: rgba(192,96,64,.2); transform: scale(1); }
+  }
+  @keyframes hsDotActive2d {
+    0%      { background: rgba(192,96,64,.2); transform: scale(1); }
+    37.5%   { background: rgba(192,96,64,.2); transform: scale(1); }
+    40.5%   { background: rgba(192,96,64,.9); transform: scale(1.4); }
+    53.1%   { background: rgba(192,96,64,.9); transform: scale(1.4); }
+    56.25%  { background: rgba(192,96,64,.2); transform: scale(1); }
+    100%    { background: rgba(192,96,64,.2); transform: scale(1); }
+  }
+  @keyframes hsDotActiveKakuro {
+    0%      { background: rgba(192,96,64,.2); transform: scale(1); }
+    53.1%   { background: rgba(192,96,64,.2); transform: scale(1); }
+    56.25%  { background: rgba(192,96,64,.9); transform: scale(1.4); }
+    68.75%  { background: rgba(192,96,64,.9); transform: scale(1.4); }
+    71.9%   { background: rgba(192,96,64,.2); transform: scale(1); }
+    100%    { background: rgba(192,96,64,.2); transform: scale(1); }
+  }
+  @keyframes hsDotActiveFuto {
+    0%      { background: rgba(192,96,64,.2); transform: scale(1); }
+    68.75%  { background: rgba(192,96,64,.2); transform: scale(1); }
+    71.9%   { background: rgba(192,96,64,.9); transform: scale(1.4); }
+    84.4%   { background: rgba(192,96,64,.9); transform: scale(1.4); }
+    87.5%   { background: rgba(192,96,64,.2); transform: scale(1); }
+    100%    { background: rgba(192,96,64,.2); transform: scale(1); }
+  }
+  @keyframes hsDotActiveBin {
+    0%      { background: rgba(192,96,64,.2); transform: scale(1); }
+    84.4%   { background: rgba(192,96,64,.2); transform: scale(1); }
+    87.5%   { background: rgba(192,96,64,.9); transform: scale(1.4); }
+    96.9%   { background: rgba(192,96,64,.9); transform: scale(1.4); }
+    100%    { background: rgba(192,96,64,.2); transform: scale(1); }
+  }
+  .hs-pdot-3d     { animation: hsDotActive3d     16s linear infinite; }
+  .hs-pdot-2d     { animation: hsDotActive2d     16s linear infinite; }
+  .hs-pdot-kakuro { animation: hsDotActiveKakuro 16s linear infinite; }
+  .hs-pdot-futo   { animation: hsDotActiveFuto   16s linear infinite; }
+  .hs-pdot-bin    { animation: hsDotActiveBin    16s linear infinite; }
+
+  /* Números de graella (apareixen en seqüència dins cada panel) */
+  .hs-gn { opacity: 0; animation: hsGridNum 2.5s ease-out infinite; }
+  .hs-gn:nth-child(1)  { animation-delay: .05s; }
+  .hs-gn:nth-child(2)  { animation-delay: .18s; }
+  .hs-gn:nth-child(3)  { animation-delay: .30s; }
+  .hs-gn:nth-child(4)  { animation-delay: .43s; }
+  .hs-gn:nth-child(5)  { animation-delay: .56s; }
+  .hs-gn:nth-child(6)  { animation-delay: .68s; }
+  .hs-gn:nth-child(7)  { animation-delay: .81s; }
+  .hs-gn:nth-child(8)  { animation-delay: .94s; }
+  .hs-gn:nth-child(9)  { animation-delay: 1.06s; }
+  .hs-gn:nth-child(10) { animation-delay: 1.19s; }
+  .hs-gn:nth-child(11) { animation-delay: 1.31s; }
+  .hs-gn:nth-child(12) { animation-delay: 1.44s; }
+  @keyframes hsGridNum {
+    0%, 3%  { opacity: 0; transform: scale(.5); }
+    15%     { opacity: 1; transform: scale(1); }
+    75%     { opacity: 1; }
+    90%     { opacity: 0; }
+    100%    { opacity: 0; }
+  }
+
+  /* Badge "Daily challenge" — decoratiu, no interactiu */
+  .hs-daily-badge {
+    position: absolute;
+    top: calc(18px + env(safe-area-inset-top)); right: 16px; z-index: 10;
+    background: rgba(192,96,64,.90); color: white;
+    font-family: var(--mono); font-size: 9px; font-weight: 500;
+    letter-spacing: .08em; text-transform: uppercase;
+    padding: 5px 10px; border-radius: 20px;
+    display: flex; align-items: center; gap: 5px;
+    box-shadow: 0 2px 8px rgba(192,96,64,.40);
+    pointer-events: none;
+    animation: hsBadgePop .5s cubic-bezier(.34,1.56,.64,1) .8s both;
+  }
+  @keyframes hsBadgePop {
+    from { transform: scale(.5); opacity: 0; }
+    to   { transform: scale(1);  opacity: 1; }
+  }
+  .hs-badge-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: rgba(255,255,255,.70); flex-shrink: 0;
+    animation: hsDotPulse 1.5s ease-in-out infinite;
+  }
+  @keyframes hsDotPulse {
+    0%, 100% { opacity: .7; transform: scale(1); }
+    50%       { opacity: 1; transform: scale(1.3); }
+  }
+
+  /* ── Àrea inferior (títol + controls) ── */
+  .hs-bottom {
+    flex: 1; min-height: 0; overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    display: flex; flex-direction: column;
+    padding: 20px 18px calc(18px + env(safe-area-inset-bottom));
+    gap: 14px;
+  }
+
+  .hs-wordmark {
+    font-family: var(--display); font-weight: 800;
+    font-size: 26px; color: var(--text); line-height: 1;
+    letter-spacing: -.03em;
+  }
+  .hs-wordmark b { color: var(--accent); }
+  .hs-tagline { font-size: 10px; color: #b0a898; margin-top: 2px; }
+
+  .hs-size-label {
+    font-family: var(--mono); font-size: 8px;
+    letter-spacing: .16em; text-transform: uppercase;
+    color: #b0a898; margin-bottom: 8px;
+  }
+  .hs-size-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+  }
+  .hs-size-btn {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 12px 6px; border: 1.5px solid #e0d8d0; border-radius: 14px;
+    background: white; cursor: pointer; gap: 3px;
+    transition: border-color 150ms, background 150ms, transform 100ms;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .hs-size-btn:hover  { border-color: var(--accent); background: rgba(192,96,64,.04); }
+  .hs-size-btn:active { transform: scale(.97); }
+  .hs-size-btn.popular { border-color: var(--accent); background: rgba(192,96,64,.05); }
+  .hs-size-num {
+    font-family: var(--display); font-size: 20px; font-weight: 700;
+    color: var(--text); line-height: 1;
+  }
+  .hs-size-sub {
+    font-family: var(--mono); font-size: 8px; color: #b0a898;
+  }
+  .hs-size-tag {
+    font-size: 7px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .06em; color: #c06040;
+    background: rgba(192,96,64,.12); padding: 1px 6px;
+    border-radius: 8px; margin-top: 2px;
+  }
+
+
+  /* Botó continuar (llegat, ocult) */
+  .hs-continue-btn {
+    display: flex; align-items: center;
+    padding: 11px 18px; border: 1.5px solid var(--rule); border-radius: 14px;
+    background: none; cursor: pointer; font-family: var(--sans);
+    font-weight: 600; font-size: 13px; color: var(--muted); width: 100%;
+    transition: border-color 150ms, color 150ms;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .hs-continue-btn:hover { border-color: var(--accent); color: var(--text); }
+
+  /* Botó "Today's Daily Challenge" — sòlid terracota */
+  .hs-daily-btn {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 13px 16px; border: none; border-radius: 14px;
+    background: var(--accent); color: white; width: 100%;
+    font-family: var(--sans); font-weight: 600; font-size: 13px;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(192,96,64,.30);
+    transition: opacity 120ms;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .hs-daily-btn:active { opacity: .88; }
+  .hs-daily-right { font-size: 11px; opacity: .82; font-weight: 400; }
+
+  /* ── Secció "More games" amb targetes ── */
+  .hs-games-section {
+    display: flex; flex-direction: column; gap: 9px;
+  }
+  .hs-games-header {
+    display: flex; align-items: center; gap: 8px;
+  }
+  .hs-games-header::before,
+  .hs-games-header::after {
+    content: ''; flex: 1; height: 1px; background: #e0d8d0;
+  }
+  .hs-games-header-txt {
+    font-family: var(--mono); font-size: 8px;
+    letter-spacing: .14em; text-transform: uppercase;
+    color: #b0a898; white-space: nowrap;
+  }
+  .hs-games-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 7px;
+  }
+  .hs-more-item {
+    display: flex; align-items: center; gap: 9px;
+    padding: 9px 10px; background: var(--surface);
+    border: 1px solid #e0d8d0; border-radius: 11px;
+    cursor: pointer; text-align: left; width: 100%;
+    transition: border-color 150ms, background 150ms, transform 100ms;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .hs-more-item:hover { border-color: #bbb0a8; background: rgba(0,0,0,.025); }
+  .hs-more-item:active { transform: scale(.97); }
+  .hs-game-icon {
+    width: 36px; height: 36px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .hs-game-icon svg { width: 20px; height: 20px; display: block; }
+  .hs-game-name {
+    font-family: var(--sans); font-size: 11px; font-weight: 700;
+    color: var(--text); line-height: 1.2;
+  }
+  .hs-game-desc {
+    font-family: var(--mono); font-size: 8px; color: #b0a898;
+    margin-top: 2px;
+  }
+
+  /* Onboarding overlay (primera execució) */
+  #onboarding-overlay {
+    position: absolute; inset: 0; z-index: 80;
+    background: var(--bg); display: none;
+    flex-direction: column; align-items: center; justify-content: center;
+    padding: 32px 28px calc(32px + env(safe-area-inset-bottom));
+    font-family: var(--sans);
+  }
+  #onboarding-overlay.open { display: flex; }
+  .ob-step { display: none; flex-direction: column; align-items: center; text-align: center; gap: 16px; width: 100%; max-width: 320px; }
+  .ob-step.active { display: flex; }
+  .ob-icon { font-size: 52px; line-height: 1; }
+  .ob-title { font-family: var(--display); font-size: 22px; font-weight: 700; color: var(--text); line-height: 1.15; }
+  .ob-text { font-size: 14px; color: var(--muted); line-height: 1.6; }
+  .ob-dots { display: flex; gap: 6px; margin-top: 8px; }
+  .ob-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--rule-strong); transition: background 200ms; }
+  .ob-dot.active { background: var(--accent); }
+  .ob-actions { display: flex; flex-direction: column; gap: 8px; width: 100%; max-width: 320px; margin-top: 12px; }
+  .ob-btn-next {
+    width: 100%; background: var(--accent); color: var(--ink); border: none;
+    border-radius: 12px; padding: 14px; font-family: var(--sans);
+    font-size: 15px; font-weight: 700; cursor: pointer; letter-spacing: 0.02em;
+  }
+  .ob-btn-next:active { filter: brightness(0.92); }
+  .ob-btn-skip {
+    background: none; border: none; font-family: var(--mono);
+    font-size: 10px; letter-spacing: .12em; text-transform: uppercase;
+    color: var(--dim); cursor: pointer; padding: 6px;
+  }
+  .ob-btn-skip:hover { color: var(--muted); }
+
+  /* Botó "home" dins del joc (per tornar a la pantalla d'inici) */
+  #btn-home {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--accent); color: white;
+    border: none; border-radius: 22px;
+    padding: 8px 16px;
+    font-weight: 700; font-size: 13px;
+    font-family: var(--sans); cursor: pointer;
+    box-shadow: 0 2px 8px rgba(192,96,64,0.35);
+    transition: opacity 120ms;
+    -webkit-tap-highlight-color: transparent;
+  }
+  #btn-home:hover { opacity: .88; }
+  #btn-home:active { opacity: .75; }
+
+  /* ====================================================== */
+
+  .help-btn {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: var(--glass-bg); backdrop-filter: blur(12px);
+    border: 1px solid var(--glass-border); border-radius: 20px;
+    padding: 5px 11px;
+    color: var(--text); font-weight: 600; font-size: 12px;
+    font-family: var(--sans); cursor: pointer;
+  }
+  .help-btn:hover { background: var(--surface); border-color: var(--accent); }
+
+  /* --- Game mode switcher (always visible) --- */
+  #game-mode-switcher {
+    display: inline-flex;
+    background: var(--glass-bg); backdrop-filter: blur(12px);
+    border: 1px solid var(--glass-border); border-radius: 20px;
+    overflow: hidden;
+  }
+  .gmode-btn {
+    padding: 5px 11px;
+    background: none; border: none;
+    color: var(--muted); font-weight: 600; font-size: 12px;
+    font-family: var(--sans); cursor: pointer;
+    border-right: 1px solid var(--rule);
+    transition: background 80ms, color 80ms;
+  }
+  .gmode-btn:last-child { border-right: none; }
+  .gmode-btn:hover { background: var(--surface-2); color: var(--text); }
+  .gmode-btn.active { background: var(--accent); color: #fff; }
+
+  /* --- Difficulty popover --- */
+  #diff-popover {
+    position: absolute; top: calc(80px + env(safe-area-inset-top)); left: 18px; z-index: 15;
+    background: var(--surface); border: 1px solid var(--rule-strong);
+    border-radius: 10px; overflow: hidden;
+    display: none; min-width: 240px;
+    box-shadow: 0 10px 36px rgba(0,0,0,0.15);
+  }
+  #diff-popover.open { display: block; }
+  .diff-item {
+    display: flex; justify-content: space-between; align-items: center; gap: 16px;
+    padding: 10px 14px 10px 12px; cursor: pointer;
+    border-left: 3px solid transparent;
+    font-size: 12px; color: var(--text);
+    background: none; border-top: none; border-right: none;
+    border-bottom: 1px solid var(--rule); width: 100%; text-align: left;
+  }
+  .diff-item:last-child { border-bottom: none; }
+  .diff-item:hover:not(:disabled) { background: var(--surface-2); }
+  .diff-item.active { border-left-color: var(--accent); background: var(--surface-2); }
+  .diff-item:disabled { opacity: 0.35; cursor: default; color: var(--muted); }
+  .diff-item .name { font-weight: 600; }
+  .diff-item .meta { color: var(--muted); font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.02em; }
+
+  /* --- Top-right HUD (icon chips) --- */
+  #readout {
+    position: absolute; top: calc(18px + env(safe-area-inset-top));
+    right: calc(14px + env(safe-area-inset-right)); z-index: 10;
+    display: flex; flex-direction: column; gap: 4px; align-items: flex-end;
+  }
+  .hud-chip {
+    display: flex; align-items: center; gap: 6px;
+    background: var(--glass-bg); backdrop-filter: blur(12px);
+    border: 1px solid var(--glass-border); border-radius: 7px;
+    padding: 4px 9px;
+  }
+  .hud-chip .hud-icon { font-size: 11px; opacity: 0.45; line-height: 1; }
+  .hud-chip .hud-val {
+    font-family: var(--mono); font-size: calc(13px * var(--hud-scale));
+    color: var(--text); font-variant-numeric: tabular-nums;
+    min-width: 32px; text-align: right; line-height: 1;
+  }
+  #chip-time .hud-val { min-width: 40px; }
+  #chip-errors[data-active="true"]  .hud-val { color: #b04040; }
+  #chip-errors[data-active="false"] .hud-val { color: var(--muted); }
+  #chip-hints[data-active="true"]   .hud-val { color: var(--accent); }
+  #chip-hints[data-active="false"]  .hud-val { color: var(--muted); }
+  #chip-hints { cursor: pointer; user-select: none; }
+  #chip-hints:active { opacity: 0.7; }
+  #chip-progress[data-done="false"] .hud-val { color: var(--text); }
+  #chip-progress[data-done="true"]  .hud-val { color: var(--muted); }
+  body.mode-2d #chip-progress, body.mode-kakuro #chip-progress,
+  body.mode-futoshiki #chip-progress, body.mode-binairo #chip-progress { display: none; }
+
+  /* --- Bottom-left coord --- */
+  #coord {
+    position: absolute; bottom: calc(76px + env(safe-area-inset-bottom)); left: 18px; z-index: 10;
+    font-family: var(--mono); font-size: 11px; min-height: 14px;
+    display: flex; gap: 2px; align-items: baseline;
+  }
+  #coord .ax  { color: var(--dim); margin-right: 1px; }
+  #coord .no  { color: var(--text); margin-right: 8px; font-variant-numeric: tabular-nums; }
+  #coord .tag { color: var(--muted); font-size: 10px; letter-spacing: 0.08em; margin-left: 4px; }
+
+  /* --- Right-side slice --- */
+  #slice {
+    position: absolute; right: calc(14px + env(safe-area-inset-right)); top: 50%; transform: translateY(-50%);
+    z-index: 10; display: flex; flex-direction: column; gap: 6px;
+  }
+
+  /* Camera preset panel */
+  #cam-preset-btn {
+    position: absolute; left: calc(14px + env(safe-area-inset-left)); top: 50%; transform: translateY(-50%);
+    z-index: 10;
+    display: flex; align-items: center; justify-content: center;
+    width: 34px; height: 34px; border-radius: 8px;
+    border: 1px solid var(--glass-border); background: var(--glass-bg);
+    backdrop-filter: blur(12px); cursor: pointer;
+    font-size: 14px; color: var(--muted);
+    transition: color 120ms, border-color 120ms;
+    -webkit-tap-highlight-color: transparent;
+  }
+  #cam-preset-btn:hover { color: var(--text); border-color: var(--accent); }
+  body.mode-2d #cam-preset-btn, body.mode-kakuro #cam-preset-btn,
+  body.mode-futoshiki #cam-preset-btn, body.mode-binairo #cam-preset-btn { display: none; }
+
+  #cam-preset-panel {
+    position: absolute; left: calc(56px + env(safe-area-inset-left)); top: 50%; transform: translateY(-50%);
+    z-index: 10;
+    display: none; grid-template-columns: repeat(2, 1fr); gap: 5px;
+    padding: 6px; border-radius: 10px;
+    border: 1px solid var(--glass-border); background: var(--glass-bg);
+    backdrop-filter: blur(12px);
+  }
+  #cam-preset-panel.open { display: grid; }
+  body.mode-2d #cam-preset-panel, body.mode-kakuro #cam-preset-panel,
+  body.mode-futoshiki #cam-preset-panel, body.mode-binairo #cam-preset-panel { display: none !important; }
+  .cam-btn {
+    padding: 7px 10px; border: 1px solid var(--rule); border-radius: 7px;
+    background: var(--surface); cursor: pointer;
+    font-family: var(--mono); font-size: 9px; color: var(--muted);
+    letter-spacing: .06em; text-transform: uppercase;
+    transition: border-color 120ms, color 120ms; white-space: nowrap;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .cam-btn:hover { border-color: var(--accent); color: var(--text); }
+  .slice-row { display: flex; align-items: center; gap: 7px; }
+  .slice-ax {
+    font-family: var(--mono); font-size: 10px; font-weight: 600;
+    color: var(--muted); width: 10px; text-align: center; letter-spacing: 0.05em;
+  }
+  .slice-track {
+    display: inline-flex; gap: 2px; padding: 3px;
+    border: 1px solid var(--glass-border);
+    background: var(--glass-bg); backdrop-filter: blur(12px);
+    border-radius: 7px;
+  }
+  .slice-seg {
+    background: transparent; border: none; border-radius: 5px;
+    color: var(--muted); font-family: var(--mono); font-size: 11px;
+    font-variant-numeric: tabular-nums;
+    padding: 5px 0; cursor: pointer; min-width: 24px;
+    transition: color 120ms;
+  }
+  .slice-seg:hover { color: var(--text); }
+  .slice-seg.active { background: var(--accent); color: #fff; font-weight: 700; }
+  .slice-seg[data-v=""] { font-size: 14px; color: var(--dim); min-width: 28px; }
+  .slice-seg[data-v=""].active { color: #fff; }
+  .slice-badge {
+    font-size: 7.5px; font-style: normal; line-height: 1;
+    color: var(--accent); vertical-align: super; margin-left: 1px;
+    font-variant-numeric: tabular-nums;
+  }
+  .slice-seg.active .slice-badge { color: rgba(255,255,255,0.85); }
+
+  /* --- Bottom-center pad --- */
+  #pad {
+    position: absolute; bottom: calc(16px + env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%);
+    z-index: 10;
+    display: inline-flex; align-items: stretch; gap: 1px; padding: 3px;
+    background: rgba(250,248,245,0.90); backdrop-filter: blur(16px);
+    border: 1px solid var(--glass-border); border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+  }
+  .pad-sep {
+    width: 1px; background: var(--rule); margin: 4px 0; border: none; align-self: stretch;
+  }
+  .pad-cell {
+    width: min(44px, calc((100vw - 23px) / 10)); height: 48px;
+    background: var(--surface-2); border: 1px solid var(--rule); border-radius: 8px;
+    color: var(--text); font-family: var(--sans); font-size: calc(17px * var(--hud-scale)); font-weight: 600;
+    cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center;
+    box-shadow: 0 2px 0 rgba(0,0,0,0.08);
+    transition: transform 80ms, box-shadow 80ms, background 100ms;
+  }
+  .pad-cell:hover:not(:disabled) { background: var(--surface); }
+  .pad-cell:active:not(:disabled) { transform: translateY(1px); box-shadow: none; }
+  .pad-cell:disabled { opacity: 0.3; cursor: default; }
+  .pad-cell.action { color: var(--muted); font-size: 18px; font-weight: 400; background: transparent; border-color: transparent; box-shadow: none; }
+  .pad-cell.action:hover:not(:disabled) { color: var(--text); background: var(--surface-2); }
+  .pad-cell.erase { color: #b04040; font-size: 16px; font-weight: 400; }
+  .pad-cell.active { background: var(--accent); color: #fff; border-color: var(--accent); box-shadow: 0 2px 0 rgba(0,0,0,0.15); }
+  .pad-cell.muted  { color: var(--dim); }
+
+  /* N=9: wrap */
+  #pad.pad--wrap {
+    flex-wrap: wrap; width: min(calc(100vw - 24px), 420px);
+    transform: translateX(0); left: 12px; gap: 3px;
+  }
+  #pad.pad--wrap .num { flex: 1 1 0; min-width: 0; width: auto; }
+  #pad.pad--wrap .pad-sep { display: none; }
+  #pad.pad--wrap .pad-break { flex-basis: 100%; height: 0; display: block; }
+
+  /* --- Help / Ranking overlay --- */
+  #ranking-overlay, #help-overlay, #stats-overlay {
+    position: absolute; inset: 0; z-index: 60; display: none;
+    background: rgba(250,248,245,0.92); backdrop-filter: blur(10px);
+    align-items: center; justify-content: center;
+  }
+  #ranking-overlay.open, #help-overlay.open, #stats-overlay.open { display: flex; }
+
+  /* --- Paywall overlay --- */
+  #paywall-overlay {
+    position: absolute; inset: 0; z-index: 70; display: none;
+    background: rgba(26,23,20,0.82); backdrop-filter: blur(14px);
+    align-items: flex-end; justify-content: center;
+  }
+  #paywall-overlay.open { display: flex; }
+  .paywall-sheet {
+    width: 100%; max-width: 480px;
+    background: var(--surface); border-radius: 20px 20px 0 0;
+    padding: 28px 24px 36px; display: flex; flex-direction: column; gap: 20px;
+  }
+  .paywall-header { text-align: center; }
+  .paywall-icon { font-size: 42px; line-height: 1; margin-bottom: 8px; }
+  .paywall-title { font-size: 22px; font-weight: 700; color: var(--text); margin: 0 0 6px; }
+  .paywall-subtitle { font-size: 14px; color: var(--muted); margin: 0; line-height: 1.5; }
+  .paywall-features { display: flex; flex-direction: column; gap: 7px; }
+  .paywall-feature { font-size: 14px; color: var(--text); display: flex; gap: 10px; align-items: center; }
+  .paywall-feature::before { content: "✓"; color: var(--accent); font-weight: 700; flex-shrink: 0; }
+  .paywall-packages { display: flex; flex-direction: column; gap: 10px; }
+  .paywall-pkg-btn {
+    width: 100%; padding: 14px 18px;
+    background: var(--surface-2); border: 1.5px solid var(--glass-border);
+    border-radius: 12px; cursor: pointer; color: var(--text);
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 16px; font-family: var(--sans); transition: border-color 0.15s;
+  }
+  .paywall-pkg-btn:active { border-color: var(--accent); background: var(--surface); }
+  .paywall-pkg-btn:disabled { opacity: 0.5; cursor: default; }
+  .paywall-pkg-period { font-weight: 600; }
+  .paywall-pkg-price { color: var(--accent); font-weight: 700; }
+  .paywall-pkg-btn:first-child { border-color: var(--accent); }
+  #paywall-spinner { display: none; text-align: center; color: var(--muted); font-size: 13px; }
+  .paywall-unavailable { color: var(--muted); font-size: 14px; text-align: center; margin: 0; }
+  .paywall-footer { display: flex; gap: 10px; justify-content: center; }
+  .paywall-link {
+    background: none; border: none; font-size: 12px; color: var(--muted);
+    cursor: pointer; text-decoration: underline; padding: 0;
+  }
+
+  /* --- Ranking cards --- */
+  #ranking-overlay .help-sheet { max-width: 520px; width: calc(100% - 40px); padding: 16px 16px 14px; }
+  #ranking-overlay h2 { margin-bottom: 10px; }
+  #ranking-overlay .help-close { margin-top: 10px; padding: 7px 14px; }
+  #ranking-content { display: flex; flex-direction: column; gap: 6px; }
+  .rk-card {
+    border: 1px solid var(--rule); border-radius: 10px; overflow: hidden;
+    background: var(--bg); flex-shrink: 0;
+  }
+  .rk-card-head {
+    display: flex; align-items: center; gap: 8px;
+    padding: 6px 12px; background: var(--card-accent, var(--accent));
+  }
+  .rk-icon { font-size: 13px; line-height: 1; }
+  .rk-name { font-family: var(--display); font-size: 12px; font-weight: 700; color: #fff; letter-spacing: 0.01em; }
+  .rk-body { padding: 2px 0 3px; }
+  .rk-row {
+    display: grid; grid-template-columns: 18px 1fr auto auto auto;
+    align-items: center; gap: 0 8px; padding: 3px 12px;
+  }
+  .rk-row:nth-child(odd) { background: var(--surface); }
+  .rk-pos { font-family: var(--mono); font-size: 9px; color: var(--dim); text-align: right; }
+  .rk-score { font-family: var(--mono); font-size: 12px; font-weight: 500; color: var(--text); }
+  .rk-diff { font-family: var(--mono); font-size: 9px; color: var(--accent); font-weight: 500; }
+  .rk-time { font-family: var(--mono); font-size: 10px; color: var(--muted); }
+  .rk-date { font-family: var(--mono); font-size: 9px; color: var(--dim); }
+  .rk-empty { padding: 6px 12px; font-size: 11px; color: var(--dim); font-style: italic; }
+
+  /* Stats overlay specific */
+  #stats-content { max-height: 60vh; overflow-y: auto; }
+  .stats-section-label {
+    font-family: var(--mono); font-size: 9px; letter-spacing: .14em;
+    text-transform: uppercase; color: var(--dim); margin: 16px 0 8px;
+  }
+  .stats-section-label:first-child { margin-top: 0; }
+  .stats-overview {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 4px;
+  }
+  .stats-ov-card {
+    background: var(--bg); border: 1px solid var(--rule); border-radius: 10px;
+    padding: 10px 14px;
+  }
+  .stats-ov-label { font-size: 10px; color: var(--muted); margin-bottom: 3px; }
+  .stats-ov-val { font-family: var(--mono); font-size: 17px; font-weight: 700; color: var(--text); }
+  .stats-diff-table { width: 100%; border-collapse: collapse; }
+  .stats-diff-table th {
+    text-align: left; font-family: var(--mono); font-size: 9px;
+    color: var(--dim); letter-spacing: .1em; font-weight: 400;
+    padding-bottom: 6px; border-bottom: 1px solid var(--rule);
+  }
+  .stats-diff-table td {
+    font-family: var(--mono); font-size: 12px; color: var(--text);
+    padding: 5px 0; border-bottom: 1px solid var(--rule);
+  }
+  .stats-diff-table td:not(:first-child) { color: var(--muted); text-align: right; }
+  .stats-diff-table tr:last-child td { border-bottom: none; }
+  .stats-diff-table td.locked { color: var(--dim); font-size: 10px; }
+  .stats-chart { display: flex; gap: 4px; align-items: flex-end; height: 48px; }
+  .stats-bar-wrap {
+    flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px;
+  }
+  .stats-bar {
+    width: 100%; background: var(--accent); border-radius: 3px 3px 0 0;
+    min-height: 2px; opacity: 0.75;
+    transition: opacity 120ms;
+  }
+  .stats-bar:hover { opacity: 1; }
+  .stats-bar-label {
+    font-family: var(--mono); font-size: 8px; color: var(--dim);
+    white-space: nowrap; overflow: hidden;
+  }
+
+  .help-sheet {
+    background: var(--surface); border: 1px solid var(--rule-strong);
+    border-radius: 14px; padding: 28px 30px;
+    max-width: 440px; min-width: 300px;
+    box-shadow: 0 8px 32px rgba(26,23,20,0.14);
+  }
+  .help-sheet h2 { margin: 0 0 22px; font-weight: 600; font-size: 15px; color: var(--text); }
+  .help-section + .help-section { margin-top: 20px; }
+  .help-label {
+    font-size: 10px; color: var(--muted); letter-spacing: 0.12em; text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .help-text { font-size: 13px; line-height: 1.65; color: var(--text); }
+  .help-text b { font-weight: 600; }
+  .help-sheet dl { display: grid; grid-template-columns: auto 1fr; gap: 8px 16px; margin: 0; font-size: 12px; }
+  .help-sheet dt { font-family: var(--mono); color: var(--muted); white-space: nowrap; font-size: 11px; }
+  .help-sheet dd { margin: 0; color: var(--text); }
+  .help-close {
+    display: block; margin: 24px 0 0;
+    background: var(--surface-2); border: 1px solid var(--rule-strong); border-radius: 8px;
+    padding: 9px 18px; color: var(--text); font-size: 13px; font-weight: 500; cursor: pointer;
+  }
+  .help-close:hover { background: var(--rule); }
+
+  /* --- Diàleg de sortida --- */
+  /* Toast de confirmació */
+  #save-toast {
+    position: fixed; bottom: calc(30px + env(safe-area-inset-bottom));
+    left: 50%; transform: translateX(-50%) translateY(20px);
+    background: #2a2520; color: #f5f3f0; border-radius: 22px;
+    padding: 10px 20px; font-family: var(--sans); font-size: 13px; font-weight: 600;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3); pointer-events: none;
+    opacity: 0; transition: opacity 250ms, transform 250ms; z-index: 90;
+    white-space: nowrap;
+  }
+  #save-toast.visible { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  #saves-modal {
+    position: fixed; inset: 0; z-index: 60; display: none;
+    background: rgba(26,23,20,0.55); backdrop-filter: blur(4px);
+    align-items: flex-end; justify-content: center;
+  }
+  #saves-modal.open { display: flex; }
+  .saves-sheet {
+    background: var(--surface); border-radius: 18px 18px 0 0;
+    padding: 20px 18px calc(24px + env(safe-area-inset-bottom));
+    width: 100%; max-width: 480px;
+    max-height: 70vh; overflow-y: auto;
+    box-shadow: 0 -4px 32px rgba(26,23,20,0.18);
+  }
+  .saves-sheet-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 14px;
+  }
+  .saves-sheet-header h3 { margin: 0; font-size: 15px; font-weight: 600; }
+  .saves-close-btn {
+    width: 28px; height: 28px; border: none; background: var(--surface-2);
+    border-radius: 50%; cursor: pointer; font-size: 12px; color: var(--muted);
+    display: flex; align-items: center; justify-content: center;
+  }
+  #saves-list { display: flex; flex-direction: column; gap: 8px; }
+  .saves-card {
+    display: flex; align-items: center; gap: 10px; padding: 10px 12px;
+    border: 1.5px solid var(--rule); border-radius: 13px;
+    background: var(--surface-2); cursor: pointer;
+  }
+  .saves-card-icon { font-size: 20px; flex-shrink: 0; }
+  .saves-card-info { flex: 1; min-width: 0; }
+  .saves-card-name { font-weight: 600; font-size: 13px; color: var(--text); }
+  .saves-card-meta { font-size: 11px; color: var(--muted); margin-top: 2px; font-family: var(--mono); }
+  .saves-card-resume {
+    flex-shrink: 0; padding: 6px 12px; border-radius: 9px;
+    background: var(--accent); color: white; border: none;
+    font-size: 12px; font-weight: 600; cursor: pointer;
+  }
+  .saves-card-delete {
+    flex-shrink: 0; width: 28px; height: 28px; border: none;
+    background: transparent; border-radius: 6px; cursor: pointer;
+    font-size: 13px; color: var(--muted);
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  #exit-dialog {
+    position: absolute; inset: 0; z-index: 30; display: none;
+    background: rgba(26,23,20,0.55); backdrop-filter: blur(4px);
+    align-items: center; justify-content: center; padding: 20px;
+  }
+  #exit-dialog.open { display: flex; }
+  .exit-sheet {
+    background: var(--surface); border: 1px solid var(--rule-strong);
+    border-radius: 18px; padding: 24px 22px;
+    max-width: 320px; width: 100%;
+    box-shadow: 0 8px 40px rgba(26,23,20,0.22);
+  }
+  .exit-sheet h3 {
+    margin: 0 0 6px; font-weight: 600; font-size: 15px; color: var(--text);
+  }
+  .exit-sheet p {
+    margin: 0 0 20px; font-size: 13px; color: var(--muted); line-height: 1.5;
+  }
+  .exit-btn-group { display: flex; flex-direction: column; gap: 9px; }
+  .exit-btn {
+    width: 100%; padding: 12px 16px; border-radius: 11px;
+    font-family: var(--sans); font-size: 13px; font-weight: 600;
+    cursor: pointer; border: 1.5px solid var(--rule-strong);
+    transition: opacity 120ms;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .exit-btn:active { opacity: .80; }
+  .exit-btn-save {
+    background: var(--accent); color: white; border-color: var(--accent);
+  }
+  .exit-btn-discard {
+    background: none; color: var(--muted);
+  }
+  .exit-btn-cancel {
+    background: none; color: var(--text);
+  }
+
+  /* --- Victory takeover --- */
+  #victory {
+    position: absolute; inset: 0; z-index: 25; display: none;
+    background: rgba(250,248,245,0.94); backdrop-filter: blur(12px);
+  }
+  #victory.open { display: flex; align-items: center; justify-content: center; padding: 20px; }
+
+  .vic-sheet {
+    background: var(--surface); border: 1px solid var(--rule-strong);
+    border-radius: 16px; padding: 22px 20px;
+    max-width: 360px; width: 100%;
+    box-shadow: 0 8px 40px rgba(26,23,20,0.14);
+  }
+  .vic-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--accent); color: var(--ink);
+    border-radius: 20px; padding: 5px 14px;
+    font-weight: 700; font-size: 13px; letter-spacing: 0.02em;
+    margin-bottom: 6px;
+  }
+  .vic-diff {
+    font-size: 12px; color: var(--muted); margin-bottom: 16px;
+  }
+  .vic-stats {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 7px; margin-bottom: 8px;
+  }
+  .vic-stat-card {
+    background: var(--surface-2); border: 1px solid var(--rule);
+    border-radius: 10px; padding: 10px 12px;
+  }
+  .vic-stat-card.wide    { grid-column: 1 / -1; }
+  .vic-stat-card.record  { background: rgba(192,96,64,0.08); border-color: rgba(192,96,64,0.25); }
+  .vic-stat-label {
+    font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px;
+  }
+  .vic-stat-val {
+    font-family: var(--mono); font-size: 22px; color: var(--text);
+    font-variant-numeric: tabular-nums; font-weight: 500; line-height: 1;
+  }
+  .vic-stat-card.record .vic-stat-val { color: var(--accent); }
+  .vic-tag {
+    font-size: 9px; color: var(--accent); letter-spacing: 0.1em; text-transform: uppercase;
+    margin-left: 7px; vertical-align: middle;
+  }
+  .vic-bests { display: flex; gap: 7px; margin-bottom: 8px; }
+  .vic-best-item {
+    flex: 1; background: var(--surface-2); border-radius: 8px; padding: 8px 10px;
+    border: 1px solid var(--rule);
+  }
+  .vic-best-label { font-size: 10px; color: var(--muted); margin-bottom: 3px; text-transform: uppercase; letter-spacing: 0.06em; }
+  .vic-best-val { font-family: var(--mono); font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
+
+  .vic-streak-bar {
+    display: flex; align-items: center; gap: 8px; padding: 9px 12px;
+    background: var(--surface-2); border-radius: 8px; margin-bottom: 16px;
+    border: 1px solid var(--rule); font-size: 13px;
+  }
+  .vic-streak-label { color: var(--muted); font-size: 12px; }
+  .vic-streak-num {
+    font-family: var(--mono); font-size: 14px; color: var(--muted);
+    margin-left: auto; font-variant-numeric: tabular-nums;
+  }
+  .vic-unlock {
+    margin-bottom: 14px; padding: 10px 12px;
+    border-left: 3px solid var(--accent); border-radius: 0 6px 6px 0;
+    font-size: 12px; color: var(--text); background: var(--surface-2);
+    display: none;
+  }
+  .vic-unlock.show { display: block; }
+  .vic-cta { display: flex; flex-direction: column; gap: 8px; }
+  .vic-cta button {
+    width: 100%; background: var(--accent); color: var(--ink); border: none;
+    border-radius: 10px; padding: 13px;
+    font-family: var(--sans); font-size: 15px; font-weight: 700; cursor: pointer;
+    letter-spacing: 0.02em;
+  }
+  .vic-cta button:active { filter: brightness(0.92); }
+  #victory-home {
+    background: none; border: 1.5px solid var(--rule-strong);
+    color: var(--text); font-weight: 600;
+  }
+  #victory-share {
+    background: none; border: 1.5px solid var(--rule-strong);
+    color: var(--text); font-weight: 600;
+  }
+  #victory-share:hover { border-color: var(--accent); }
+  #victory-share[hidden] { display: none; }
+
+  /* --- Settings panel --- */
+  #settings-panel {
+    position: absolute; top: calc(68px + env(safe-area-inset-top)); left: 14px; z-index: 60;
+    background: var(--surface); border: 1px solid var(--rule-strong);
+    border-radius: 12px; overflow: hidden;
+    display: none; flex-direction: column; min-width: 248px; max-width: 280px;
+    box-shadow: 0 8px 32px rgba(26,23,20,0.12);
+    max-height: calc(100dvh - 100px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+    overflow-y: auto;
+  }
+  #settings-panel.open { display: flex; }
+  #settings-panel.from-home .sett-game-only { display: none; }
+  #settings-panel:not(.from-home) .sett-home-only { display: none; }
+  body.mode-2d #settings-panel .sett-game-only,
+  body.mode-kakuro #settings-panel .sett-game-only,
+  body.mode-futoshiki #settings-panel .sett-game-only,
+  body.mode-binairo #settings-panel .sett-game-only { display: none; }
+  #settings-panel.from-home {
+    top: calc(60px + env(safe-area-inset-top)); left: auto; right: 14px;
+  }
+
+  .sett-section { padding: 10px 14px; border-bottom: 1px solid var(--rule); }
+  .sett-section:last-child { border-bottom: none; }
+  .sett-section-label {
+    font-size: 10px; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .sett-row {
+    display: flex; align-items: center; justify-content: space-between; gap: 14px;
+    padding: 4px 0;
+  }
+  .sett-label { font-size: 12px; color: var(--text); white-space: nowrap; }
+
+  .sett-slider {
+    -webkit-appearance: none; appearance: none;
+    width: 90px; height: 3px; background: var(--rule-strong); border: none; outline: none;
+    cursor: pointer; border-radius: 2px;
+  }
+  .sett-slider::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%;
+    background: var(--accent); cursor: pointer;
+  }
+
+  /* Toggle switch */
+  .sett-toggle { position: relative; width: 38px; height: 22px; cursor: pointer; flex-shrink: 0; }
+  .sett-toggle input { position: absolute; opacity: 0; width: 0; height: 0; }
+  .sett-toggle-track {
+    position: absolute; inset: 0;
+    background: var(--rule-strong); border-radius: 11px;
+    transition: background 200ms, border 200ms;
+    border: 1px solid transparent;
+  }
+  .sett-toggle-track::after {
+    content: ''; position: absolute;
+    width: 16px; height: 16px; background: var(--muted); border-radius: 50%;
+    top: 2px; left: 2px;
+    transition: transform 200ms, background 200ms;
+  }
+  .sett-toggle input:checked + .sett-toggle-track {
+    background: rgba(192,96,64,0.18); border-color: rgba(192,96,64,0.35);
+  }
+  .sett-toggle input:checked + .sett-toggle-track::after {
+    transform: translateX(16px); background: var(--accent);
+  }
+
+  /* Size buttons */
+  .size-group { display: flex; gap: 3px; }
+  .size-btn {
+    background: var(--surface-2); border: 1px solid var(--rule-strong); border-radius: 6px;
+    color: var(--muted); font-family: var(--mono); font-size: 11px; font-weight: 600;
+    padding: 5px 11px; cursor: pointer;
+  }
+  .size-btn.active { background: var(--accent); color: var(--ink); border-color: var(--accent); }
+
+  .sett-btn {
+    display: flex; align-items: center; gap: 8px;
+    background: none; border: none; color: var(--text);
+    font-family: var(--sans); font-size: 12px; font-weight: 500;
+    padding: 9px 14px; cursor: pointer; width: 100%; text-align: left;
+  }
+  .sett-btn:hover { background: var(--surface-2); }
+  .sett-btn-icon { font-size: 13px; opacity: 0.55; }
+  .sett-btn.danger { color: #c06060; }
+  .sett-btn.danger .sett-btn-icon { opacity: 0.8; }
+  .sett-sep { height: 1px; background: var(--rule); }
+
+  /* Streak inside settings */
+  .sett-streak-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 4px 0;
+  }
+  .sett-streak-label { font-size: 12px; color: var(--muted); }
+
+  /* Bloqueja els botons del HUD mentre hi ha un dit al canvas (evita activació accidental en gestos de pinça) */
+  body.canvas-gesture #btn-notes,
+  body.canvas-gesture #btn-new,
+  body.canvas-gesture #btn-undo,
+  body.canvas-gesture #btn-redo,
+  body.canvas-gesture #btn-mute,
+  body.canvas-gesture .help-btn,
+  body.canvas-gesture #btn-home,
+  body.canvas-gesture .level-pill { pointer-events: none; }
+
+  /* --- Landscape low-height --- */
+  @media (orientation: landscape) and (max-height: 500px) {
+    #pad {
+      bottom: auto; top: 50%; left: auto;
+      right: calc(64px + env(safe-area-inset-right));
+      transform: translateY(-50%);
+      flex-direction: column; gap: 3px;
+    }
+    .pad-sep { width: 100%; height: 1px; margin: 0 4px; align-self: auto; }
+    #slice { right: calc(14px + env(safe-area-inset-right)); }
+    #coord { bottom: calc(16px + env(safe-area-inset-bottom)); }
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* --- Portrait mobile --- */
+  @media (orientation: portrait) and (max-width: 768px) {
+    #slice {
+      top: auto; transform: none;
+      bottom: calc(72px + env(safe-area-inset-bottom));
+      right: calc(12px + env(safe-area-inset-right));
+    }
+    body.size-9 #slice { bottom: calc(131px + env(safe-area-inset-bottom)); }
+  }
+  @media (orientation: portrait) and (max-width: 480px) {
+    body.size-9 #slice { bottom: calc(125px + env(safe-area-inset-bottom)); }
+  }
+
+  /* --- Narrow phones --- */
+  @media (max-width: 480px) {
+    #brand { gap: 6px; }
+    .wordmark { font-size: 19px; }
+    .pad-cell { height: 44px; }
+    #slice { gap: 5px; }
+    .slice-seg { min-width: 22px; padding: 4px 0; }
+    .vic-sheet { padding: 18px 16px; }
+    .vic-stat-val { font-size: 19px; }
+  }
+
+  /* ======================================================
+     2D CLASSIC SUDOKU MODE
+     ====================================================== */
+
+  /* Hide 3D elements when in 2D mode */
+  body.mode-2d canvas        { display: none !important; }
+  body.mode-2d #slice        { display: none !important; }
+  body.mode-2d #coord        { display: none !important; }
+
+  /* Wrapper centers the board in the available space */
+  #board2d-wrap {
+    position: absolute;
+    top: calc(68px + env(safe-area-inset-top));
+    bottom: calc(86px + env(safe-area-inset-bottom));
+    left: 0; right: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 5;
+  }
+  body.mode-2d #board2d-wrap { display: flex; }
+
+  /* The 9×9 grid */
+  #board2d {
+    display: grid;
+    grid-template-columns: repeat(9, 1fr);
+    width: min(calc(100vw - 40px), calc(100vh - 200px), 520px);
+    aspect-ratio: 1;
+    border: 2px solid var(--muted);
+    box-sizing: border-box;
+  }
+
+  /* Cell base style */
+  .cell2d {
+    background: var(--surface-2);
+    border: none;
+    border-right: 1px solid var(--rule-strong);
+    border-bottom: 1px solid var(--rule-strong);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: clamp(13px, 3.8vmin, 30px);
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    box-sizing: border-box;
+    transition: background 80ms;
+    font-variant-numeric: tabular-nums;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .cell2d:hover { background: var(--surface); }
+
+  /* Box borders (thick lines every 3 cells) */
+  .cell2d[data-c="2"], .cell2d[data-c="5"] { border-right: 2px solid var(--muted); }
+  .cell2d[data-c="8"]                       { border-right: none; }
+  .cell2d[data-r="2"], .cell2d[data-r="5"] { border-bottom: 2px solid var(--muted); }
+  .cell2d[data-r="8"]                       { border-bottom: none; }
+
+  /* State modifiers */
+  .cell2d--fixed {
+    background: var(--surface-2);
+    color: var(--muted);
+    cursor: default;
+  }
+  .cell2d--fixed:hover { background: var(--surface-2); }
+
+  .cell2d--selected {
+    background: var(--accent) !important;
+    color: #fff !important;
+  }
+
+  .cell2d--conflict {
+    background: rgba(192, 60, 48, 0.12);
+    color: #b03828;
+  }
+
+  .cell2d--hl {
+    background: rgba(192, 96, 64, 0.08);
+  }
+
+  /* Notes mini-grid (3×3 inside the cell) */
+  .notes2d {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    width: 100%; height: 100%;
+    gap: 0;
+  }
+  .notes2d span {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: clamp(7px, 1.5vmin, 11px);
+    font-weight: 400;
+    color: var(--muted);
+    line-height: 1;
+  }
+  .cell2d--selected .notes2d span { color: rgba(255,255,255,0.85); }
+
+  /* Landscape low-height adjustment */
+  @media (orientation: landscape) and (max-height: 500px) {
+    #board2d-wrap {
+      top: calc(60px + env(safe-area-inset-top));
+      bottom: calc(72px + env(safe-area-inset-bottom));
+    }
+  }
+
+  /* ======================================================
+     KAKURO MODE
+     ====================================================== */
+
+  body.mode-kakuro canvas        { display: none !important; }
+  body.mode-kakuro #slice        { display: none !important; }
+  body.mode-kakuro #coord        { display: none !important; }
+
+  #board-kakuro-wrap {
+    position: absolute;
+    top: calc(68px + env(safe-area-inset-top));
+    bottom: calc(86px + env(safe-area-inset-bottom));
+    left: 0; right: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 5;
+  }
+  body.mode-kakuro #board-kakuro-wrap { display: flex; }
+
+  #board-kakuro {
+    display: grid;
+    width: min(calc(100vw - 32px), calc(100vh - 180px), 480px);
+    aspect-ratio: 1;
+    box-sizing: border-box;
+  }
+
+  /* Pure black cell */
+  .kk-black {
+    background: var(--ink);
+    border: 1px solid rgba(26,23,20,0.5);
+    box-sizing: border-box;
+  }
+
+  /* Clue cell: black with diagonal and two numbers */
+  .kk-clue {
+    background: var(--ink);
+    border: 1px solid rgba(26,23,20,0.5);
+    box-sizing: border-box;
+    position: relative;
+    overflow: hidden;
+  }
+  .kk-diag {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    stroke: rgba(200,189,176,0.45); stroke-width: 1.5; pointer-events: none;
+  }
+  /* down clue: bottom-left */
+  .kk-down {
+    position: absolute; bottom: 2px; left: 3px;
+    font-family: var(--mono); font-size: clamp(7px, 2vmin, 13px);
+    color: #c8b89a; line-height: 1; font-weight: 600;
+  }
+  /* right clue: top-right */
+  .kk-right {
+    position: absolute; top: 2px; right: 3px;
+    font-family: var(--mono); font-size: clamp(7px, 2vmin, 13px);
+    color: #c8b89a; line-height: 1; font-weight: 600;
+  }
+
+  /* White playable cell */
+  .kk-white {
+    background: var(--surface-2);
+    border: 1px solid var(--rule-strong);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: clamp(13px, 3.8vmin, 28px);
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    box-sizing: border-box;
+    transition: background 80ms;
+    font-variant-numeric: tabular-nums;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .kk-white:hover { background: var(--surface); }
+  .kk-white--selected {
+    background: var(--accent) !important;
+    color: var(--ink) !important;
+  }
+  .kk-white--conflict {
+    background: rgba(192, 60, 48, 0.12);
+    color: #b03828;
+  }
+
+  @media (orientation: landscape) and (max-height: 500px) {
+    #board-kakuro-wrap {
+      top: calc(60px + env(safe-area-inset-top));
+      bottom: calc(72px + env(safe-area-inset-bottom));
+    }
+  }
+
+  /* ======================================================
+     FUTOSHIKI MODE
+     ====================================================== */
+
+  body.mode-futoshiki canvas        { display: none !important; }
+  body.mode-futoshiki #slice        { display: none !important; }
+  body.mode-futoshiki #coord        { display: none !important; }
+
+  #board-futoshiki-wrap {
+    position: absolute;
+    top: calc(68px + env(safe-area-inset-top));
+    bottom: calc(86px + env(safe-area-inset-bottom));
+    left: 0; right: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 5;
+  }
+  body.mode-futoshiki #board-futoshiki-wrap { display: flex; }
+
+  #board-futoshiki {
+    display: grid;
+    width: min(calc(100vw - 32px), calc(100vh - 180px), 480px);
+    aspect-ratio: 1;
+    box-sizing: border-box;
+  }
+
+  .ft-cell {
+    background: var(--surface-2);
+    border: 1px solid var(--rule-strong);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: clamp(13px, 4vmin, 32px);
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    box-sizing: border-box;
+    transition: background 80ms;
+    font-variant-numeric: tabular-nums;
+    -webkit-tap-highlight-color: transparent;
+    min-width: 0;
+    min-height: 0;
+  }
+  .ft-cell:hover { background: var(--surface); }
+
+  .ft-cell--fixed {
+    background: var(--surface-2);
+    color: var(--muted);
+    cursor: default;
+  }
+  .ft-cell--fixed:hover { background: var(--surface-2); }
+
+  .ft-cell--selected {
+    background: var(--accent) !important;
+    color: #fff !important;
+  }
+
+  .ft-cell--conflict {
+    background: rgba(192, 60, 48, 0.12);
+    color: #b03828;
+  }
+
+  .ft-cell--hl {
+    background: rgba(144, 96, 176, 0.08);
+  }
+
+  /* Inequality signs between cells */
+  .ft-ineq {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: clamp(9px, 2.2vmin, 16px);
+    line-height: 1;
+    color: var(--text);
+    opacity: 0.35;
+    min-width: 0;
+    min-height: 0;
+    pointer-events: none;
+    user-select: none;
+  }
+  .ft-ineq[data-v] { opacity: 0.7; }
+
+  /* Notes mini-grid inside a cell */
+  .ft-notes {
+    display: grid;
+    width: 100%; height: 100%;
+  }
+  .ft-notes span {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: clamp(5px, 1vmin, 8px);
+    font-weight: 400;
+    color: var(--muted);
+    line-height: 1;
+  }
+  .ft-cell--selected .ft-notes span { color: rgba(255,255,255,0.85); }
+
+  @media (orientation: landscape) and (max-height: 500px) {
+    #board-futoshiki-wrap {
+      top: calc(60px + env(safe-area-inset-top));
+      bottom: calc(72px + env(safe-area-inset-bottom));
+    }
+  }
+
+  /* ======================================================
+     BINAIRO MODE
+     ====================================================== */
+
+  body.mode-binairo canvas        { display: none !important; }
+  body.mode-binairo #slice        { display: none !important; }
+  body.mode-binairo #coord        { display: none !important; }
+  body.mode-binairo #btn-notes    { display: none !important; }
+
+  #board-binairo-wrap {
+    position: absolute;
+    top: calc(68px + env(safe-area-inset-top));
+    bottom: calc(86px + env(safe-area-inset-bottom));
+    left: 0; right: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 5;
+  }
+  body.mode-binairo #board-binairo-wrap { display: flex; }
+
+  #board-binairo {
+    display: grid;
+    width: min(calc(100vw - 32px), calc(100vh - 180px), 480px);
+    aspect-ratio: 1;
+    border: 2px solid var(--muted);
+    box-sizing: border-box;
+  }
+
+  .bn-cell {
+    background: var(--surface-2);
+    border: none;
+    border-right: 1px solid var(--rule-strong);
+    border-bottom: 1px solid var(--rule-strong);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: clamp(14px, 4.5vmin, 36px);
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    box-sizing: border-box;
+    transition: background 80ms;
+    font-variant-numeric: tabular-nums;
+    -webkit-tap-highlight-color: transparent;
+    min-width: 0; min-height: 0;
+  }
+  .bn-cell:hover { background: var(--surface); }
+  .bn-cell--last-c { border-right: none; }
+  .bn-cell--last-r { border-bottom: none; }
+  .bn-cell--sep-c  { border-right: 2px solid var(--muted); }
+  .bn-cell--sep-r  { border-bottom: 2px solid var(--muted); }
+
+  .bn-cell--zero { color: #408878; }
+  .bn-cell--one  { color: #c06040; }
+
+  .bn-cell--fixed { color: var(--muted); cursor: default; }
+  .bn-cell--fixed:hover { background: var(--surface-2); }
+  .bn-cell--fixed.bn-cell--zero { color: color-mix(in srgb, #408878 55%, var(--muted)); }
+  .bn-cell--fixed.bn-cell--one  { color: color-mix(in srgb, #c06040 55%, var(--muted)); }
+
+  .bn-cell--selected { background: var(--accent) !important; color: #fff !important; }
+  .bn-cell--conflict { background: rgba(192,60,48,0.12); color: #b03828; }
+  .bn-cell--hl       { background: rgba(64,136,120,0.08); }
+
+  @media (orientation: landscape) and (max-height: 500px) {
+    #board-binairo-wrap {
+      top: calc(60px + env(safe-area-inset-top));
+      bottom: calc(72px + env(safe-area-inset-bottom));
+    }
+  }
+
+  /* --- Tutorial pas a pas (help overlay) --- */
+  .help-sheet { overflow-y: auto; max-height: 90vh; }
+
+  .help-progress-bar {
+    display: flex; gap: 5px; margin: 0 0 20px;
+  }
+  .help-progress-dot {
+    flex: 1; height: 3px; border-radius: 2px;
+    background: var(--rule-strong); transition: background 250ms;
+  }
+  .help-progress-dot.done { background: var(--accent); }
+
+  .help-step {
+    background: var(--surface-2); border: 1px solid var(--rule);
+    border-radius: 10px; margin-bottom: 8px; overflow: hidden;
+    transition: border-color 200ms;
+  }
+  .help-step.active { border-color: var(--rule-strong); }
+  .help-step-head {
+    display: flex; align-items: center; gap: 10px; padding: 11px 13px;
+  }
+  .help-step.inactive .help-step-head { opacity: 0.45; }
+  .help-step-icon {
+    width: 30px; height: 30px; border-radius: 7px; flex-shrink: 0;
+    background: rgba(192,96,64,0.1); border: 1px solid rgba(192,96,64,0.22);
+    display: flex; align-items: center; justify-content: center; font-size: 14px;
+  }
+  .help-step.inactive .help-step-icon { background: var(--surface); border-color: var(--rule); }
+  .help-step-title { font-size: 13px; font-weight: 600; color: var(--text); }
+  .help-step-sub   { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .help-step-body  { display: none; padding: 0 13px 13px; }
+  .help-step.active .help-step-body { display: block; }
+  .help-step-text  { font-size: 13px; line-height: 1.7; color: var(--text); margin-bottom: 10px; }
+  .help-step-text b { color: var(--accent); font-weight: 600; }
+
+  .help-mini-grid { display: flex; flex-direction: column; gap: 3px; }
+  .help-mini-row  { display: flex; gap: 3px; }
+  .help-mini-cell {
+    width: 26px; height: 26px; border-radius: 4px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--mono); font-size: 12px; font-weight: 600;
+  }
+  .help-mini-cell.hl  { background: rgba(192,96,64,0.12); border: 1px solid rgba(192,96,64,0.35); color: var(--accent); }
+  .help-mini-cell.emp { background: var(--surface); border: 1px solid var(--rule); color: var(--dim); }
+  .help-mini-cell.fix { background: var(--surface-2); border: 1px solid var(--rule-strong); color: var(--muted); }
+  .help-illus {
+    background: var(--bg); border-radius: 8px; padding: 10px 14px;
+    display: flex; flex-direction: column; align-items: center; gap: 7px;
+    font-size: 11px; color: var(--muted); text-align: center;
+  }
+  .help-ctrl-grid {
+    display: grid; grid-template-columns: auto 1fr; gap: 6px 14px;
+    font-size: 12px; width: 100%;
+  }
+  .help-ctrl-grid dt { font-family: var(--mono); color: var(--muted); font-size: 11px; white-space: nowrap; }
+  .help-ctrl-grid dd { margin: 0; color: var(--text); }
+
+  .help-nav { display: flex; gap: 8px; margin-top: 16px; }
+  .help-nav-back {
+    flex: 1; padding: 10px; background: var(--surface-2);
+    border: 1px solid var(--rule-strong); border-radius: 8px;
+    color: var(--muted); font-size: 12px; font-weight: 600; cursor: pointer;
+    font-family: var(--sans);
+  }
+  .help-nav-back:disabled { opacity: 0.25; cursor: default; }
+  .help-nav-next {
+    flex: 2; padding: 10px; background: var(--accent); border: none;
+    border-radius: 8px; color: var(--ink); font-size: 13px; font-weight: 700;
+    cursor: pointer; font-family: var(--sans); transition: opacity 150ms;
+  }
+  .help-nav-next:hover { opacity: 0.88; }
+
+  /* --- Settings sub-labels and beginner tip --- */
+  .sett-label-group { display: flex; flex-direction: column; gap: 1px; }
+  .sett-sublabel { font-size: 10.5px; color: var(--muted); line-height: 1.4; }
+  .sett-row { align-items: flex-start; padding: 6px 0; }
+
+  .sett-tip {
+    background: rgba(80,144,80,0.07); border: 1px solid rgba(80,144,80,0.2);
+    border-radius: 8px; padding: 10px 12px; margin-bottom: 4px;
+    display: flex; gap: 9px; align-items: flex-start;
+  }
+  .sett-tip-icon { font-size: 14px; flex-shrink: 0; line-height: 1.4; }
+  .sett-tip-text { font-size: 11px; color: var(--muted); line-height: 1.6; }
+  .sett-tip-text strong { color: #508050; }
+
+  /* --- Difficulty popover — short description --- */
+  .diff-item { flex-direction: column; align-items: flex-start; gap: 3px; }
+  .diff-item .diff-top { display: flex; justify-content: space-between; align-items: center; width: 100%; }
+  .diff-item .diff-desc { font-size: 10.5px; color: var(--muted); line-height: 1.4; }
+  .diff-item:disabled .diff-desc { color: var(--dim); }
+  .diff-badge {
+    font-size: 9.5px; font-weight: 600; letter-spacing: 0.04em;
+    padding: 1px 7px; border-radius: 10px; white-space: nowrap;
+  }
+  .diff-badge.rec  { background: rgba(80,190,100,0.12); color: #5cb860; border: 1px solid rgba(80,190,100,0.25); }
+  .diff-badge.hard { background: rgba(200,80,80,0.10);  color: #c06060; border: 1px solid rgba(200,80,80,0.2); }
+</style>
+</head>
+<body>
+
+  <!-- Pantalla d'inici -->
+  <div id="home-screen" aria-label="Game selection">
+
+    <!-- ── Zona hero: cub tinta flotant ── -->
+    <div class="hs-hero">
+
+      <!-- Partícules de números -->
+      <span class="hs-particle" style="left:10%;animation-duration:9s;animation-delay:0s"   aria-hidden="true">3</span>
+      <span class="hs-particle" style="left:24%;animation-duration:12s;animation-delay:2.8s" aria-hidden="true">7</span>
+      <span class="hs-particle" style="left:42%;animation-duration:10s;animation-delay:1.1s" aria-hidden="true">1</span>
+      <span class="hs-particle" style="left:61%;animation-duration:14s;animation-delay:4.2s" aria-hidden="true">5</span>
+      <span class="hs-particle" style="left:78%;animation-duration:8s;animation-delay:0.6s"  aria-hidden="true">9</span>
+      <span class="hs-particle" style="left:88%;animation-duration:11s;animation-delay:3.1s" aria-hidden="true">2</span>
+      <span class="hs-particle" style="left:17%;animation-duration:13s;animation-delay:5.9s" aria-hidden="true">4</span>
+      <span class="hs-particle" style="left:54%;animation-duration:9s;animation-delay:7.4s"  aria-hidden="true">8</span>
+
+      <!-- Panel 1: Sudoku 3D (6s) -->
+      <div class="hs-panel hs-panel-3d" aria-hidden="true">
+        <svg class="hs-panel-cube" viewBox="0 0 100 100" fill="none">
+          <!--
+            Cub isomètric 3×3×3: cada cel·la és un polígon independent (com al joc real).
+            Geometria: T=(50,9) TR=(83,27) TL=(17,27) C=(50,45) B=(50,81)
+              dr=(11,6)  dl=(-11,6)  sv=(0,12)
+            Inset cares top: top+0.6  right-1  bottom-0.6  left+1
+            Inset cares laterals: A+(-0.8,1.3) B+(+0.8,1.3) C+(+0.8,-1.3) D+(-0.8,-1.3)
+            Colors zenPaper: fixed=#342820  filled=#c06040  buit=rgba(200,175,150,.09)
+            Llum direccional: top opacity=1  right=.86  left=.74
+          -->
+
+          <!-- ── CARA SUPERIOR (9 cel·les) ── -->
+          <!-- fixed:5 -->  <polygon points="50,9.6 60,15 50,20.4 40,15"    fill="#342820"/>
+          <!-- buit    -->  <polygon points="61,15.6 71,21 61,26.4 51,21"   fill="rgba(200,175,150,.09)"/>
+          <!-- fixed:9 -->  <polygon points="72,21.6 82,27 72,32.4 62,27"   fill="#342820"/>
+          <!-- filled:3 --> <polygon points="39,15.6 49,21 39,26.4 29,21"   fill="#c06040"/>
+          <!-- fixed:7 -->  <polygon points="50,21.6 60,27 50,32.4 40,27"   fill="#342820"/>
+          <!-- buit    -->  <polygon points="61,27.6 71,33 61,38.4 51,33"   fill="rgba(200,175,150,.09)"/>
+          <!-- buit    -->  <polygon points="28,21.6 38,27 28,32.4 18,27"   fill="rgba(200,175,150,.09)"/>
+          <!-- filled:4 --> <polygon points="39,27.6 49,33 39,38.4 29,33"   fill="#c06040"/>
+          <!-- filled:6 --> <polygon points="50,33.6 60,39 50,44.4 40,39"   fill="#c06040"/>
+          <g font-family="'IBM Plex Mono',monospace" font-size="5.5" text-anchor="middle" dominant-baseline="middle" fill="rgba(255,248,240,.90)" font-weight="500">
+            <text x="50" y="15">5</text>  <text x="72" y="27">9</text>
+            <text x="39" y="21">3</text>  <text x="50" y="27">7</text>
+            <text x="39" y="33">4</text>  <text x="50" y="39">6</text>
+          </g>
+
+          <!-- ── CARA DRETA (9 cel·les, llum -14%) ── -->
+          <g opacity=".86">
+            <!-- filled:4 --> <polygon points="82.2,28.3 72.8,34.3 72.8,43.7 82.2,37.7" fill="#c06040"/>
+            <!-- fixed:1  --> <polygon points="71.2,34.3 61.8,40.3 61.8,49.7 71.2,43.7" fill="#342820"/>
+            <!-- buit     --> <polygon points="60.2,40.3 50.8,46.3 50.8,55.7 60.2,49.7" fill="rgba(200,175,150,.09)"/>
+            <!-- buit     --> <polygon points="82.2,40.3 72.8,46.3 72.8,55.7 82.2,49.7" fill="rgba(200,175,150,.09)"/>
+            <!-- filled:8 --> <polygon points="71.2,46.3 61.8,52.3 61.8,61.7 71.2,55.7" fill="#c06040"/>
+            <!-- fixed:2  --> <polygon points="60.2,52.3 50.8,58.3 50.8,67.7 60.2,61.7" fill="#342820"/>
+            <!-- fixed:3  --> <polygon points="82.2,52.3 72.8,58.3 72.8,67.7 82.2,61.7" fill="#342820"/>
+            <!-- buit     --> <polygon points="71.2,58.3 61.8,64.3 61.8,73.7 71.2,67.7" fill="rgba(200,175,150,.09)"/>
+            <!-- filled:5 --> <polygon points="60.2,64.3 50.8,70.3 50.8,79.7 60.2,73.7" fill="#c06040"/>
+            <g font-family="'IBM Plex Mono',monospace" font-size="5" text-anchor="middle" dominant-baseline="middle" fill="rgba(255,248,240,.88)" font-weight="500">
+              <text x="77.5" y="39">4</text>  <text x="66.5" y="45">1</text>
+              <text x="66.5" y="57">8</text>  <text x="55.5" y="63">2</text>
+              <text x="77.5" y="63">3</text>  <text x="55.5" y="75">5</text>
+            </g>
+          </g>
+
+          <!-- ── CARA ESQUERRA (9 cel·les, llum -26%) ── -->
+          <g opacity=".74">
+            <!-- fixed:7  --> <polygon points="17.8,28.3 27.2,34.3 27.2,43.7 17.8,37.7" fill="#342820"/>
+            <!-- buit     --> <polygon points="28.8,34.3 38.2,40.3 38.2,49.7 28.8,43.7" fill="rgba(200,175,150,.09)"/>
+            <!-- filled:2 --> <polygon points="39.8,40.3 49.2,46.3 49.2,55.7 39.8,49.7" fill="#c06040"/>
+            <!-- filled:6 --> <polygon points="17.8,40.3 27.2,46.3 27.2,55.7 17.8,49.7" fill="#c06040"/>
+            <!-- fixed:8  --> <polygon points="28.8,46.3 38.2,52.3 38.2,61.7 28.8,55.7" fill="#342820"/>
+            <!-- buit     --> <polygon points="39.8,52.3 49.2,58.3 49.2,67.7 39.8,61.7" fill="rgba(200,175,150,.09)"/>
+            <!-- buit     --> <polygon points="17.8,52.3 27.2,58.3 27.2,67.7 17.8,61.7" fill="rgba(200,175,150,.09)"/>
+            <!-- filled:1 --> <polygon points="28.8,58.3 38.2,64.3 38.2,73.7 28.8,67.7" fill="#c06040"/>
+            <!-- fixed:9  --> <polygon points="39.8,64.3 49.2,70.3 49.2,79.7 39.8,73.7" fill="#342820"/>
+            <g font-family="'IBM Plex Mono',monospace" font-size="5" text-anchor="middle" dominant-baseline="middle" fill="rgba(255,248,240,.88)" font-weight="500">
+              <text x="22.5" y="39">7</text>  <text x="44.5" y="51">2</text>
+              <text x="22.5" y="51">6</text>  <text x="33.5" y="57">8</text>
+              <text x="33.5" y="69">1</text>  <text x="44.5" y="75">9</text>
+            </g>
+          </g>
+
+          <!-- ── ARESTES EXTERIORS ── -->
+          <g stroke-linecap="round" stroke-linejoin="round">
+            <line x1="50" y1="9"  x2="83" y2="27" stroke="#1a1714" stroke-width="1.45" opacity=".78"/>
+            <line x1="50" y1="9"  x2="17" y2="27" stroke="#1a1714" stroke-width="1.45" opacity=".78"/>
+            <line x1="83" y1="27" x2="83" y2="63" stroke="#1a1714" stroke-width="1.10" opacity=".62"/>
+            <line x1="17" y1="27" x2="17" y2="63" stroke="#1a1714" stroke-width="1.10" opacity=".57"/>
+            <line x1="50" y1="45" x2="83" y2="27" stroke="#1a1714" stroke-width=".85"  opacity=".42"/>
+            <line x1="50" y1="45" x2="17" y2="27" stroke="#1a1714" stroke-width=".85"  opacity=".42"/>
+            <line x1="50" y1="45" x2="50" y2="81" stroke="#1a1714" stroke-width=".90"  opacity=".50"/>
+            <line x1="83" y1="63" x2="50" y2="81" stroke="#1a1714" stroke-width=".90"  opacity=".44"/>
+            <line x1="17" y1="63" x2="50" y2="81" stroke="#1a1714" stroke-width=".90"  opacity=".40"/>
+          </g>
+          <circle cx="50" cy="9" r="2.5" fill="#b84c30" opacity=".88"/>
+          <circle cx="50" cy="9" r="1"   fill="rgba(255,255,255,.5)"/>
+        </svg>
+        <div class="hs-cube-shadow"></div>
+        <div class="hs-panel-label" style="bottom:42px">Sudoku <b>3D</b></div>
+      </div>
+
+      <!-- Panel 2: Sudoku 2D (2.5s) -->
+      <div class="hs-panel hs-panel-2d" aria-hidden="true">
+        <svg width="140" height="140" viewBox="0 0 63 63">
+          <rect width="63" height="63" rx="5" fill="rgba(80,144,176,.08)" stroke="#5090b0" stroke-width=".6" opacity=".5"/>
+          <g stroke="rgba(80,144,176,.3)" stroke-width=".4">
+            <line x1="7"  y1="0" x2="7"  y2="63"/><line x1="14" y1="0" x2="14" y2="63"/>
+            <line x1="21" y1="0" x2="21" y2="63"/><line x1="28" y1="0" x2="28" y2="63"/>
+            <line x1="35" y1="0" x2="35" y2="63"/><line x1="42" y1="0" x2="42" y2="63"/>
+            <line x1="49" y1="0" x2="49" y2="63"/><line x1="56" y1="0" x2="56" y2="63"/>
+            <line x1="0" y1="7"  x2="63" y2="7"/> <line x1="0" y1="14" x2="63" y2="14"/>
+            <line x1="0" y1="21" x2="63" y2="21"/><line x1="0" y1="28" x2="63" y2="28"/>
+            <line x1="0" y1="35" x2="63" y2="35"/><line x1="0" y1="42" x2="63" y2="42"/>
+            <line x1="0" y1="49" x2="63" y2="49"/><line x1="0" y1="56" x2="63" y2="56"/>
+          </g>
+          <g stroke="#5090b0" stroke-width="1.2" opacity=".6">
+            <line x1="21" y1="0" x2="21" y2="63"/><line x1="42" y1="0" x2="42" y2="63"/>
+            <line x1="0" y1="21" x2="63" y2="21"/><line x1="0" y1="42" x2="63" y2="42"/>
+          </g>
+          <g font-family="'IBM Plex Mono',monospace" font-size="5" fill="#3a7090" text-anchor="middle" dominant-baseline="middle">
+            <text class="hs-gn" x="3.5"  y="3.5">5</text>   <text class="hs-gn" x="10.5" y="3.5">3</text>
+            <text class="hs-gn" x="24.5" y="3.5">7</text>   <text class="hs-gn" x="38.5" y="17.5">6</text>
+            <text class="hs-gn" x="10.5" y="10.5">9</text>  <text class="hs-gn" x="24.5" y="17.5">1</text>
+            <text class="hs-gn" x="45.5" y="10.5">4</text>  <text class="hs-gn" x="45.5" y="24.5">8</text>
+            <text class="hs-gn" x="3.5"  y="24.5">8</text>  <text class="hs-gn" x="59.5" y="3.5">1</text>
+            <text class="hs-gn" x="59.5" y="31.5">2</text>  <text class="hs-gn" x="31.5" y="59.5">9</text>
+          </g>
+        </svg>
+        <div class="hs-panel-label">Sudoku <b>2D</b></div>
+      </div>
+
+      <!-- Panel 3: Kakuro (2.5s) -->
+      <div class="hs-panel hs-panel-kakuro" aria-hidden="true">
+        <svg width="130" height="130" viewBox="0 0 52 52">
+          <rect width="52" height="52" rx="4" fill="rgba(80,128,80,.06)" stroke="#508050" stroke-width=".5" opacity=".4"/>
+          <g stroke="rgba(80,128,80,.25)" stroke-width=".4">
+            <line x1="13" y1="0" x2="13" y2="52"/><line x1="26" y1="0" x2="26" y2="52"/>
+            <line x1="39" y1="0" x2="39" y2="52"/>
+            <line x1="0" y1="13" x2="52" y2="13"/><line x1="0" y1="26" x2="52" y2="26"/>
+            <line x1="0" y1="39" x2="52" y2="39"/>
+          </g>
+          <rect x=".5"  y=".5"   width="12" height="12" rx="1.5" fill="rgba(80,128,80,.2)"/>
+          <rect x=".5"  y="13.5" width="12" height="12" rx="1.5" fill="rgba(80,128,80,.2)"/>
+          <rect x="13.5" y=".5"  width="12" height="12" rx="1.5" fill="rgba(80,128,80,.2)"/>
+          <rect x="39.5" y="26.5" width="12" height="12" rx="1.5" fill="rgba(80,128,80,.2)"/>
+          <line x1=".5"  y1="12.5" x2="12.5" y2=".5"   stroke="rgba(80,128,80,.4)" stroke-width=".7"/>
+          <line x1=".5"  y1="25.5" x2="12.5" y2="13.5" stroke="rgba(80,128,80,.4)" stroke-width=".7"/>
+          <line x1="13.5" y1="12.5" x2="25.5" y2=".5"  stroke="rgba(80,128,80,.4)" stroke-width=".7"/>
+          <line x1="39.5" y1="38.5" x2="51.5" y2="26.5" stroke="rgba(80,128,80,.4)" stroke-width=".7"/>
+          <text x="10" y="5"  font-family="'IBM Plex Mono',monospace" font-size="4" fill="#508050" opacity=".8" text-anchor="end">16</text>
+          <text x="10" y="12" font-family="'IBM Plex Mono',monospace" font-size="4" fill="#508050" opacity=".6" text-anchor="start">9</text>
+          <text x="23" y="5"  font-family="'IBM Plex Mono',monospace" font-size="4" fill="#508050" opacity=".8" text-anchor="end">12</text>
+          <g font-family="'IBM Plex Mono',monospace" font-size="5.5" fill="#3a6438" text-anchor="middle" dominant-baseline="middle">
+            <text class="hs-gn" x="19.5" y="19.5">3</text>  <text class="hs-gn" x="32.5" y="19.5">6</text>
+            <text class="hs-gn" x="19.5" y="32.5">7</text>  <text class="hs-gn" x="32.5" y="32.5">2</text>
+            <text class="hs-gn" x="19.5" y="45.5">4</text>  <text class="hs-gn" x="32.5" y="45.5">5</text>
+            <text class="hs-gn" x="45.5" y="19.5">1</text>  <text class="hs-gn" x="6.5"  y="32.5">8</text>
+          </g>
+        </svg>
+        <div class="hs-panel-label">Kakuro</div>
+      </div>
+
+      <!-- Panel 4: Futoshiki (2.5s) -->
+      <div class="hs-panel hs-panel-futo" aria-hidden="true">
+        <svg width="120" height="120" viewBox="0 0 52 52">
+          <rect width="52" height="52" rx="4" fill="rgba(144,96,176,.06)" stroke="#9060b0" stroke-width=".5" opacity=".4"/>
+          <g stroke="rgba(144,96,176,.2)" stroke-width=".5">
+            <line x1="13" y1="0" x2="13" y2="52"/><line x1="26" y1="0" x2="26" y2="52"/>
+            <line x1="39" y1="0" x2="39" y2="52"/>
+            <line x1="0" y1="13" x2="52" y2="13"/><line x1="0" y1="26" x2="52" y2="26"/>
+            <line x1="0" y1="39" x2="52" y2="39"/>
+          </g>
+          <g font-family="'IBM Plex Mono',monospace" font-size="6" fill="rgba(144,96,176,.7)" text-anchor="middle" dominant-baseline="middle">
+            <text x="19.5" y="6.5">&lt;</text>
+            <text x="6.5"  y="19.5">v</text>
+            <text x="45.5" y="32.5">^</text>
+            <text x="32.5" y="45.5">&gt;</text>
+          </g>
+          <g font-family="'IBM Plex Mono',monospace" font-size="6" fill="#6a3d90" text-anchor="middle" dominant-baseline="middle">
+            <text class="hs-gn" x="6.5"  y="6.5">2</text>   <text class="hs-gn" x="32.5" y="6.5">4</text>
+            <text class="hs-gn" x="19.5" y="19.5">3</text>  <text class="hs-gn" x="45.5" y="6.5">1</text>
+            <text class="hs-gn" x="6.5"  y="32.5">4</text>  <text class="hs-gn" x="19.5" y="45.5">1</text>
+            <text class="hs-gn" x="45.5" y="45.5">2</text>  <text class="hs-gn" x="32.5" y="32.5">3</text>
+          </g>
+        </svg>
+        <div class="hs-panel-label">Futoshiki</div>
+      </div>
+
+      <!-- Panel 5: Takuzu/Binairo (2.5s) -->
+      <div class="hs-panel hs-panel-bin" aria-hidden="true">
+        <svg width="120" height="120" viewBox="0 0 48 48">
+          <rect width="48" height="48" rx="4" fill="rgba(64,136,120,.06)" stroke="#408878" stroke-width=".5" opacity=".4"/>
+          <g stroke="rgba(64,136,120,.2)" stroke-width=".4">
+            <line x1="8"  y1="0" x2="8"  y2="48"/><line x1="16" y1="0" x2="16" y2="48"/>
+            <line x1="24" y1="0" x2="24" y2="48"/><line x1="32" y1="0" x2="32" y2="48"/>
+            <line x1="40" y1="0" x2="40" y2="48"/>
+            <line x1="0" y1="8"  x2="48" y2="8"/> <line x1="0" y1="16" x2="48" y2="16"/>
+            <line x1="0" y1="24" x2="48" y2="24"/><line x1="0" y1="32" x2="48" y2="32"/>
+            <line x1="0" y1="40" x2="48" y2="40"/>
+          </g>
+          <g font-family="'IBM Plex Mono',monospace" font-size="5.5" text-anchor="middle" dominant-baseline="middle">
+            <text class="hs-gn" x="4"  y="4"  fill="#2a6058">0</text>
+            <text class="hs-gn" x="20" y="4"  fill="#408878">1</text>
+            <text class="hs-gn" x="36" y="4"  fill="#2a6058">0</text>
+            <text class="hs-gn" x="12" y="12" fill="#408878">1</text>
+            <text class="hs-gn" x="28" y="12" fill="#2a6058">0</text>
+            <text class="hs-gn" x="44" y="12" fill="#408878">1</text>
+            <text class="hs-gn" x="4"  y="20" fill="#408878">1</text>
+            <text class="hs-gn" x="20" y="20" fill="#2a6058">0</text>
+            <text class="hs-gn" x="36" y="20" fill="#408878">1</text>
+            <text class="hs-gn" x="12" y="28" fill="#2a6058">0</text>
+            <text class="hs-gn" x="44" y="28" fill="#2a6058">0</text>
+            <text class="hs-gn" x="28" y="36" fill="#408878">1</text>
+          </g>
+        </svg>
+        <div class="hs-panel-label">Takuzu</div>
+      </div>
+
+      <!-- Indicadors de punt (sempre visibles) -->
+      <div class="hs-panel-dots" aria-hidden="true">
+        <div class="hs-pdot hs-pdot-3d"     title="Sudoku 3D"></div>
+        <div class="hs-pdot hs-pdot-2d"     title="Sudoku 2D"></div>
+        <div class="hs-pdot hs-pdot-kakuro" title="Kakuro"></div>
+        <div class="hs-pdot hs-pdot-futo"   title="Futoshiki"></div>
+        <div class="hs-pdot hs-pdot-bin"    title="Takuzu"></div>
+      </div>
+
+      <!-- Badge decoratiu (no interactiu, el botó real és a hs-bottom) -->
+      <div class="hs-daily-badge" aria-hidden="true">
+        <div class="hs-badge-dot"></div>
+        Daily challenge
+      </div>
+    </div>
+
+    <!-- ── Àrea inferior: títol + controls ── -->
+    <div class="hs-bottom">
+      <div class="hs-top-row">
+        <div>
+          <div class="hs-wordmark">Sudoku<b>³</b></div>
+          <div class="hs-tagline">The third dimension of Sudoku.</div>
+        </div>
+        <button id="btn-settings-home" title="Settings" aria-label="Settings">⚙</button>
+      </div>
+
+
+      <div>
+        <div class="hs-size-label">Choose cube size</div>
+        <div class="hs-size-grid">
+          <button class="hs-size-btn" data-hs-size="3">
+            <div class="hs-size-num">3³</div>
+            <div class="hs-size-sub">27 cells</div>
+          </button>
+          <button class="hs-size-btn popular" data-hs-size="4">
+            <div class="hs-size-num">4³</div>
+            <div class="hs-size-sub">64 cells</div>
+            <div class="hs-size-tag">Popular</div>
+          </button>
+          <button class="hs-size-btn" data-hs-size="9">
+            <div class="hs-size-num">9³</div>
+            <div class="hs-size-sub">729 cells</div>
+          </button>
+        </div>
+      </div>
+
+      <!-- Botó desafiament diari: sòlid terracota -->
+      <button class="hs-daily-btn" id="btn-daily-home">
+        <span>📅 Today's Daily Challenge</span>
+        <span class="hs-daily-right" id="hs-daily-streak-val"></span>
+      </button>
+
+      <!-- btn-more-games mantingut ocult per compatibilitat JS -->
+      <button id="btn-more-games" aria-expanded="true" style="display:none"></button>
+
+      <!-- Jocs addicionals amb targetes -->
+      <div class="hs-games-section">
+        <div class="hs-games-header">
+          <span class="hs-games-header-txt">More games</span>
+        </div>
+        <div class="hs-games-grid" id="hs-more-list">
+
+          <!-- Sudoku 2D -->
+          <button class="hs-more-item" data-hs-game="2d">
+            <div class="hs-game-icon" style="background:rgba(80,144,176,.14);color:#3a7090">
+              <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="1" y="1" width="18" height="18" rx="2" stroke="currentColor" stroke-width="1.3"/>
+                <line x1="7" y1="1" x2="7" y2="19" stroke="currentColor" stroke-width=".5" opacity=".5"/>
+                <line x1="13" y1="1" x2="13" y2="19" stroke="currentColor" stroke-width=".5" opacity=".5"/>
+                <line x1="1" y1="7" x2="19" y2="7" stroke="currentColor" stroke-width=".5" opacity=".5"/>
+                <line x1="1" y1="13" x2="19" y2="13" stroke="currentColor" stroke-width=".5" opacity=".5"/>
+                <rect x="2.5" y="2.5" width="3" height="3" fill="currentColor" opacity=".6" rx=".4"/>
+                <rect x="8.5" y="8.5" width="3" height="3" fill="currentColor" opacity=".6" rx=".4"/>
+                <rect x="14.5" y="14.5" width="3" height="3" fill="currentColor" opacity=".6" rx=".4"/>
+              </svg>
+            </div>
+            <div>
+              <div class="hs-game-name">Sudoku 2D</div>
+              <div class="hs-game-desc">Classic 9×9</div>
+            </div>
+          </button>
+
+          <!-- Kakuro -->
+          <button class="hs-more-item" data-hs-game="kakuro">
+            <div class="hs-game-icon" style="background:rgba(176,136,64,.14);color:#9a7020">
+              <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="1" y="1" width="8" height="8" fill="currentColor" opacity=".2" rx="1"/>
+                <line x1="1" y1="9" x2="9" y2="1" stroke="currentColor" stroke-width="1.1" opacity=".75"/>
+                <rect x="11" y="1" width="8" height="8" stroke="currentColor" stroke-width="1" rx="1" opacity=".6"/>
+                <rect x="1" y="11" width="8" height="8" stroke="currentColor" stroke-width="1" rx="1" opacity=".6"/>
+                <rect x="11" y="11" width="8" height="8" fill="currentColor" opacity=".2" rx="1"/>
+                <line x1="11" y1="19" x2="19" y2="11" stroke="currentColor" stroke-width="1.1" opacity=".75"/>
+              </svg>
+            </div>
+            <div>
+              <div class="hs-game-name">Kakuro</div>
+              <div class="hs-game-desc">Cross sums</div>
+            </div>
+          </button>
+
+          <!-- Futoshiki -->
+          <button class="hs-more-item" data-hs-game="futoshiki">
+            <div class="hs-game-icon" style="background:rgba(72,152,112,.14);color:#2a7850">
+              <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="1" y="1" width="6.5" height="6.5" rx="1" stroke="currentColor" stroke-width="1.1" fill="currentColor" fill-opacity=".15" opacity=".8"/>
+                <rect x="12.5" y="1" width="6.5" height="6.5" rx="1" stroke="currentColor" stroke-width="1.1" opacity=".6"/>
+                <rect x="1" y="12.5" width="6.5" height="6.5" rx="1" stroke="currentColor" stroke-width="1.1" opacity=".6"/>
+                <rect x="12.5" y="12.5" width="6.5" height="6.5" rx="1" stroke="currentColor" stroke-width="1.1" fill="currentColor" fill-opacity=".15" opacity=".8"/>
+                <path d="M9.5 3.2 L10.6 4.25 L9.5 5.3" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round" stroke-linecap="round" opacity=".9"/>
+                <path d="M2.8 10.5 L4.25 9.4 L5.7 10.5" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round" stroke-linecap="round" opacity=".9"/>
+              </svg>
+            </div>
+            <div>
+              <div class="hs-game-name">Futoshiki</div>
+              <div class="hs-game-desc">Inequalities</div>
+            </div>
+          </button>
+
+          <!-- Takuzu -->
+          <button class="hs-more-item" data-hs-game="binairo">
+            <div class="hs-game-icon" style="background:rgba(104,80,160,.14);color:#5a48a0">
+              <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="2.5" cy="2.5"  r="1.8" fill="currentColor" opacity=".8"/>
+                <circle cx="7.5" cy="2.5"  r="1.8" stroke="currentColor" stroke-width="1" opacity=".45"/>
+                <circle cx="12.5" cy="2.5" r="1.8" fill="currentColor" opacity=".8"/>
+                <circle cx="17.5" cy="2.5" r="1.8" stroke="currentColor" stroke-width="1" opacity=".45"/>
+                <circle cx="2.5" cy="7.5"  r="1.8" stroke="currentColor" stroke-width="1" opacity=".45"/>
+                <circle cx="7.5" cy="7.5"  r="1.8" fill="currentColor" opacity=".8"/>
+                <circle cx="12.5" cy="7.5" r="1.8" stroke="currentColor" stroke-width="1" opacity=".45"/>
+                <circle cx="17.5" cy="7.5" r="1.8" fill="currentColor" opacity=".8"/>
+                <circle cx="2.5" cy="12.5"  r="1.8" fill="currentColor" opacity=".8"/>
+                <circle cx="7.5" cy="12.5"  r="1.8" fill="currentColor" opacity=".8"/>
+                <circle cx="12.5" cy="12.5" r="1.8" stroke="currentColor" stroke-width="1" opacity=".45"/>
+                <circle cx="17.5" cy="12.5" r="1.8" stroke="currentColor" stroke-width="1" opacity=".45"/>
+                <circle cx="2.5" cy="17.5"  r="1.8" stroke="currentColor" stroke-width="1" opacity=".45"/>
+                <circle cx="7.5" cy="17.5"  r="1.8" stroke="currentColor" stroke-width="1" opacity=".45"/>
+                <circle cx="12.5" cy="17.5" r="1.8" fill="currentColor" opacity=".8"/>
+                <circle cx="17.5" cy="17.5" r="1.8" fill="currentColor" opacity=".8"/>
+              </svg>
+            </div>
+            <div>
+              <div class="hs-game-name">Takuzu</div>
+              <div class="hs-game-desc">Binary logic</div>
+            </div>
+          </button>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="brand">
+    <div class="wordmark">Sudoku<sup>3</sup></div>
+    <div id="mode-name" class="mode-name">Sudoku 3D</div>
+    <button id="btn-home" title="Game selection">⌂ Home</button>
+    <button class="level-pill" id="level-pill" aria-label="Change difficulty">
+      <span class="dot"></span>
+      <span class="name" id="pill-name">Beginner</span>
+      <span class="caret">▾</span>
+    </button>
+    <button class="help-btn" id="help-btn">💡 how to play</button>
+    <button class="help-btn" id="settings-btn">⚙ settings</button>
+  </div>
+
+  <div id="settings-panel">
+
+    <!-- Tip for beginners -->
+    <div class="sett-section" style="padding-bottom:12px">
+      <div class="sett-tip">
+        <span class="sett-tip-icon">💡</span>
+        <div class="sett-tip-text">
+          <strong>For beginners:</strong> start with <strong>Beginner + 3³</strong>. You can change any option at any time without losing your game.
+        </div>
+      </div>
+    </div>
+
+    <!-- Mode / Cube size -->
+    <div class="sett-section sett-game-only">
+      <div class="sett-section-label">Mode</div>
+      <div class="size-group" style="margin-bottom:6px">
+        <button class="size-btn" data-s="3">3³</button>
+        <button class="size-btn active" data-s="4">4³</button>
+        <button class="size-btn" data-s="9">9³</button>
+        <button class="size-btn" data-s="2d" hidden>2D</button>
+        <button class="size-btn" data-s="kakuro" hidden>KK</button>
+        <button class="size-btn" data-s="futoshiki" hidden>FT</button>
+        <button class="size-btn" data-s="binairo" hidden>BN</button>
+      </div>
+      <div class="sett-sublabel" style="padding:0 1px">3³ = 27 cells · 4³ = 64 cells · 9³ = 729 cells</div>
+    </div>
+
+    <!-- Sound and motion -->
+    <div class="sett-section">
+      <div class="sett-section-label">Sound &amp; motion</div>
+      <div class="sett-row">
+        <div class="sett-label-group">
+          <label class="sett-label" for="sfx-vol">Sound effects</label>
+          <span class="sett-sublabel">Volume of game sounds</span>
+        </div>
+        <input class="sett-slider" id="sfx-vol" type="range" min="0" max="1" step="0.05" value="0.6" />
+      </div>
+      <div class="sett-row">
+        <div class="sett-label-group">
+          <span class="sett-label">Reduce motion</span>
+          <span class="sett-sublabel">Disable cube animations</span>
+        </div>
+        <label class="sett-toggle" aria-label="Reduce motion">
+          <input id="reduced-motion" type="checkbox" />
+          <span class="sett-toggle-track"></span>
+        </label>
+      </div>
+    </div>
+
+    <!-- Display -->
+    <div class="sett-section">
+      <div class="sett-section-label">Display</div>
+      <div class="sett-row">
+        <div class="sett-label-group">
+          <label class="sett-label" for="hud-scale">HUD size</label>
+          <span class="sett-sublabel">Size of numbers and indicators</span>
+        </div>
+        <input class="sett-slider" id="hud-scale" type="range" min="0.8" max="1.4" step="0.1" value="1" />
+      </div>
+      <div class="sett-row">
+        <div class="sett-label-group">
+          <span class="sett-label">High contrast</span>
+          <span class="sett-sublabel">Improve colour visibility</span>
+        </div>
+        <label class="sett-toggle" aria-label="High contrast">
+          <input id="high-contrast" type="checkbox" />
+          <span class="sett-toggle-track"></span>
+        </label>
+      </div>
+      <div class="sett-row">
+        <div class="sett-label-group">
+          <span class="sett-label">Unlock all levels</span>
+          <span class="sett-sublabel">Skip the progressive unlock system</span>
+        </div>
+        <label class="sett-toggle" aria-label="Unlock all levels">
+          <input id="unlock-all" type="checkbox" />
+          <span class="sett-toggle-track"></span>
+        </label>
+      </div>
+    </div>
+
+    <!-- Game -->
+    <div class="sett-section">
+      <div class="sett-section-label">Game</div>
+      <div class="sett-streak-row">
+        <span class="sett-streak-label">Current streak</span>
+        <span id="sett-streak-val" style="font-family:var(--mono);font-size:13px;color:var(--muted)">— days</span>
+      </div>
+      <button class="sett-btn sett-home-only" id="btn-saved-games"><span class="sett-btn-icon">🗂</span> Saved games</button>
+      <button class="sett-btn" id="btn-stats"><span class="sett-btn-icon">📊</span> Statistics</button>
+      <button class="sett-btn" id="btn-ranking"><span class="sett-btn-icon">🏆</span> Ranking</button>
+      <button class="sett-btn" id="btn-daily"><span class="sett-btn-icon">📅</span> Daily challenge</button>
+      <button class="sett-btn sett-game-only" id="btn-share"><span class="sett-btn-icon">🔗</span> Share puzzle</button>
+      <button class="sett-btn sett-game-only" id="btn-solve"><span class="sett-btn-icon">💡</span> Show solution</button>
+    </div>
+
+    <!-- Purchase -->
+    <div class="sett-section">
+      <div class="sett-section-label">Purchase</div>
+      <button class="sett-btn" id="btn-remove-ads"><span class="sett-btn-icon">🚫</span> Remove Ads — 1.99€</button>
+      <button class="sett-btn" id="btn-restore-purchases"><span class="sett-btn-icon">↩</span> Restore purchases</button>
+    </div>
+
+    <!-- Data -->
+    <div class="sett-section">
+      <div class="sett-section-label">Data</div>
+      <button class="sett-btn" id="btn-export"><span class="sett-btn-icon">📤</span> Export data</button>
+      <button class="sett-btn" id="btn-import"><span class="sett-btn-icon">📥</span> Import data</button>
+      <input type="file" id="import-file" accept=".json" style="display:none">
+      <button class="sett-btn danger" id="btn-reset"><span class="sett-btn-icon">🗑</span> Reset everything</button>
+    </div>
+
+    <!-- Version -->
+    <div class="sett-section" style="padding:10px 16px">
+      <span id="app-version" style="font-family:var(--mono);font-size:10.5px;color:var(--dim)"></span>
+    </div>
+
+  </div>
+
+  <!-- 2D Classic Sudoku board -->
+  <div id="board2d-wrap">
+    <div id="board2d"></div>
+  </div>
+
+  <!-- Kakuro board -->
+  <div id="board-kakuro-wrap">
+    <div id="board-kakuro"></div>
+  </div>
+
+  <!-- Futoshiki board -->
+  <div id="board-futoshiki-wrap">
+    <div id="board-futoshiki"></div>
+  </div>
+
+  <!-- Binairo board -->
+  <div id="board-binairo-wrap">
+    <div id="board-binairo"></div>
+  </div>
+
+  <div id="diff-popover" role="menu" aria-label="Difficulty levels"></div>
+
+  <!-- HUD: icon chips -->
+  <div id="readout">
+    <div class="hud-chip" id="chip-time">
+      <span class="hud-icon">⏱</span>
+      <span class="hud-val" id="info-time">0:00</span>
+    </div>
+    <div class="hud-chip" id="chip-errors" data-active="false">
+      <span class="hud-icon">⚠</span>
+      <span class="hud-val" id="info-errors">0</span>
+    </div>
+    <div class="hud-chip" id="chip-hints" data-active="false">
+      <span class="hud-icon">💡</span>
+      <span class="hud-val" id="info-hints">—</span>
+    </div>
+    <div class="hud-chip" id="chip-progress" data-done="false">
+      <span class="hud-icon">▦</span>
+      <span class="hud-val" id="info-progress">0/0</span>
+    </div>
+    <!-- hidden element for JS compatibility -->
+    <span id="info-validations" style="display:none">0</span>
+  </div>
+
+  <button id="cam-preset-btn" title="Camera views" aria-label="Camera views">⊹</button>
+  <div id="cam-preset-panel" aria-label="Camera preset views">
+    <button class="cam-btn" data-cam="front">Front</button>
+    <button class="cam-btn" data-cam="back">Back</button>
+    <button class="cam-btn" data-cam="left">Left</button>
+    <button class="cam-btn" data-cam="right">Right</button>
+    <button class="cam-btn" data-cam="top">Top</button>
+    <button class="cam-btn" data-cam="bottom">Bottom</button>
+  </div>
+
+  <div id="slice">
+    <div class="slice-row"><span class="slice-ax">x</span>
+      <div class="slice-track" id="slice-x">
+        <button class="slice-seg" data-v="">∞</button>
+        <button class="slice-seg" data-v="0">1</button>
+        <button class="slice-seg" data-v="1">2</button>
+        <button class="slice-seg" data-v="2">3</button>
+        <button class="slice-seg" data-v="3">4</button>
+      </div>
+    </div>
+    <div class="slice-row"><span class="slice-ax">y</span>
+      <div class="slice-track" id="slice-y">
+        <button class="slice-seg" data-v="">∞</button>
+        <button class="slice-seg" data-v="0">1</button>
+        <button class="slice-seg" data-v="1">2</button>
+        <button class="slice-seg" data-v="2">3</button>
+        <button class="slice-seg" data-v="3">4</button>
+      </div>
+    </div>
+    <div class="slice-row"><span class="slice-ax">z</span>
+      <div class="slice-track" id="slice-z">
+        <button class="slice-seg" data-v="">∞</button>
+        <button class="slice-seg" data-v="0">1</button>
+        <button class="slice-seg" data-v="1">2</button>
+        <button class="slice-seg" data-v="2">3</button>
+        <button class="slice-seg" data-v="3">4</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="coord"><span id="info-cell"></span></div>
+
+  <div id="pad">
+    <button class="pad-cell num" data-n="1">1</button>
+    <button class="pad-cell num" data-n="2">2</button>
+    <button class="pad-cell num" data-n="3">3</button>
+    <button class="pad-cell num" data-n="4">4</button>
+    <button class="pad-cell num erase" data-n="0" aria-label="Erase">⌫</button>
+    <div class="pad-sep"></div>
+    <button class="pad-cell action" id="btn-undo" title="Undo" aria-label="Undo">↶</button>
+    <button class="pad-cell action" id="btn-redo" title="Redo" aria-label="Redo">↷</button>
+    <div class="pad-sep"></div>
+    <button class="pad-cell action" id="btn-new" title="New puzzle" aria-label="New puzzle">⟳</button>
+    <div class="pad-sep"></div>
+    <button class="pad-cell action" id="btn-notes" title="Notes mode (N)" aria-label="Notes mode" aria-pressed="false">𝑛</button>
+    <button class="pad-cell action" id="btn-mute" title="Sound (M)" aria-label="Sound">♪</button>
+  </div>
+
+  <div id="help-overlay" aria-hidden="true">
+    <div class="help-sheet" role="dialog" aria-label="How to play">
+
+      <!-- ── SUDOKU HELP (3D i 2D) ── -->
+      <!-- ── SUDOKU 3D HELP ── -->
+      <div id="help-sudoku3d">
+        <h2>How to play · Sudoku 3D</h2>
+
+        <div class="help-progress-bar">
+          <div class="help-progress-dot done" id="s3-dot-0"></div>
+          <div class="help-progress-dot" id="s3-dot-1"></div>
+          <div class="help-progress-dot" id="s3-dot-2"></div>
+          <div class="help-progress-dot" id="s3-dot-3"></div>
+        </div>
+
+        <div class="help-step active" id="s3-step-0">
+          <div class="help-step-head">
+            <div class="help-step-icon">🎯</div>
+            <div>
+              <div class="help-step-title">Step 1 · The goal</div>
+              <div class="help-step-sub">Understand the challenge</div>
+            </div>
+          </div>
+          <div class="help-step-body">
+            <p class="help-step-text">Fill all cells of the 3D cube so that <b>no number repeats</b> along any row, column, or pillar in the three axes (X, Y, Z).</p>
+            <div class="help-illus">
+              <div class="help-mini-grid">
+                <div class="help-mini-row">
+                  <div class="help-mini-cell hl">1</div>
+                  <div class="help-mini-cell hl">2</div>
+                  <div class="help-mini-cell hl">3</div>
+                  <div class="help-mini-cell hl">4</div>
+                </div>
+                <div class="help-mini-row">
+                  <div class="help-mini-cell emp">3</div>
+                  <div class="help-mini-cell emp">4</div>
+                  <div class="help-mini-cell emp">1</div>
+                  <div class="help-mini-cell emp">2</div>
+                </div>
+              </div>
+              Each line contains 1·2·3·4 without repetition ✓
+            </div>
+          </div>
+        </div>
+
+        <div class="help-step inactive" id="s3-step-1">
+          <div class="help-step-head">
+            <div class="help-step-icon">🔄</div>
+            <div>
+              <div class="help-step-title">Step 2 · Navigate the cube</div>
+              <div class="help-step-sub">Rotate and isolate layers</div>
+            </div>
+          </div>
+          <div class="help-step-body">
+            <p class="help-step-text"><b>Drag</b> the cube to rotate it and see all faces. On the right you'll find the <b>layer</b> controls: select an axis number (X, Y or Z) to isolate a single layer and reach the <b>hidden cells inside</b> the cube.</p>
+            <p class="help-step-text">The small superscript next to each layer button (e.g. <b>2³</b>) tells you how many <b>empty cells</b> are hiding in that layer — if you see numbers there, those layers still need filling!</p>
+            <div class="help-illus">
+              <div style="display:flex;gap:12px;align-items:center">
+                <div style="font-size:36px;opacity:0.7">⬛</div>
+                <div style="font-size:11px;color:var(--muted);text-align:left;line-height:1.8">
+                  👆 Tap &amp; drag → rotate<br>
+                  🤏 Pinch → zoom<br>
+                  👆👆 Double tap → align view
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="help-step inactive" id="s3-step-2">
+          <div class="help-step-head">
+            <div class="help-step-icon">👆</div>
+            <div>
+              <div class="help-step-title">Step 3 · Enter numbers</div>
+              <div class="help-step-sub">Tap and choose</div>
+            </div>
+          </div>
+          <div class="help-step-body">
+            <p class="help-step-text">Tap an <b>empty cell</b> on the cube to select it, then press a number on the <b>bottom pad</b>. Fixed cells (shown in a different colour) cannot be changed.</p>
+            <div class="help-illus">
+              <div class="help-mini-grid">
+                <div class="help-mini-row">
+                  <div class="help-mini-cell fix">2</div>
+                  <div class="help-mini-cell emp" style="outline:2px solid var(--accent);outline-offset:1px"> </div>
+                  <div class="help-mini-cell fix">4</div>
+                </div>
+              </div>
+              Fixed cell · Selected cell (highlighted) · Empty
+            </div>
+          </div>
+        </div>
+
+        <div class="help-step inactive" id="s3-step-3">
+          <div class="help-step-head">
+            <div class="help-step-icon">⚡</div>
+            <div>
+              <div class="help-step-title">Step 4 · Help &amp; controls</div>
+              <div class="help-step-sub">Errors, hints and progress</div>
+            </div>
+          </div>
+          <div class="help-step-body">
+            <p class="help-step-text">In <b>Beginner</b> and <b>Intermediate</b> mode errors are marked in red. Use <b>↶ ↷</b> to undo/redo and <b>💡</b> for hints.</p>
+            <p class="help-step-text">The <b>▦ X/Y</b> counter (top-right, below 💡) shows cells filled out of the total — including the ones hidden inside. When it reaches X/X, the cube is truly complete!</p>
+            <div class="help-illus">
+              <dl class="help-ctrl-grid">
+                <dt>1–4 / 1–9</dt><dd>place digit</dd>
+                <dt>⌫</dt><dd>erase cell</dd>
+                <dt>← → ↑ ↓</dt><dd>move selection</dd>
+                <dt>Ctrl Z / Ctrl ⇧ Z</dt><dd>undo / redo</dd>
+                <dt>Ctrl 1–6</dt><dd>orthogonal view</dd>
+              </dl>
+            </div>
+          </div>
+        </div>
+
+        <div class="help-nav">
+          <button class="help-nav-back" id="s3-help-prev" disabled>← Back</button>
+          <button class="help-nav-next" id="s3-help-next">Step 2 · Navigate the cube →</button>
+        </div>
+      </div>
+
+      <!-- ── SUDOKU 2D HELP ── -->
+      <div id="help-sudoku2d" style="display:none">
+        <h2>How to play · Sudoku 2D</h2>
+
+        <div class="help-progress-bar">
+          <div class="help-progress-dot done" id="s2-dot-0"></div>
+          <div class="help-progress-dot" id="s2-dot-1"></div>
+          <div class="help-progress-dot" id="s2-dot-2"></div>
+        </div>
+
+        <div class="help-step active" id="s2-step-0">
+          <div class="help-step-head">
+            <div class="help-step-icon">🎯</div>
+            <div>
+              <div class="help-step-title">Step 1 · The goal</div>
+              <div class="help-step-sub">Classic 9×9 Sudoku</div>
+            </div>
+          </div>
+          <div class="help-step-body">
+            <p class="help-step-text">Fill the 9×9 grid with digits from <b>1 to 9</b> so that each digit appears <b>exactly once</b> in every row, every column, and every <b>3×3 box</b>.</p>
+            <div class="help-illus">
+              <div class="help-mini-grid">
+                <div class="help-mini-row">
+                  <div class="help-mini-cell hl">1</div>
+                  <div class="help-mini-cell hl">2</div>
+                  <div class="help-mini-cell hl">3</div>
+                </div>
+                <div class="help-mini-row">
+                  <div class="help-mini-cell emp">4</div>
+                  <div class="help-mini-cell emp">5</div>
+                  <div class="help-mini-cell emp">6</div>
+                </div>
+                <div class="help-mini-row">
+                  <div class="help-mini-cell emp">7</div>
+                  <div class="help-mini-cell emp">8</div>
+                  <div class="help-mini-cell emp">9</div>
+                </div>
+              </div>
+              Rows, columns <b>and</b> each 3×3 box: 1–9 without repetition ✓
+            </div>
+          </div>
+        </div>
+
+        <div class="help-step inactive" id="s2-step-1">
+          <div class="help-step-head">
+            <div class="help-step-icon">👆</div>
+            <div>
+              <div class="help-step-title">Step 2 · Enter numbers</div>
+              <div class="help-step-sub">Tap and choose</div>
+            </div>
+          </div>
+          <div class="help-step-body">
+            <p class="help-step-text">Tap an <b>empty cell</b> on the grid to select it, then press a number on the <b>bottom pad</b>. Fixed cells (shown in a different colour) cannot be changed. Use <b>notes</b> (𝑛 button) to mark candidate digits.</p>
+            <div class="help-illus">
+              <div class="help-mini-grid">
+                <div class="help-mini-row">
+                  <div class="help-mini-cell fix">2</div>
+                  <div class="help-mini-cell emp" style="outline:2px solid var(--accent);outline-offset:1px"> </div>
+                  <div class="help-mini-cell fix">4</div>
+                </div>
+              </div>
+              Fixed cell · Selected cell (highlighted) · Empty
+            </div>
+          </div>
+        </div>
+
+        <div class="help-step inactive" id="s2-step-2">
+          <div class="help-step-head">
+            <div class="help-step-icon">⚡</div>
+            <div>
+              <div class="help-step-title">Step 3 · Help &amp; controls</div>
+              <div class="help-step-sub">Errors, hints and keyboard</div>
+            </div>
+          </div>
+          <div class="help-step-body">
+            <p class="help-step-text">In <b>Beginner</b> and <b>Intermediate</b> mode errors are marked in red automatically. Use <b>↶ ↷</b> to undo/redo and <b>💡</b> for a hint.</p>
+            <div class="help-illus">
+              <dl class="help-ctrl-grid">
+                <dt>1–9</dt><dd>place digit</dd>
+                <dt>⌫</dt><dd>erase cell</dd>
+                <dt>← → ↑ ↓</dt><dd>move selection</dd>
+                <dt>Ctrl Z / Ctrl ⇧ Z</dt><dd>undo / redo</dd>
+              </dl>
+            </div>
+          </div>
+        </div>
+
+        <div class="help-nav">
+          <button class="help-nav-back" id="s2-help-prev" disabled>← Back</button>
+          <button class="help-nav-next" id="s2-help-next">Step 2 · Enter numbers →</button>
+        </div>
+      </div>
+
+      <!-- ── KAKURO HELP ── -->
+      <div id="help-kakuro" style="display:none">
+        <h2>How to play · Kakuro</h2>
+
+        <div class="help-progress-bar">
+          <div class="help-progress-dot done" id="kk-dot-0"></div>
+          <div class="help-progress-dot" id="kk-dot-1"></div>
+          <div class="help-progress-dot" id="kk-dot-2"></div>
+        </div>
+
+        <div class="help-step active" id="kk-step-0">
+          <div class="help-step-head">
+            <div class="help-step-icon">🔢</div>
+            <div>
+              <div class="help-step-title">Step 1 · The clue cells</div>
+              <div class="help-step-sub">Read the black cells</div>
+            </div>
+          </div>
+          <div class="help-step-body">
+            <p class="help-step-text">Black cells with a diagonal line contain two clues. The number in the <b>top-right</b> is the sum for the white cells to the <b>right</b>. The number in the <b>bottom-left</b> is the sum for the white cells <b>below</b>.</p>
+            <div class="help-illus" style="display:flex;align-items:center;gap:14px">
+              <div style="width:52px;height:52px;background:#100d0a;border:1px solid #444;position:relative;overflow:hidden;flex-shrink:0">
+                <svg style="position:absolute;inset:0;width:100%;height:100%" viewBox="0 0 40 40" preserveAspectRatio="none"><line x1="2" y1="2" x2="38" y2="38" stroke="#666" stroke-width="1.5"/></svg>
+                <span style="position:absolute;bottom:3px;left:4px;font-family:var(--mono);font-size:11px;color:#c8b89a;font-weight:600">17</span>
+                <span style="position:absolute;top:3px;right:4px;font-family:var(--mono);font-size:11px;color:#c8b89a;font-weight:600">23</span>
+              </div>
+              <div style="font-size:12px;color:var(--text);line-height:1.8">
+                <b style="color:var(--accent)">23</b> → sum of cells to the right<br>
+                <b style="color:var(--accent)">17</b> → sum of cells below
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="help-step inactive" id="kk-step-1">
+          <div class="help-step-head">
+            <div class="help-step-icon">🚫</div>
+            <div>
+              <div class="help-step-title">Step 2 · The rules</div>
+              <div class="help-step-sub">Sums and no repeats</div>
+            </div>
+          </div>
+          <div class="help-step-body">
+            <p class="help-step-text">Fill each white cell with a digit from <b>1 to 9</b>. Within each run of white cells, <b>no digit may repeat</b>. When the run is complete, the digits must add up exactly to the clue.</p>
+            <div class="help-illus">
+              <div style="display:flex;align-items:center;gap:4px">
+                <div style="width:40px;height:40px;background:#100d0a;border:1px solid #444;position:relative;overflow:hidden">
+                  <svg style="position:absolute;inset:0;width:100%;height:100%" viewBox="0 0 40 40" preserveAspectRatio="none"><line x1="2" y1="2" x2="38" y2="38" stroke="#666" stroke-width="1.5"/></svg>
+                  <span style="position:absolute;top:2px;right:3px;font-family:var(--mono);font-size:10px;color:#c8b89a;font-weight:600">6</span>
+                </div>
+                <div style="width:40px;height:40px;background:#1d1912;border:1px solid #2a2520;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:18px;color:#f0ead8;font-weight:600">1</div>
+                <div style="width:40px;height:40px;background:#1d1912;border:1px solid #2a2520;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:18px;color:#f0ead8;font-weight:600">2</div>
+                <div style="width:40px;height:40px;background:#1d1912;border:1px solid #2a2520;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:18px;color:#f0ead8;font-weight:600">3</div>
+              </div>
+              <div style="margin-top:8px;font-size:12px;color:var(--muted)">1+2+3 = 6 ✓ · no repeated digits ✓</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="help-step inactive" id="kk-step-2">
+          <div class="help-step-head">
+            <div class="help-step-icon">💡</div>
+            <div>
+              <div class="help-step-title">Step 3 · Tips &amp; controls</div>
+              <div class="help-step-sub">Strategy and buttons</div>
+            </div>
+          </div>
+          <div class="help-step-body">
+            <p class="help-step-text">Some sums have only one possible combination — start there. For example, a 2-cell run with sum <b>3</b> can only be <b>1+2</b>. Use <b>↶ ↷</b> to undo/redo. <b>⟳</b> generates a new puzzle.</p>
+            <div class="help-illus">
+              <dl class="help-ctrl-grid">
+                <dt>1–9</dt><dd>place digit</dd>
+                <dt>⌫</dt><dd>erase cell</dd>
+                <dt>← → ↑ ↓</dt><dd>move selection</dd>
+                <dt>Ctrl Z / Ctrl ⇧ Z</dt><dd>undo / redo</dd>
+              </dl>
+            </div>
+          </div>
+        </div>
+
+        <div class="help-nav">
+          <button class="help-nav-back" id="kk-help-prev" disabled>← Back</button>
+          <button class="help-nav-next" id="kk-help-next">Step 2 · The rules →</button>
+        </div>
+      </div>
+
+      <!-- ── FUTOSHIKI HELP ── -->
+      <div id="help-futoshiki" style="display:none">
+        <h2>How to play · Futoshiki</h2>
+
+        <div class="help-progress-bar">
+          <div class="help-progress-dot done" id="ft-dot-0"></div>
+          <div class="help-progress-dot" id="ft-dot-1"></div>
+          <div class="help-progress-dot" id="ft-dot-2"></div>
+        </div>
+
+        <div class="help-step active" id="ft-step-0">
+          <div class="help-step-head">
+            <div class="help-step-icon">🎯</div>
+            <div>
+              <div class="help-step-title">Step 1 · The goal</div>
+              <div class="help-step-sub">Fill the grid like a Latin square</div>
+            </div>
+          </div>
+          <div class="help-step-body">
+            <p class="help-step-text">Fill the N×N grid with numbers from <b>1 to N</b> so that each number appears <b>exactly once</b> in every row and every column. There are no boxes — only rows and columns.</p>
+            <div class="help-illus">
+              <div class="help-mini-grid">
+                <div class="help-mini-row">
+                  <div class="help-mini-cell hl">2</div>
+                  <div class="help-mini-cell hl">4</div>
+                  <div class="help-mini-cell hl">1</div>
+                  <div class="help-mini-cell hl">3</div>
+                </div>
+                <div class="help-mini-row">
+                  <div class="help-mini-cell emp">1</div>
+                  <div class="help-mini-cell emp">3</div>
+                  <div class="help-mini-cell emp">4</div>
+                  <div class="help-mini-cell emp">2</div>
+                </div>
+              </div>
+              Each row and column contains 1·2·3·4 without repetition ✓
+            </div>
+          </div>
+        </div>
+
+        <div class="help-step inactive" id="ft-step-1">
+          <div class="help-step-head">
+            <div class="help-step-icon">⟨ ⟩</div>
+            <div>
+              <div class="help-step-title">Step 2 · The inequality signs</div>
+              <div class="help-step-sub">Respect the order between neighbours</div>
+            </div>
+          </div>
+          <div class="help-step-body">
+            <p class="help-step-text">Between some adjacent cells you'll see an inequality sign. The sign always <b>points towards the smaller value</b>. Both the horizontal <b>&lt; &gt;</b> and the vertical <b>∧ ∨</b> signs work the same way.</p>
+            <div class="help-illus">
+              <div style="display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:15px;font-weight:700">
+                <div class="help-mini-cell hl" style="width:32px;height:32px">1</div>
+                <span style="color:var(--accent)">&lt;</span>
+                <div class="help-mini-cell emp" style="width:32px;height:32px">3</div>
+              </div>
+              <div style="margin-top:8px;font-size:12px;color:var(--muted);text-align:center">
+                <b style="color:var(--accent)">&lt;</b> means left is smaller than right: 1 &lt; 3 ✓<br>
+                <b style="color:var(--accent)">∧</b> means top is smaller than bottom<br>
+                <b style="color:var(--accent)">∨</b> means top is larger than bottom
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="help-step inactive" id="ft-step-2">
+          <div class="help-step-head">
+            <div class="help-step-icon">💡</div>
+            <div>
+              <div class="help-step-title">Step 3 · Tips &amp; controls</div>
+              <div class="help-step-sub">Strategy and keyboard shortcuts</div>
+            </div>
+          </div>
+          <div class="help-step-body">
+            <p class="help-step-text">Start with rows or columns that have many inequality signs — they constrain the possible values the most. Use <b>pencil notes</b> (𝑛 button) to mark candidates. Use <b>↶ ↷</b> to undo/redo.</p>
+            <div class="help-illus">
+              <dl class="help-ctrl-grid">
+                <dt>1–N</dt><dd>place digit</dd>
+                <dt>⌫</dt><dd>erase cell</dd>
+                <dt>← → ↑ ↓</dt><dd>move selection</dd>
+                <dt>Ctrl Z / Ctrl ⇧ Z</dt><dd>undo / redo</dd>
+              </dl>
+            </div>
+          </div>
+        </div>
+
+        <div class="help-nav">
+          <button class="help-nav-back" id="ft-help-prev" disabled>← Back</button>
+          <button class="help-nav-next" id="ft-help-next">Step 2 · Inequality signs →</button>
+        </div>
+      </div>
+
+      <!-- ── BINAIRO HELP ── -->
+      <div id="help-binairo" style="display:none">
+        <h2>How to play · Takuzu</h2>
+
+        <div class="help-progress-bar">
+          <div class="help-progress-dot done" id="bn-dot-0"></div>
+          <div class="help-progress-dot" id="bn-dot-1"></div>
+          <div class="help-progress-dot" id="bn-dot-2"></div>
+        </div>
+
+        <div class="help-step active" id="bn-step-0">
+          <div class="help-step-head">
+            <div class="help-step-icon" style="font-size:11px;font-family:var(--mono);font-weight:700;color:var(--accent)">0·1</div>
+            <div>
+              <div class="help-step-title">Step 1 · The goal</div>
+              <div class="help-step-sub">Fill the grid with 0s and 1s</div>
+            </div>
+          </div>
+          <div class="help-step-body">
+            <p class="help-step-text">Fill every cell with a <b>0</b> or a <b>1</b>. Each row and each column must contain <b>exactly as many 0s as 1s</b>.</p>
+            <div class="help-illus">
+              <div class="help-mini-grid">
+                <div class="help-mini-row">
+                  <div class="help-mini-cell hl" style="color:#408878">0</div>
+                  <div class="help-mini-cell hl" style="color:#c06040">1</div>
+                  <div class="help-mini-cell hl" style="color:#408878">0</div>
+                  <div class="help-mini-cell hl" style="color:#c06040">1</div>
+                </div>
+              </div>
+              Each row: two 0s and two 1s ✓
+            </div>
+          </div>
+        </div>
+
+        <div class="help-step inactive" id="bn-step-1">
+          <div class="help-step-head">
+            <div class="help-step-icon">🚫</div>
+            <div>
+              <div class="help-step-title">Step 2 · No three in a row</div>
+              <div class="help-step-sub">Never three equal values consecutive</div>
+            </div>
+          </div>
+          <div class="help-step-body">
+            <p class="help-step-text">You can never have <b>three or more</b> of the same value consecutively — neither horizontally nor vertically. Two in a row is fine, but three is not allowed.</p>
+            <div class="help-illus">
+              <div style="display:flex;gap:16px;align-items:center">
+                <div>
+                  <div class="help-mini-row" style="gap:3px;margin-bottom:4px">
+                    <div class="help-mini-cell emp" style="color:#408878">0</div>
+                    <div class="help-mini-cell emp" style="color:#408878">0</div>
+                    <div class="help-mini-cell emp" style="color:#c06040">1</div>
+                  </div>
+                  <div style="font-size:11px;color:var(--muted);text-align:center">✓ OK</div>
+                </div>
+                <div>
+                  <div class="help-mini-row" style="gap:3px;margin-bottom:4px">
+                    <div class="help-mini-cell emp" style="color:#408878">0</div>
+                    <div class="help-mini-cell emp" style="color:#408878">0</div>
+                    <div class="help-mini-cell emp" style="color:#408878">0</div>
+                  </div>
+                  <div style="font-size:11px;color:#b03828;text-align:center">✗ Forbidden</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="help-step inactive" id="bn-step-2">
+          <div class="help-step-head">
+            <div class="help-step-icon">💡</div>
+            <div>
+              <div class="help-step-title">Step 3 · Unique rows and tips</div>
+              <div class="help-step-sub">No two rows or columns may be identical</div>
+            </div>
+          </div>
+          <div class="help-step-body">
+            <p class="help-step-text">No two rows may be identical, and no two columns may be identical. <b>Strategy:</b> when two consecutive cells share a value, the cells on either side must be the opposite value.</p>
+            <div class="help-illus">
+              <dl class="help-ctrl-grid">
+                <dt>0 / 1</dt><dd>place value</dd>
+                <dt>⌫</dt><dd>erase cell</dd>
+                <dt>← → ↑ ↓</dt><dd>move selection</dd>
+                <dt>Ctrl Z / Ctrl ⇧ Z</dt><dd>undo / redo</dd>
+              </dl>
+            </div>
+          </div>
+        </div>
+
+        <div class="help-nav">
+          <button class="help-nav-back" id="bn-help-prev" disabled>← Back</button>
+          <button class="help-nav-next" id="bn-help-next">Step 2 · No three in a row →</button>
+        </div>
+      </div>
+
+      <button class="help-close" id="help-close-btn" style="margin-top:16px">Close</button>
+    </div>
+  </div>
+
+  <div id="ranking-overlay" aria-hidden="true">
+    <div class="help-sheet" role="dialog" aria-label="Top scores">
+      <h2>🏆 Top Scores</h2>
+      <div id="ranking-content"></div>
+      <button class="help-close" id="ranking-close">Close</button>
+    </div>
+  </div>
+
+  <div id="stats-overlay" aria-hidden="true">
+    <div class="help-sheet" role="dialog" aria-label="Statistics">
+      <h2>Statistics</h2>
+      <div id="stats-content"></div>
+      <button class="help-close" id="stats-close">Close</button>
+    </div>
+  </div>
+
+  <div id="loading-overlay" style="display:none;position:absolute;inset:0;z-index:30;background:rgba(8,6,4,0.85);align-items:center;justify-content:center;flex-direction:column;gap:16px;">
+    <div style="width:32px;height:32px;border:2px solid var(--rule);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite;"></div>
+    <div style="font-family:var(--mono);font-size:12px;color:var(--muted);letter-spacing:0.1em;">GENERATING…</div>
+  </div>
+
+  <!-- Victory -->
+  <div id="victory" aria-hidden="true">
+    <div class="vic-sheet" role="dialog" aria-label="Puzzle solved">
+
+      <div class="vic-badge">✓ Puzzle solved!</div>
+      <div class="vic-diff" id="v-level">—</div>
+
+      <div class="vic-stats">
+        <div class="vic-stat-card" id="v-time-card">
+          <div class="vic-stat-label">Time</div>
+          <div class="vic-stat-val">
+            <span id="v-time-num">—</span><span class="vic-tag" id="v-time-tag"></span>
+          </div>
+        </div>
+        <div class="vic-stat-card">
+          <div class="vic-stat-label">Errors</div>
+          <div class="vic-stat-val" id="v-errors">—</div>
+        </div>
+        <div class="vic-stat-card wide" id="v-score-card">
+          <div class="vic-stat-label">Score</div>
+          <div class="vic-stat-val">
+            <span id="v-score-num">—</span><span class="vic-tag" id="v-score-tag"></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="vic-bests">
+        <div class="vic-best-item">
+          <div class="vic-best-label">Best time</div>
+          <div class="vic-best-val" id="v-best-time">—</div>
+        </div>
+        <div class="vic-best-item">
+          <div class="vic-best-label">Best score</div>
+          <div class="vic-best-val" id="v-best-score">—</div>
+        </div>
+      </div>
+
+      <div class="vic-streak-bar">
+        <span>🔥</span>
+        <span class="vic-streak-label">Current streak</span>
+        <span class="vic-streak-num" id="v-streak">—</span>
+      </div>
+
+      <div class="vic-unlock" id="v-unlock"></div>
+
+      <div class="vic-cta">
+        <button id="victory-share" hidden>Share result</button>
+        <button id="victory-new">New puzzle →</button>
+        <button id="victory-home">⌂ Home</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Onboarding overlay -->
+  <div id="onboarding-overlay" aria-modal="true" role="dialog" aria-label="Welcome tutorial">
+    <div class="ob-step active" data-ob="0">
+      <div class="ob-icon">🧊</div>
+      <div class="ob-title">Welcome to Sudoku³</div>
+      <div class="ob-text">Classic Sudoku, now in three dimensions. Fill the cube so no number repeats in any row, column, or pillar.</div>
+    </div>
+    <div class="ob-step" data-ob="1">
+      <div class="ob-icon">🔄</div>
+      <div class="ob-title">Rotate the cube</div>
+      <div class="ob-text">Drag to rotate and see all sides. Pinch to zoom in and out. The cube is your playground.</div>
+    </div>
+    <div class="ob-step" data-ob="2">
+      <div class="ob-icon">👆</div>
+      <div class="ob-title">Tap a cell, then a number</div>
+      <div class="ob-text">Tap any empty cell to select it, then tap a number at the bottom to fill it. Tap again to erase.</div>
+    </div>
+    <div class="ob-step" data-ob="3">
+      <div class="ob-icon">🔪</div>
+      <div class="ob-title">Slice to see inside</div>
+      <div class="ob-text">The X · Y · Z buttons let you cut the cube layer by layer — essential for solving the inner cells.</div>
+    </div>
+    <div class="ob-dots">
+      <div class="ob-dot active" data-ob-dot="0"></div>
+      <div class="ob-dot" data-ob-dot="1"></div>
+      <div class="ob-dot" data-ob-dot="2"></div>
+      <div class="ob-dot" data-ob-dot="3"></div>
+    </div>
+    <div class="ob-actions">
+      <button class="ob-btn-next" id="ob-next">Next →</button>
+      <button class="ob-btn-skip" id="ob-skip">Skip tutorial</button>
+    </div>
+  </div>
+
+<script type="module" src="./src/main.js"></script>
+<script>
+// Step-by-step tutorial
+(function () {
+  const STEP_LABELS = [
+    'Step 2 · Navigate the cube →',
+    'Step 3 · Enter numbers →',
+    'Step 4 · Help & controls →',
+    'Start playing ✓',
+  ];
+
+  let currentStep = 0;
+
+  const steps    = document.querySelectorAll('.help-step');
+  const dots     = document.querySelectorAll('.help-progress-dot');
+  const prevBtn  = document.getElementById('help-prev');
+  const nextBtn  = document.getElementById('help-next');
+  const overlay  = document.getElementById('help-overlay');
+
+  function renderStep(n) {
+    steps.forEach((s, i) => {
+      s.classList.toggle('active',   i === n);
+      s.classList.toggle('inactive', i !== n);
+    });
+    dots.forEach((d, i) => d.classList.toggle('done', i <= n));
+    prevBtn.disabled = n === 0;
+    nextBtn.textContent = STEP_LABELS[n];
+  }
+
+  prevBtn.addEventListener('click', () => {
+    if (currentStep > 0) renderStep(--currentStep);
+  });
+
+  nextBtn.addEventListener('click', () => {
+    if (currentStep < steps.length - 1) {
+      renderStep(++currentStep);
+    } else {
+      overlay.classList.remove('open');
+      overlay.setAttribute('aria-hidden', 'true');
+      currentStep = 0;
+      renderStep(0);
+    }
+  });
+
+  // Reset step on open
+  document.getElementById('help-btn').addEventListener('click', () => {
+    currentStep = 0;
+    renderStep(0);
+  });
+})();
+</script>
+
+<!-- Modal de partides desades -->
+<div id="saves-modal" aria-modal="true" role="dialog" aria-label="Saved games">
+  <div class="saves-sheet">
+    <div class="saves-sheet-header">
+      <h3>Saved games</h3>
+      <button class="saves-close-btn" id="btn-saves-close" aria-label="Close">✕</button>
+    </div>
+    <div id="saves-list"></div>
+    <p id="saves-empty-msg" style="display:none;color:var(--muted);font-size:13px;text-align:center;padding:16px 0">No saved games yet.</p>
+  </div>
+</div>
+
+<div id="save-toast">✓ Game saved</div>
+
+<!-- Exit confirmation dialog -->
+<div id="exit-dialog" aria-modal="true" role="dialog" aria-label="Leave game">
+  <div class="exit-sheet">
+    <h3>Leave this game?</h3>
+    <p id="exit-dialog-msg">Your progress will be saved and you can resume later.</p>
+    <div class="exit-btn-group">
+      <button class="exit-btn exit-btn-save" id="btn-exit-save">↩ Save &amp; exit</button>
+      <button class="exit-btn exit-btn-discard" id="btn-exit-discard">Exit without saving</button>
+      <button class="exit-btn exit-btn-cancel" id="btn-exit-cancel">Keep playing</button>
+    </div>
+  </div>
+</div>
+
+  <!-- Paywall -->
+  <div id="paywall-overlay" aria-hidden="true" aria-modal="true" role="dialog">
+    <div class="paywall-sheet">
+      <div class="paywall-header">
+        <div class="paywall-icon">🧩</div>
+        <h2 class="paywall-title">Sudoku 3D Pro</h2>
+        <p class="paywall-subtitle">Unlock the full experience.<br>Remove all ads forever.</p>
+      </div>
+      <div class="paywall-features">
+        <div class="paywall-feature">No ads — ever</div>
+        <div class="paywall-feature">Unlimited hints</div>
+        <div class="paywall-feature">Support the developer</div>
+      </div>
+      <div class="paywall-packages" id="paywall-packages"></div>
+      <div id="paywall-spinner">Loading…</div>
+      <div class="paywall-footer">
+        <button class="paywall-link" id="paywall-restore">Restore purchases</button>
+        <button class="paywall-link" id="paywall-close">Close</button>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

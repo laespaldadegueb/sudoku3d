@@ -1,0 +1,1004 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Variants del Cub Heroic · Sudoku³</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800;900&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: #111010;
+  color: #e0dcd6;
+  font-family: 'Inter', sans-serif;
+  padding: 52px 28px 100px;
+  min-height: 100vh;
+}
+
+/* ─── Capçalera ─── */
+.doc-header { max-width: 1100px; margin: 0 auto 64px; }
+.doc-eyebrow {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px; letter-spacing: .24em; text-transform: uppercase;
+  color: #4a4640; margin-bottom: 8px;
+}
+.doc-title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 32px; font-weight: 800; letter-spacing: -.03em;
+  color: #f0ece6; line-height: 1.1; margin-bottom: 10px;
+}
+.doc-title b { color: #c06040; }
+.doc-lead { font-size: 13px; color: #5a5650; line-height: 1.7; max-width: 560px; }
+
+/* ─── Grid de variants ─── */
+.cubes-grid {
+  max-width: 1100px; margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 48px 36px;
+}
+
+/* ─── Targeta de variant ─── */
+.cube-card {
+  display: flex; flex-direction: column; gap: 0;
+  background: #161412;
+  border: 1px solid #1e1c1a;
+  border-radius: 20px;
+  overflow: hidden;
+}
+
+/* Àrea de previsualització (context pantalla d'inici) */
+.cube-preview {
+  position: relative;
+  height: 280px;
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
+}
+
+/* Variant light (fons paper càlid) */
+.bg-paper {
+  background: radial-gradient(ellipse 80% 70% at 50% 55%, #f5f0e8, #e8e0d4 70%, #d8d0c4);
+}
+.bg-paper::before {
+  content: '';
+  position: absolute; inset: 0;
+  background-image:
+    repeating-linear-gradient(0deg, transparent, transparent 22px, rgba(192,96,64,.05) 22px, rgba(192,96,64,.05) 23px),
+    repeating-linear-gradient(90deg, transparent, transparent 22px, rgba(192,96,64,.05) 22px, rgba(192,96,64,.05) 23px);
+}
+
+/* Variant dark (fons nit) */
+.bg-night {
+  background: radial-gradient(ellipse 80% 70% at 50% 55%, #1a1614, #0e0d0c 70%);
+}
+.bg-night::before {
+  content: '';
+  position: absolute; inset: 0;
+  background-image:
+    repeating-linear-gradient(0deg, transparent, transparent 28px, rgba(255,255,255,.015) 28px, rgba(255,255,255,.015) 29px),
+    repeating-linear-gradient(90deg, transparent, transparent 28px, rgba(255,255,255,.015) 28px, rgba(255,255,255,.015) 29px);
+}
+
+/* Ombra ambiental sota el cub */
+.cube-ambient {
+  position: absolute;
+  bottom: 28px; left: 50%; transform: translateX(-50%);
+  border-radius: 50%;
+  animation: shadowPulse 3.5s ease-in-out infinite;
+}
+@keyframes shadowPulse {
+  0%,100% { transform: translateX(-50%) scaleX(1); opacity: 1; }
+  50%      { transform: translateX(-50%) scaleX(.82); opacity: .6; }
+}
+
+/* Animació de flotació del cub */
+.cube-svg {
+  position: relative; z-index: 2;
+  animation: cubeBob 3.5s ease-in-out infinite;
+  filter: drop-shadow(0 14px 28px rgba(0,0,0,.22)) drop-shadow(0 3px 6px rgba(0,0,0,.12));
+}
+.cube-svg-dark {
+  position: relative; z-index: 2;
+  animation: cubeBob 3.5s ease-in-out infinite;
+}
+@keyframes cubeBob {
+  0%,100% { transform: translateY(0); }
+  50%      { transform: translateY(-9px); }
+}
+
+/* ─── Metadades de la targeta ─── */
+.cube-meta {
+  padding: 18px 20px 20px;
+  display: flex; flex-direction: column; gap: 8px;
+  border-top: 1px solid #1e1c1a;
+}
+.cube-id {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 8px; letter-spacing: .2em; text-transform: uppercase; color: #3a3630;
+}
+.cube-name {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 15px; font-weight: 700; color: #d8d0c8; letter-spacing: -.01em;
+}
+.cube-desc { font-size: 11px; color: #4a4640; line-height: 1.6; }
+.cube-pills { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 2px; }
+.pill {
+  font-size: 8px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase;
+  padding: 2px 7px; border-radius: 20px;
+}
+.pill-warm { background: rgba(192,96,64,.12); color: #a05838; border: 1px solid rgba(192,96,64,.2); }
+.pill-blue { background: rgba(80,144,176,.12); color: #4878a0; border: 1px solid rgba(80,144,176,.2); }
+.pill-dark { background: rgba(150,150,150,.1); color: #5a5650; border: 1px solid rgba(150,150,150,.15); }
+.pill-glow { background: rgba(220,120,60,.12); color: #c06040; border: 1px solid rgba(220,120,60,.25); }
+
+/* ─── Fila d'icona + mini preview ─── */
+.icon-row {
+  display: flex; align-items: center; gap: 10px; margin-top: 6px;
+  padding-top: 12px; border-top: 1px solid #1a1816;
+}
+.icon-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 8px; letter-spacing: .16em; text-transform: uppercase; color: #3a3630;
+}
+.icon-small { border-radius: 8px; overflow: hidden; width: 36px; height: 36px; flex-shrink: 0; }
+.icon-small svg { display: block; width: 36px; height: 36px; }
+
+/* ─── Separador de secció ─── */
+.section-sep {
+  max-width: 1100px; margin: 64px auto 32px;
+  display: flex; align-items: center; gap: 16px;
+}
+.sep-line { flex: 1; height: 1px; background: #1e1c1a; }
+.sep-text {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px; letter-spacing: .2em; text-transform: uppercase; color: #3a3630;
+  white-space: nowrap;
+}
+
+/* ─── Taula de comparativa final ─── */
+.compare-wrap { max-width: 1100px; margin: 0 auto; }
+.compare-title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 17px; font-weight: 700; color: #c8c0b8; margin-bottom: 20px;
+}
+.compare-table {
+  width: 100%; border-collapse: collapse; font-size: 11px;
+}
+.compare-table th {
+  font-family: 'IBM Plex Mono', monospace; font-size: 8px; letter-spacing: .16em;
+  text-transform: uppercase; color: #3a3630;
+  padding: 8px 12px; text-align: left; border-bottom: 1px solid #1e1c1a;
+}
+.compare-table td {
+  padding: 10px 12px; border-bottom: 1px solid #161412; color: #6a6460;
+  vertical-align: top;
+}
+.compare-table tr:hover td { background: #161412; }
+.td-name { font-weight: 600; color: #d0c8c0; font-family: 'Space Grotesk', sans-serif; font-size: 12px; }
+.dot-row { display: flex; gap: 3px; }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: #1e1c1a; }
+.dot-filled { background: #c06040; }
+.dot-half   { background: linear-gradient(90deg, #c06040 50%, #1e1c1a 50%); }
+.td-reco { color: #808878; font-style: italic; }
+</style>
+</head>
+<body>
+
+<!-- ─── Capçalera ─── -->
+<header class="doc-header">
+  <div class="doc-eyebrow">Sudoku³ · Pantalla d'inici · Proposta A "Cube Splash" · Variants del cub</div>
+  <div class="doc-title">Set dissenys per al <b>cub heroic</b></div>
+  <div class="doc-lead">
+    El cub flotant és el primer que veu el jugador. Cada variant explora un
+    registre visual diferent: des del volumètric sòlid fins al wireframe geomètric,
+    passant pel vidre, l'estil tècnic o el neon. Tots funcionen amb l'animació de flotació.
+  </div>
+</header>
+
+<!-- ─── Grid de variants ─── -->
+<div class="cubes-grid">
+
+
+  <!-- ══════════ CUB 1: VOLUMÈTRIC (actual millorat) ══════════ -->
+  <div class="cube-card">
+    <div class="cube-preview bg-paper">
+      <div class="cube-ambient" style="width:130px;height:14px;background:radial-gradient(ellipse,rgba(192,96,64,.2) 0%,transparent 70%)"></div>
+      <svg class="cube-svg" width="200" height="200" viewBox="0 0 100 100" fill="none">
+        <defs>
+          <linearGradient id="v1top" x1="20%" y1="0%" x2="80%" y2="100%">
+            <stop offset="0%" stop-color="#e07850"/>
+            <stop offset="100%" stop-color="#b84c30"/>
+          </linearGradient>
+          <linearGradient id="v1right" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#5898b8"/>
+            <stop offset="100%" stop-color="#3a7090"/>
+          </linearGradient>
+          <linearGradient id="v1left" x1="100%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stop-color="#5a9060"/>
+            <stop offset="100%" stop-color="#3a6440"/>
+          </linearGradient>
+          <linearGradient id="v1sheen" x1="20%" y1="0%" x2="80%" y2="100%">
+            <stop offset="0%" stop-color="rgba(255,255,255,.35)"/>
+            <stop offset="55%" stop-color="rgba(255,255,255,0)"/>
+          </linearGradient>
+        </defs>
+        <!-- Cares principals -->
+        <polygon points="50,9 83,27 50,45 17,27" fill="url(#v1top)"/>
+        <polygon points="50,9 83,27 50,45 17,27" fill="url(#v1sheen)"/>
+        <polygon points="83,27 83,63 50,81 50,45" fill="url(#v1right)"/>
+        <polygon points="17,27 50,45 50,81 17,63" fill="url(#v1left)"/>
+        <!-- Grid cara superior: línies suaus -->
+        <g stroke="rgba(255,255,255,.18)" stroke-width=".7">
+          <line x1="61" y1="15" x2="39" y2="27"/>
+          <line x1="72" y1="21" x2="28" y2="21"/><!-- no escale correcte, aproximació -->
+          <line x1="39" y1="15" x2="61" y2="27"/>
+          <line x1="28" y1="21" x2="72" y2="21"/>
+        </g>
+        <!-- Grid cara dreta -->
+        <g stroke="rgba(255,255,255,.15)" stroke-width=".6">
+          <line x1="83" y1="45" x2="50" y2="63"/>
+          <line x1="72" y1="33" x2="72" y2="69"/>
+          <line x1="61" y1="39" x2="61" y2="75"/>
+        </g>
+        <!-- Grid cara esquerra -->
+        <g stroke="rgba(255,255,255,.15)" stroke-width=".6">
+          <line x1="17" y1="45" x2="50" y2="63"/>
+          <line x1="28" y1="33" x2="28" y2="69"/>
+          <line x1="39" y1="39" x2="39" y2="75"/>
+        </g>
+        <!-- Números cara superior (crema) -->
+        <g font-family="IBM Plex Mono,monospace" font-size="5.5" text-anchor="middle" fill="rgba(255,248,238,.82)" font-weight="500">
+          <text x="50" y="20">7</text>  <text x="61" y="26">5</text>  <text x="72" y="32">1</text>
+          <text x="39" y="26">3</text>  <text x="50" y="32">9</text>  <text x="61" y="38">2</text>
+          <text x="28" y="32">8</text>  <text x="39" y="38">4</text>  <text x="50" y="44">6</text>
+        </g>
+        <!-- Números cares laterals (blanc) -->
+        <g font-family="IBM Plex Mono,monospace" font-size="5" text-anchor="middle" fill="rgba(255,255,255,.60)" font-weight="400">
+          <text x="72" y="40">4</text>  <text x="61" y="46">9</text>
+          <text x="72" y="52">2</text>  <text x="61" y="58">7</text>
+          <text x="28" y="40">6</text>  <text x="39" y="46">1</text>
+          <text x="28" y="52">5</text>  <text x="39" y="58">3</text>
+        </g>
+        <!-- Contorn fi i elegant -->
+        <g stroke="rgba(30,20,10,.25)" stroke-width=".8" stroke-linecap="round" stroke-linejoin="round" fill="none">
+          <polyline points="17,27 50,9 83,27"/>
+          <line x1="83" y1="27" x2="83" y2="63"/>
+          <line x1="17" y1="27" x2="17" y2="63"/>
+          <line x1="50" y1="45" x2="50" y2="81"/>
+          <line x1="83" y1="63" x2="50" y2="81"/>
+          <line x1="17" y1="63" x2="50" y2="81"/>
+          <line x1="50" y1="45" x2="83" y2="27"/>
+          <line x1="50" y1="45" x2="17" y2="27"/>
+        </g>
+        <!-- Vèrtex superior terracota -->
+        <circle cx="50" cy="9" r="2.5" fill="#c06040" opacity=".9"/>
+        <circle cx="50" cy="9" r="5" fill="#c06040" opacity=".15"/>
+      </svg>
+    </div>
+    <div class="cube-meta">
+      <div class="cube-id">Variant 1</div>
+      <div class="cube-name">Volumètric refinat</div>
+      <div class="cube-desc">
+        El disseny actual, però amb contorns molt més fins, gradients de color
+        reequilibrats i números amb menys saturació. Menys "dens", més elegant.
+      </div>
+      <div class="cube-pills">
+        <span class="pill pill-warm">3 colors de joc</span>
+        <span class="pill pill-dark">9 núm. per cara</span>
+        <span class="pill pill-dark">Contorn fi</span>
+      </div>
+      <div class="icon-row">
+        <div class="icon-label">Com a icona:</div>
+        <div class="icon-small" style="background:#f0ece6">
+          <svg viewBox="0 0 36 36" fill="none"><polygon points="18,4 30,10 18,16 6,10" fill="#d06848"/><polygon points="30,10 30,26 18,32 18,16" fill="#4a80a8"/><polygon points="6,10 18,16 18,32 6,26" fill="#508858"/></svg>
+        </div>
+        <div style="font-size:10px;color:#4a4640;line-height:1.5">Llegible i consistent a 40px</div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ══════════ CUB 2: MONOCROM TERRACOTA ══════════ -->
+  <div class="cube-card">
+    <div class="cube-preview bg-paper">
+      <div class="cube-ambient" style="width:130px;height:14px;background:radial-gradient(ellipse,rgba(192,96,64,.25) 0%,transparent 70%)"></div>
+      <svg class="cube-svg" width="200" height="200" viewBox="0 0 100 100" fill="none">
+        <defs>
+          <linearGradient id="m2top" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#e07858"/>
+            <stop offset="100%" stop-color="#c05838"/>
+          </linearGradient>
+          <linearGradient id="m2right" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#a84830"/>
+            <stop offset="100%" stop-color="#8a3420"/>
+          </linearGradient>
+          <linearGradient id="m2left" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#c86040"/>
+            <stop offset="100%" stop-color="#a04828"/>
+          </linearGradient>
+          <linearGradient id="m2sheen" x1="0%" y1="0%" x2="60%" y2="100%">
+            <stop offset="0%" stop-color="rgba(255,220,190,.4)"/>
+            <stop offset="50%" stop-color="rgba(255,220,190,0)"/>
+          </linearGradient>
+        </defs>
+        <!-- Cares (llum-mitjà-fosc → efecte volumètric) -->
+        <polygon points="50,9 83,27 50,45 17,27" fill="url(#m2top)"/>
+        <polygon points="50,9 83,27 50,45 17,27" fill="url(#m2sheen)"/>
+        <polygon points="83,27 83,63 50,81 50,45" fill="url(#m2right)"/>
+        <polygon points="17,27 50,45 50,81 17,63" fill="url(#m2left)"/>
+        <!-- Números blancs ben llegibles -->
+        <g font-family="IBM Plex Mono,monospace" font-size="6" text-anchor="middle" fill="rgba(255,248,235,.78)" font-weight="500">
+          <text x="50" y="20">7</text>  <text x="61" y="26">5</text>  <text x="72" y="32">1</text>
+          <text x="39" y="26">3</text>  <text x="50" y="32">9</text>  <text x="61" y="38">2</text>
+          <text x="28" y="32">8</text>  <text x="39" y="38">4</text>  <text x="50" y="44">6</text>
+        </g>
+        <g font-family="IBM Plex Mono,monospace" font-size="5" text-anchor="middle" fill="rgba(255,255,255,.45)" font-weight="400">
+          <text x="72" y="40">4</text>  <text x="61" y="52">9</text>
+          <text x="72" y="58">2</text>
+          <text x="28" y="40">6</text>  <text x="39" y="52">1</text>
+          <text x="28" y="58">5</text>
+        </g>
+        <!-- Grid subtil -->
+        <g stroke="rgba(255,200,160,.2)" stroke-width=".6">
+          <line x1="50" y1="45" x2="50" y2="81"/>
+          <line x1="83" y1="45" x2="50" y2="63"/> <line x1="17" y1="45" x2="50" y2="63"/>
+          <line x1="61" y1="15" x2="39" y2="27"/> <line x1="39" y1="15" x2="61" y2="27"/>
+          <line x1="72" y1="33" x2="72" y2="63"/> <line x1="28" y1="33" x2="28" y2="63"/>
+        </g>
+        <!-- Contorn -->
+        <g stroke="rgba(80,20,5,.3)" stroke-width=".7" stroke-linecap="round" fill="none">
+          <polyline points="17,27 50,9 83,27"/>
+          <line x1="83" y1="27" x2="83" y2="63"/>
+          <line x1="17" y1="27" x2="17" y2="63"/>
+          <line x1="50" y1="45" x2="50" y2="81"/>
+          <line x1="83" y1="63" x2="50" y2="81"/>
+          <line x1="17" y1="63" x2="50" y2="81"/>
+          <line x1="50" y1="45" x2="83" y2="27"/>
+          <line x1="50" y1="45" x2="17" y2="27"/>
+        </g>
+        <!-- Highlight cantonada superior -->
+        <polygon points="50,9 55,11.5 50,14 45,11.5" fill="rgba(255,230,200,.7)"/>
+      </svg>
+    </div>
+    <div class="cube-meta">
+      <div class="cube-id">Variant 2</div>
+      <div class="cube-name">Monocrom terracota</div>
+      <div class="cube-desc">
+        Un sol color base (terracota) amb tres tonalitats (clara, mitja, fosca)
+        que creen la il·lusió 3D. Unifica tota l'app sota un sol color. Molt elegant.
+      </div>
+      <div class="cube-pills">
+        <span class="pill pill-warm">Un sol color</span>
+        <span class="pill pill-dark">Llum direccional</span>
+        <span class="pill pill-warm">Coherent amb acent</span>
+      </div>
+      <div class="icon-row">
+        <div class="icon-label">Com a icona:</div>
+        <div class="icon-small" style="background:#f0ece6">
+          <svg viewBox="0 0 36 36" fill="none">
+            <polygon points="18,4 30,10 18,16 6,10" fill="#d46848"/>
+            <polygon points="30,10 30,26 18,32 18,16" fill="#8a3420"/>
+            <polygon points="6,10 18,16 18,32 6,26" fill="#b05030"/>
+          </svg>
+        </div>
+        <div style="font-size:10px;color:#4a4640;line-height:1.5">Icona clara, identitat forta</div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ══════════ CUB 3: WIREFRAME TÈCNIC ══════════ -->
+  <div class="cube-card">
+    <div class="cube-preview bg-paper">
+      <div class="cube-ambient" style="width:100px;height:10px;background:radial-gradient(ellipse,rgba(192,96,64,.15) 0%,transparent 70%)"></div>
+      <svg class="cube-svg" width="200" height="200" viewBox="0 0 100 100" fill="none">
+        <!-- Cares semitransparents -->
+        <polygon points="50,9 83,27 50,45 17,27" fill="rgba(192,96,64,.06)"/>
+        <polygon points="83,27 83,63 50,81 50,45" fill="rgba(80,144,176,.06)"/>
+        <polygon points="17,27 50,45 50,81 17,63" fill="rgba(80,128,80,.06)"/>
+        <!-- Línies de grid: cara superior en terracota -->
+        <g stroke="#c06040" stroke-width=".7" opacity=".5">
+          <line x1="61" y1="15" x2="39" y2="27"/>
+          <line x1="72" y1="21" x2="28" y2="33"/><!-- paralleles a AB -->
+          <line x1="39" y1="15" x2="61" y2="27"/>
+          <line x1="28" y1="21" x2="72" y2="33"/><!-- paralleles a AD -->
+        </g>
+        <!-- Línies de grid: cara dreta en blau -->
+        <g stroke="#5090b0" stroke-width=".7" opacity=".5">
+          <line x1="83" y1="45" x2="50" y2="63"/>
+          <line x1="83" y1="54" x2="50" y2="72"/>
+          <line x1="72" y1="33" x2="72" y2="69"/>
+          <line x1="61" y1="39" x2="61" y2="75"/>
+        </g>
+        <!-- Línies de grid: cara esquerra en verd -->
+        <g stroke="#508050" stroke-width=".7" opacity=".5">
+          <line x1="17" y1="45" x2="50" y2="63"/>
+          <line x1="17" y1="54" x2="50" y2="72"/>
+          <line x1="28" y1="33" x2="28" y2="69"/>
+          <line x1="39" y1="39" x2="39" y2="75"/>
+        </g>
+        <!-- Arestes principals gruixudes -->
+        <g stroke="#1a1714" stroke-width="1.2" stroke-linecap="round" opacity=".7">
+          <line x1="50" y1="9" x2="83" y2="27"/>
+          <line x1="50" y1="9" x2="17" y2="27"/>
+          <line x1="83" y1="27" x2="83" y2="63"/>
+          <line x1="17" y1="27" x2="17" y2="63"/>
+          <line x1="50" y1="45" x2="50" y2="81"/>
+          <line x1="83" y1="63" x2="50" y2="81"/>
+          <line x1="17" y1="63" x2="50" y2="81"/>
+          <line x1="50" y1="45" x2="83" y2="27"/>
+          <line x1="50" y1="45" x2="17" y2="27"/>
+        </g>
+        <!-- Vèrtexs amb punts de color -->
+        <circle cx="50" cy="9"  r="2"  fill="#c06040"/>
+        <circle cx="83" cy="27" r="1.5" fill="#5090b0"/>
+        <circle cx="17" cy="27" r="1.5" fill="#508050"/>
+        <circle cx="83" cy="63" r="1.5" fill="#5090b0" opacity=".6"/>
+        <circle cx="17" cy="63" r="1.5" fill="#508050" opacity=".6"/>
+        <circle cx="50" cy="81" r="1.5" fill="#8a7a6a" opacity=".5"/>
+        <!-- Números als centres de les cares (discrets) -->
+        <text x="50" y="28" font-family="IBM Plex Mono,monospace" font-size="8" font-weight="600" text-anchor="middle" fill="#c06040" opacity=".5">9</text>
+        <text x="68" y="56" font-family="IBM Plex Mono,monospace" font-size="7" font-weight="500" text-anchor="middle" fill="#5090b0" opacity=".4">4</text>
+        <text x="32" y="56" font-family="IBM Plex Mono,monospace" font-size="7" font-weight="500" text-anchor="middle" fill="#508050" opacity=".4">2</text>
+      </svg>
+    </div>
+    <div class="cube-meta">
+      <div class="cube-id">Variant 3</div>
+      <div class="cube-name">Wireframe tècnic</div>
+      <div class="cube-desc">
+        Cub quasi buit: les arestes del cub en tinta, les graelles de cada cara
+        en el color del joc corresponent. Minimalista, intel·ligent. Recorda les
+        il·lustracions tècniques d'un puzzle.
+      </div>
+      <div class="cube-pills">
+        <span class="pill pill-dark">Transparent</span>
+        <span class="pill pill-dark">3 colors de grid</span>
+        <span class="pill pill-dark">Minimalista</span>
+      </div>
+      <div class="icon-row">
+        <div class="icon-label">Com a icona:</div>
+        <div class="icon-small" style="background:#f0ece6">
+          <svg viewBox="0 0 36 36" fill="none">
+            <polygon points="18,4 30,10 18,16 6,10" fill="rgba(192,96,64,.1)"/>
+            <polygon points="30,10 30,26 18,32 18,16" fill="rgba(80,144,176,.1)"/>
+            <polygon points="6,10 18,16 18,32 6,26" fill="rgba(80,128,80,.1)"/>
+            <line x1="18" y1="4" x2="30" y2="10" stroke="#c06040" stroke-width="1.2"/>
+            <line x1="18" y1="4" x2="6"  y2="10" stroke="#508050" stroke-width="1.2"/>
+            <line x1="30" y1="10" x2="30" y2="26" stroke="#5090b0" stroke-width="1"/>
+            <line x1="6"  y1="10" x2="6"  y2="26" stroke="#508050" stroke-width="1"/>
+            <line x1="18" y1="16" x2="18" y2="32" stroke="#8a7a6a" stroke-width="1"/>
+            <line x1="30" y1="26" x2="18" y2="32" stroke="#8a7a6a" stroke-width="1"/>
+            <line x1="6"  y1="26" x2="18" y2="32" stroke="#8a7a6a" stroke-width="1"/>
+            <line x1="18" y1="16" x2="30" y2="10" stroke="#8a7a6a" stroke-width=".8" opacity=".5"/>
+            <line x1="18" y1="16" x2="6"  y2="10" stroke="#8a7a6a" stroke-width=".8" opacity=".5"/>
+          </svg>
+        </div>
+        <div style="font-size:10px;color:#4a4640;line-height:1.5">Llegible però molt subtil</div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ══════════ CUB 4: CRISTALL / VIDRE ══════════ -->
+  <div class="cube-card">
+    <div class="cube-preview bg-paper">
+      <div class="cube-ambient" style="width:120px;height:12px;background:radial-gradient(ellipse,rgba(192,96,64,.18) 0%,transparent 70%)"></div>
+      <svg class="cube-svg" width="200" height="200" viewBox="0 0 100 100" fill="none">
+        <defs>
+          <linearGradient id="gl-top-a" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%"   stop-color="rgba(240,200,180,.55)"/>
+            <stop offset="50%"  stop-color="rgba(210,140,100,.35)"/>
+            <stop offset="100%" stop-color="rgba(180,80,50,.50)"/>
+          </linearGradient>
+          <linearGradient id="gl-top-b" x1="0%" y1="0%" x2="80%" y2="80%">
+            <stop offset="0%"   stop-color="rgba(255,255,255,.50)"/>
+            <stop offset="40%"  stop-color="rgba(255,255,255,.10)"/>
+            <stop offset="100%" stop-color="rgba(255,255,255,0)"/>
+          </linearGradient>
+          <linearGradient id="gl-right" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%"   stop-color="rgba(180,230,255,.25)"/>
+            <stop offset="100%" stop-color="rgba(80,150,190,.40)"/>
+          </linearGradient>
+          <linearGradient id="gl-left" x1="100%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%"   stop-color="rgba(160,220,180,.20)"/>
+            <stop offset="100%" stop-color="rgba(60,140,80,.38)"/>
+          </linearGradient>
+        </defs>
+
+        <!-- Cara superior vidre -->
+        <polygon points="50,9 83,27 50,45 17,27" fill="url(#gl-top-a)"/>
+        <polygon points="50,9 83,27 50,45 17,27" fill="url(#gl-top-b)"/>
+        <!-- Cara dreta vidre -->
+        <polygon points="83,27 83,63 50,81 50,45" fill="url(#gl-right)"/>
+        <!-- Cara esquerra vidre -->
+        <polygon points="17,27 50,45 50,81 17,63" fill="url(#gl-left)"/>
+
+        <!-- Línies de grid lluminoses -->
+        <g stroke="rgba(255,255,255,.30)" stroke-width=".6">
+          <!-- top face grid -->
+          <line x1="61" y1="15" x2="39" y2="27"/>
+          <line x1="72" y1="21" x2="28" y2="33"/>
+          <line x1="39" y1="15" x2="61" y2="27"/>
+          <line x1="28" y1="21" x2="72" y2="33"/>
+          <!-- right face grid -->
+          <line x1="83" y1="45" x2="50" y2="63"/>
+          <line x1="72" y1="33" x2="72" y2="69"/>
+          <!-- left face grid -->
+          <line x1="17" y1="45" x2="50" y2="63"/>
+          <line x1="28" y1="33" x2="28" y2="69"/>
+        </g>
+
+        <!-- Reflex especular gran (llença de llum) -->
+        <polygon points="50,9 67,18 50,27 33,18"
+                 fill="rgba(255,255,255,.22)" />
+        <!-- Reflex petit a l'aresta dreta -->
+        <line x1="83" y1="27" x2="83" y2="45" stroke="rgba(255,255,255,.5)" stroke-width="1.5"/>
+
+        <!-- Arestes translúcides -->
+        <g stroke="rgba(255,255,255,.55)" stroke-width=".8" stroke-linecap="round" fill="none">
+          <line x1="50" y1="9"  x2="83" y2="27"/>
+          <line x1="50" y1="9"  x2="17" y2="27"/>
+          <line x1="83" y1="27" x2="83" y2="63"/>
+          <line x1="17" y1="27" x2="17" y2="63"/>
+          <line x1="50" y1="45" x2="50" y2="81"/>
+          <line x1="83" y1="63" x2="50" y2="81"/>
+          <line x1="17" y1="63" x2="50" y2="81"/>
+          <line x1="50" y1="45" x2="83" y2="27"/>
+          <line x1="50" y1="45" x2="17" y2="27"/>
+        </g>
+        <!-- Aresta exterior fosca per ancoratge -->
+        <g stroke="rgba(100,50,20,.25)" stroke-width=".5" fill="none">
+          <line x1="50" y1="9"  x2="83" y2="27"/>
+          <line x1="50" y1="9"  x2="17" y2="27"/>
+          <line x1="83" y1="27" x2="83" y2="63"/>
+          <line x1="17" y1="27" x2="17" y2="63"/>
+          <line x1="83" y1="63" x2="50" y2="81"/>
+          <line x1="17" y1="63" x2="50" y2="81"/>
+          <line x1="50" y1="81" x2="50" y2="81"/>
+        </g>
+
+        <!-- Números en terracota translúcid sobre cara superior -->
+        <g font-family="IBM Plex Mono,monospace" font-size="5.5" text-anchor="middle" fill="rgba(255,230,210,.9)" font-weight="600">
+          <text x="50" y="22">5</text>
+          <text x="39" y="28">3</text>  <text x="61" y="28">7</text>
+          <text x="28" y="34">1</text>  <text x="72" y="34">9</text>
+        </g>
+
+        <!-- Punt lluminós al vèrtex -->
+        <circle cx="50" cy="9" r="2" fill="white" opacity=".9"/>
+        <circle cx="50" cy="9" r="5" fill="rgba(255,200,160,.3)"/>
+      </svg>
+    </div>
+    <div class="cube-meta">
+      <div class="cube-id">Variant 4</div>
+      <div class="cube-name">Cristall / Vidre</div>
+      <div class="cube-desc">
+        Cares semitransparents que deixen veure el fons darrere. L'efecte de
+        vidre amb reflexos dóna una sensació de sofisticació i modernitat.
+        Els arestes brillen en blanc.
+      </div>
+      <div class="cube-pills">
+        <span class="pill pill-dark">Semitransparent</span>
+        <span class="pill pill-dark">Reflexos blancs</span>
+        <span class="pill pill-dark">Premium</span>
+      </div>
+      <div class="icon-row">
+        <div class="icon-label">Com a icona:</div>
+        <div class="icon-small" style="background:#e8e0d8">
+          <svg viewBox="0 0 36 36" fill="none">
+            <polygon points="18,4 30,10 18,16 6,10" fill="rgba(220,160,120,.5)"/>
+            <polygon points="18,4 30,10 18,16 6,10" fill="rgba(255,255,255,.3)"/>
+            <polygon points="30,10 30,26 18,32 18,16" fill="rgba(120,200,240,.3)"/>
+            <polygon points="6,10 18,16 18,32 6,26" fill="rgba(120,210,140,.3)"/>
+            <line x1="18" y1="4" x2="30" y2="10" stroke="rgba(255,255,255,.8)" stroke-width="1"/>
+            <line x1="18" y1="4" x2="6"  y2="10" stroke="rgba(255,255,255,.8)" stroke-width="1"/>
+            <line x1="30" y1="10" x2="30" y2="26" stroke="rgba(255,255,255,.5)" stroke-width=".8"/>
+            <line x1="6"  y1="10" x2="6"  y2="26" stroke="rgba(255,255,255,.5)" stroke-width=".8"/>
+            <line x1="30" y1="26" x2="18" y2="32" stroke="rgba(255,255,255,.4)" stroke-width=".8"/>
+            <line x1="6"  y1="26" x2="18" y2="32" stroke="rgba(255,255,255,.4)" stroke-width=".8"/>
+            <circle cx="18" cy="4" r="1.5" fill="white"/>
+          </svg>
+        </div>
+        <div style="font-size:10px;color:#4a4640;line-height:1.5">Elegant, però difícil a mida petita</div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ══════════ CUB 5: NEON FOSC ══════════ -->
+  <div class="cube-card">
+    <div class="cube-preview bg-night">
+      <div class="cube-ambient" style="width:150px;height:20px;background:radial-gradient(ellipse,rgba(220,100,50,.25) 0%,transparent 70%);filter:blur(4px)"></div>
+      <!-- Glow de fons ambiental -->
+      <div style="position:absolute;width:180px;height:180px;border-radius:50%;background:radial-gradient(ellipse,rgba(192,96,64,.15) 0%,transparent 65%);filter:blur(16px);z-index:0"></div>
+      <svg class="cube-svg-dark" width="200" height="200" viewBox="0 0 100 100" fill="none" style="filter:drop-shadow(0 0 12px rgba(220,100,50,.4)) drop-shadow(0 0 4px rgba(220,100,50,.6))">
+        <defs>
+          <linearGradient id="neon-top" x1="20%" y1="0%" x2="80%" y2="100%">
+            <stop offset="0%" stop-color="rgba(230,100,60,.5)"/>
+            <stop offset="100%" stop-color="rgba(180,60,30,.6)"/>
+          </linearGradient>
+          <linearGradient id="neon-right" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="rgba(60,130,180,.35)"/>
+            <stop offset="100%" stop-color="rgba(30,80,130,.45)"/>
+          </linearGradient>
+          <linearGradient id="neon-left" x1="100%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stop-color="rgba(60,130,80,.35)"/>
+            <stop offset="100%" stop-color="rgba(30,90,50,.45)"/>
+          </linearGradient>
+        </defs>
+        <polygon points="50,9 83,27 50,45 17,27" fill="url(#neon-top)"/>
+        <polygon points="83,27 83,63 50,81 50,45" fill="url(#neon-right)"/>
+        <polygon points="17,27 50,45 50,81 17,63" fill="url(#neon-left)"/>
+        <!-- Grid neon terracota -->
+        <g stroke="rgba(230,110,60,.5)" stroke-width=".7">
+          <line x1="61" y1="15" x2="39" y2="27"/>
+          <line x1="72" y1="21" x2="28" y2="33"/>
+          <line x1="39" y1="15" x2="61" y2="27"/>
+          <line x1="28" y1="21" x2="72" y2="33"/>
+        </g>
+        <!-- Grid neon blau -->
+        <g stroke="rgba(80,170,220,.4)" stroke-width=".7">
+          <line x1="83" y1="45" x2="50" y2="63"/>
+          <line x1="72" y1="33" x2="72" y2="69"/>
+          <line x1="61" y1="39" x2="61" y2="75"/>
+        </g>
+        <!-- Grid neon verd -->
+        <g stroke="rgba(80,180,100,.4)" stroke-width=".7">
+          <line x1="17" y1="45" x2="50" y2="63"/>
+          <line x1="28" y1="33" x2="28" y2="69"/>
+          <line x1="39" y1="39" x2="39" y2="75"/>
+        </g>
+        <!-- Arestes neon brillants -->
+        <g stroke="rgba(240,120,70,.85)" stroke-width="1.1" stroke-linecap="round">
+          <line x1="50" y1="9"  x2="83" y2="27"/>
+          <line x1="50" y1="9"  x2="17" y2="27"/>
+          <line x1="50" y1="45" x2="83" y2="27"/>
+          <line x1="50" y1="45" x2="17" y2="27"/>
+        </g>
+        <g stroke="rgba(80,170,220,.6)" stroke-width="1" stroke-linecap="round">
+          <line x1="83" y1="27" x2="83" y2="63"/>
+          <line x1="83" y1="63" x2="50" y2="81"/>
+          <line x1="50" y1="45" x2="50" y2="81"/>
+        </g>
+        <g stroke="rgba(80,180,100,.6)" stroke-width="1" stroke-linecap="round">
+          <line x1="17" y1="27" x2="17" y2="63"/>
+          <line x1="17" y1="63" x2="50" y2="81"/>
+        </g>
+        <!-- Números lluminosos -->
+        <g font-family="IBM Plex Mono,monospace" font-size="5.5" text-anchor="middle" fill="rgba(255,200,160,.85)" font-weight="600">
+          <text x="50" y="20">7</text>  <text x="61" y="26">5</text>
+          <text x="39" y="26">3</text>  <text x="50" y="32">9</text>
+        </g>
+        <!-- Punt lluminós vèrtex superior -->
+        <circle cx="50" cy="9" r="2.5" fill="#ff8050" opacity=".95"/>
+        <circle cx="50" cy="9" r="6"   fill="rgba(255,120,60,.3)"/>
+      </svg>
+    </div>
+    <div class="cube-meta">
+      <div class="cube-id">Variant 5</div>
+      <div class="cube-name">Neon fosc</div>
+      <div class="cube-desc">
+        Per al fons fosc de la Proposta C. Arestes en neon terracota, blau i verd.
+        Cares translúcides fosques. Glow ambiental al voltant. Sensació d'holograma.
+      </div>
+      <div class="cube-pills">
+        <span class="pill pill-glow">Neon glow</span>
+        <span class="pill pill-dark">Mode nit</span>
+        <span class="pill pill-glow">Holograma</span>
+      </div>
+      <div class="icon-row">
+        <div class="icon-label">Com a icona:</div>
+        <div class="icon-small" style="background:#0e0d0c">
+          <svg viewBox="0 0 36 36" fill="none">
+            <polygon points="18,4 30,10 18,16 6,10" fill="rgba(210,90,50,.45)"/>
+            <polygon points="30,10 30,26 18,32 18,16" fill="rgba(60,120,180,.3)"/>
+            <polygon points="6,10 18,16 18,32 6,26" fill="rgba(60,150,80,.3)"/>
+            <line x1="18" y1="4" x2="30" y2="10" stroke="rgba(255,120,60,.9)" stroke-width="1.2"/>
+            <line x1="18" y1="4" x2="6"  y2="10" stroke="rgba(255,120,60,.9)" stroke-width="1.2"/>
+            <line x1="30" y1="10" x2="18" y2="16" stroke="rgba(255,120,60,.7)" stroke-width=".9"/>
+            <line x1="6"  y1="10" x2="18" y2="16" stroke="rgba(255,120,60,.7)" stroke-width=".9"/>
+            <line x1="30" y1="10" x2="30" y2="26" stroke="rgba(80,170,220,.7)" stroke-width=".9"/>
+            <line x1="6"  y1="10" x2="6"  y2="26" stroke="rgba(80,180,100,.7)" stroke-width=".9"/>
+            <circle cx="18" cy="4" r="1.8" fill="#ff7040"/>
+          </svg>
+        </div>
+        <div style="font-size:10px;color:#4a4640;line-height:1.5">Perfecte sobre fons fosc</div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ══════════ CUB 6: BAUHAUS / PAPAT ══════════ -->
+  <div class="cube-card">
+    <div class="cube-preview bg-paper">
+      <div class="cube-ambient" style="width:120px;height:12px;background:radial-gradient(ellipse,rgba(192,96,64,.2) 0%,transparent 70%)"></div>
+      <svg class="cube-svg" width="200" height="200" viewBox="0 0 100 100" fill="none">
+        <!-- Colors plans, sense gradients -->
+        <polygon points="50,9 83,27 50,45 17,27" fill="#d4603a"/>
+        <polygon points="83,27 83,63 50,81 50,45" fill="#4878a0"/>
+        <polygon points="17,27 50,45 50,81 17,63" fill="#488858"/>
+        <!-- Línies de grid sòlides negres -->
+        <g stroke="rgba(20,10,5,.2)" stroke-width=".8">
+          <!-- top face: dues línies horitz. i dues vert. isomètriques -->
+          <line x1="61" y1="15" x2="39" y2="27"/>
+          <line x1="72" y1="21" x2="28" y2="33"/>
+          <line x1="39" y1="15" x2="61" y2="27"/>
+          <line x1="28" y1="21" x2="72" y2="33"/>
+          <!-- right face -->
+          <line x1="83" y1="45" x2="50" y2="63"/>
+          <line x1="83" y1="54" x2="50" y2="72"/>
+          <line x1="72" y1="33" x2="72" y2="69"/>
+          <line x1="61" y1="39" x2="61" y2="75"/>
+          <!-- left face -->
+          <line x1="17" y1="45" x2="50" y2="63"/>
+          <line x1="17" y1="54" x2="50" y2="72"/>
+          <line x1="28" y1="33" x2="28" y2="69"/>
+          <line x1="39" y1="39" x2="39" y2="75"/>
+        </g>
+        <!-- Números en blanc pur, molt llegibles -->
+        <g font-family="IBM Plex Mono,monospace" font-size="6.5" text-anchor="middle" fill="white" font-weight="700" opacity=".88">
+          <text x="50" y="22">5</text>
+          <text x="39" y="28">3</text>  <text x="61" y="28">7</text>
+          <text x="28" y="34">8</text>  <text x="72" y="34">1</text>
+          <text x="50" y="34">4</text>  <text x="39" y="40">9</text>  <text x="61" y="40">2</text>
+          <text x="50" y="44">6</text>
+        </g>
+        <g font-family="IBM Plex Mono,monospace" font-size="5.5" text-anchor="middle" fill="rgba(255,255,255,.55)" font-weight="600">
+          <text x="72" y="42">4</text>  <text x="61" y="48">9</text>  <text x="72" y="56">6</text>
+          <text x="28" y="42">2</text>  <text x="39" y="48">7</text>  <text x="28" y="56">1</text>
+        </g>
+        <!-- Arestes negres gruixudes (estil Bauhaus) -->
+        <g stroke="#1a1714" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="50" y1="9"  x2="83" y2="27"/>
+          <line x1="50" y1="9"  x2="17" y2="27"/>
+          <line x1="83" y1="27" x2="83" y2="63"/>
+          <line x1="17" y1="27" x2="17" y2="63"/>
+          <line x1="50" y1="45" x2="50" y2="81"/>
+          <line x1="83" y1="63" x2="50" y2="81"/>
+          <line x1="17" y1="63" x2="50" y2="81"/>
+          <line x1="50" y1="45" x2="83" y2="27"/>
+          <line x1="50" y1="45" x2="17" y2="27"/>
+        </g>
+      </svg>
+    </div>
+    <div class="cube-meta">
+      <div class="cube-id">Variant 6</div>
+      <div class="cube-name">Bauhaus / Pla pur</div>
+      <div class="cube-desc">
+        Colors plans sense gradients, arestes negres gruixudes. Màxim contrast.
+        Números blancs molt llegibles. Recorda les il·lustracions gràfiques dels
+        anys 30. Bold, directe, sense ornaments.
+      </div>
+      <div class="cube-pills">
+        <span class="pill pill-warm">Colors plans</span>
+        <span class="pill pill-dark">Arestes gruixudes</span>
+        <span class="pill pill-dark">Alt contrast</span>
+      </div>
+      <div class="icon-row">
+        <div class="icon-label">Com a icona:</div>
+        <div class="icon-small" style="background:#f0ece6">
+          <svg viewBox="0 0 36 36" fill="none">
+            <polygon points="18,4 30,10 18,16 6,10" fill="#d4603a"/>
+            <polygon points="30,10 30,26 18,32 18,16" fill="#4878a0"/>
+            <polygon points="6,10 18,16 18,32 6,26" fill="#488858"/>
+            <g stroke="#1a1714" stroke-width="1.5" stroke-linecap="round">
+              <line x1="18" y1="4" x2="30" y2="10"/>
+              <line x1="18" y1="4" x2="6"  y2="10"/>
+              <line x1="30" y1="10" x2="30" y2="26"/>
+              <line x1="6"  y1="10" x2="6"  y2="26"/>
+              <line x1="18" y1="16" x2="18" y2="32"/>
+              <line x1="30" y1="26" x2="18" y2="32"/>
+              <line x1="6"  y1="26" x2="18" y2="32"/>
+              <line x1="18" y1="16" x2="30" y2="10"/>
+              <line x1="18" y1="16" x2="6"  y2="10"/>
+            </g>
+          </svg>
+        </div>
+        <div style="font-size:10px;color:#4a4640;line-height:1.5">Molt llegible a totes les mides</div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ══════════ CUB 7: TINTA / SKETCHED ══════════ -->
+  <div class="cube-card">
+    <div class="cube-preview bg-paper">
+      <div class="cube-ambient" style="width:100px;height:10px;background:radial-gradient(ellipse,rgba(26,23,20,.12) 0%,transparent 70%)"></div>
+      <svg class="cube-svg" width="200" height="200" viewBox="0 0 100 100" fill="none">
+        <!-- Cares: paper amb color molt pàl·lid -->
+        <polygon points="50,9 83,27 50,45 17,27" fill="rgba(192,96,64,.12)"/>
+        <polygon points="83,27 83,63 50,81 50,45" fill="rgba(80,144,176,.10)"/>
+        <polygon points="17,27 50,45 50,81 17,63" fill="rgba(80,128,80,.10)"/>
+
+        <!-- Marca de hatch-fill a les cares laterals (tècnica de croquis) -->
+        <g stroke="rgba(26,23,20,.07)" stroke-width=".6">
+          <!-- hatch cara dreta (diagonal ↘) -->
+          <line x1="75" y1="33" x2="65" y2="63"/>
+          <line x1="82" y1="36" x2="60" y2="78"/>
+          <line x1="65" y1="31" x2="55" y2="61"/>
+          <!-- hatch cara esquerra (diagonal ↙) -->
+          <line x1="25" y1="33" x2="35" y2="63"/>
+          <line x1="18" y1="36" x2="40" y2="78"/>
+          <line x1="35" y1="31" x2="45" y2="61"/>
+        </g>
+
+        <!-- Grid de tinta: línies lleugerament irregulars -->
+        <g stroke="rgba(26,23,20,.28)" stroke-width=".7" stroke-linecap="round">
+          <!-- top face -->
+          <line x1="61.3" y1="14.8" x2="38.8" y2="27.2"/>
+          <line x1="72.1" y1="21.1" x2="27.9" y2="33.2"/>
+          <line x1="38.7" y1="14.9" x2="61.2" y2="27.1"/>
+          <line x1="27.8" y1="21.0" x2="72.2" y2="32.9"/>
+          <!-- right face -->
+          <line x1="82.9" y1="45.1" x2="50.1" y2="63.0"/>
+          <line x1="83.1" y1="54.0" x2="49.9" y2="72.1"/>
+          <line x1="72.0" y1="32.8" x2="71.8" y2="69.2"/>
+          <line x1="61.1" y1="39.1" x2="61.0" y2="74.9"/>
+          <!-- left face -->
+          <line x1="17.1" y1="45.0" x2="49.9" y2="63.1"/>
+          <line x1="16.9" y1="54.1" x2="50.1" y2="71.9"/>
+          <line x1="28.2" y1="33.1" x2="28.0" y2="69.1"/>
+          <line x1="39.0" y1="38.9" x2="38.8" y2="74.8"/>
+        </g>
+
+        <!-- Arestes en tinta: doble línia per efecte de ploma -->
+        <g stroke="#1a1714" stroke-linecap="round" stroke-linejoin="round">
+          <!-- arestes principals gruixudes -->
+          <line x1="50" y1="9"  x2="83" y2="27" stroke-width="1.4" opacity=".8"/>
+          <line x1="50" y1="9"  x2="17" y2="27" stroke-width="1.4" opacity=".8"/>
+          <line x1="83" y1="27" x2="83" y2="63" stroke-width="1.1" opacity=".65"/>
+          <line x1="17" y1="27" x2="17" y2="63" stroke-width="1.1" opacity=".60"/>
+          <line x1="50" y1="45" x2="50" y2="81" stroke-width="1.0" opacity=".55"/>
+          <line x1="83" y1="63" x2="50" y2="81" stroke-width="1.0" opacity=".50"/>
+          <line x1="17" y1="63" x2="50" y2="81" stroke-width="1.0" opacity=".45"/>
+          <!-- arestes interiors (menys visibles, en tinta gris) -->
+          <line x1="50" y1="45" x2="83" y2="27" stroke-width=".8" opacity=".4"/>
+          <line x1="50" y1="45" x2="17" y2="27" stroke-width=".8" opacity=".4"/>
+        </g>
+
+        <!-- Números a la cara superior en tinta terracota -->
+        <g font-family="IBM Plex Mono,monospace" font-size="6.5" text-anchor="middle" fill="#b84c30" font-weight="500" opacity=".85">
+          <text x="50" y="21">5</text>
+          <text x="39" y="27">3</text>  <text x="61" y="27">7</text>
+          <text x="28" y="33">8</text>  <text x="72" y="33">1</text>
+          <text x="50" y="33">4</text>  <text x="39" y="39">9</text>  <text x="61" y="39">2</text>
+          <text x="50" y="43">6</text>
+        </g>
+        <!-- Números cares laterals: tinta fosca -->
+        <g font-family="IBM Plex Mono,monospace" font-size="5.5" text-anchor="middle" fill="rgba(26,23,20,.45)" font-weight="400">
+          <text x="72" y="41">2</text>  <text x="61" y="53">7</text>
+          <text x="28" y="41">6</text>  <text x="39" y="53">4</text>
+        </g>
+
+        <!-- Punt de tinta al vèrtex superior (taca d'encre) -->
+        <circle cx="50" cy="9" r="2.5" fill="#b84c30" opacity=".9"/>
+        <circle cx="50" cy="9" r="1"   fill="white" opacity=".4"/>
+      </svg>
+    </div>
+    <div class="cube-meta">
+      <div class="cube-id">Variant 7</div>
+      <div class="cube-name">Tinta / Croquis</div>
+      <div class="cube-desc">
+        Estètica de dibuix a mà alzada: línies de tinta, hatching lateral,
+        números en terracota com si fossin escrits amb bolígraf. Molt coherent
+        amb la paleta "Zen Paper". Càlid i artesanal.
+      </div>
+      <div class="cube-pills">
+        <span class="pill pill-warm">Estil sketched</span>
+        <span class="pill pill-warm">Zen Paper</span>
+        <span class="pill pill-dark">Artesanal</span>
+      </div>
+      <div class="icon-row">
+        <div class="icon-label">Com a icona:</div>
+        <div class="icon-small" style="background:#f0ece6">
+          <svg viewBox="0 0 36 36" fill="none">
+            <polygon points="18,4 30,10 18,16 6,10" fill="rgba(192,96,64,.15)"/>
+            <polygon points="30,10 30,26 18,32 18,16" fill="rgba(80,144,176,.1)"/>
+            <polygon points="6,10 18,16 18,32 6,26" fill="rgba(80,128,80,.1)"/>
+            <g stroke="#1a1714" stroke-linecap="round">
+              <line x1="18" y1="4" x2="30" y2="10" stroke-width="1.4"/>
+              <line x1="18" y1="4" x2="6"  y2="10" stroke-width="1.4"/>
+              <line x1="30" y1="10" x2="30" y2="26" stroke-width="1.1" opacity=".7"/>
+              <line x1="6"  y1="10" x2="6"  y2="26" stroke-width="1.1" opacity=".65"/>
+              <line x1="18" y1="16" x2="18" y2="32" stroke-width="1"  opacity=".6"/>
+              <line x1="30" y1="26" x2="18" y2="32" stroke-width="1"  opacity=".55"/>
+              <line x1="6"  y1="26" x2="18" y2="32" stroke-width="1"  opacity=".5"/>
+              <line x1="18" y1="16" x2="30" y2="10" stroke-width=".7" opacity=".45"/>
+              <line x1="18" y1="16" x2="6"  y2="10" stroke-width=".7" opacity=".45"/>
+            </g>
+            <circle cx="18" cy="4" r="2" fill="#b84c30" opacity=".9"/>
+          </svg>
+        </div>
+        <div style="font-size:10px;color:#4a4640;line-height:1.5">Artesanal i còmode a totes les mides</div>
+      </div>
+    </div>
+  </div>
+
+
+</div><!-- /cubes-grid -->
+
+
+<!-- ─── Separador ─── -->
+<div class="section-sep">
+  <div class="sep-line"></div>
+  <div class="sep-text">Comparativa ràpida</div>
+  <div class="sep-line"></div>
+</div>
+
+<!-- ─── Taula comparativa ─── -->
+<div class="compare-wrap">
+  <div class="compare-title">Resum de característiques</div>
+  <table class="compare-table">
+    <thead>
+      <tr>
+        <th>Variant</th>
+        <th>Impacte visual</th>
+        <th>Coherència Zen Paper</th>
+        <th>Llegibilitat icona</th>
+        <th>Complexitat impl.</th>
+        <th>Recomanat per a</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="td-name">1 · Volumètric refinat</td>
+        <td><div class="dot-row"><div class="dot dot-filled"></div><div class="dot dot-filled"></div><div class="dot dot-filled"></div><div class="dot dot-half"></div><div class="dot"></div></div></td>
+        <td><div class="dot-row"><div class="dot dot-filled"></div><div class="dot dot-filled"></div><div class="dot dot-filled"></div><div class="dot dot-filled"></div><div class="dot"></div></div></td>
+        <td><div class="dot-row"><div class="dot dot-filled"></div><div class="dot dot-filled"></div><div class="dot dot-filled"></div><div class="dot dot-filled"></div><div class="dot"></div></div></td>
+        <td><div class="dot-row"><div class="dot dot-filled"></div><div class="dot dot-filled"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></td>
+        <td class="td-reco">Evolució natural del disseny actual</td>
+      </tr>
+      <tr>
+        <td class="td-name">2 · Monocrom terracota</td>
+        <td><div class="dot-row"><div class="dot dot-filled"></div><div class="dot dot-filled"></div><div class="dot dot-filled"></div><div class="dot dot-filled"></div><div class="dot"></div></div></td>
+        <td><div class="dot-row"><div class="dot dot-filled"></div><div class="dot dot-filled"></div><div class="dot dot-filled"></div><div class="dot dot-filled"></div><div class="dot dot-filled"></div></div></td>
+        <td><div class="dot-row"><div class="dot dot-filled"></div><div class="dot dot-filled"></div><div class="dot dot-filled"></div><div class="dot dot-filled"></div><div class="dot dot-filled"></div></div></td>
+        <td><div class="dot-row"><div class="dot dot-filled"></div><div class="dot dot-filled"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></td>
+        <td class="td-reco">Màxima coherència amb l'acent de l'app ⭐</td>
+      </tr>
+      <tr>
+        <td class="td-name">3 · Wireframe tècnic</td>
+        <td><div class="dot-row"><div class="dot dot-filled"></div><div class="dot dot-filled"></div><div class="dot dot-filled"></div><div class="dot"></div><div class="dot"></div></div></td>
+        <td><div class="dot-row"><div class="dot dot-filled"></div><div class="dot dot-filled"></div><div class="dot dot-filled"></div><div class="dot"></div><div class="dot"></div></div></td>
+        <td><div class="dot-row"><div class="dot dot-filled"></div><div class="dot dot-filled"></div><div class="dot dot-half"></div><div class="dot"></div><div class="dot"></div></div></td>
+        <td><div class="dot-row"><div class="dot dot-filled"></div><div class="dot dot-filled"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></td>
+        <td class="td-reco">Si el vols minimalista i net</td>
+      </tr>
+      <tr>
+        <td class="td-name">4 · Cristall / Vidre</td>
+        <td><div class="dot-row"><div class="dot dot-filled"></div><div class="dot dot-filled"></div><div class="dot dot-filled"></div><div class="dot dot-filled"></div><div class="dot dot-filled"></div></div></td>
+        <td><div class="dot-row"><div class="dot dot-filled"></div><div class="dot dot-filled"></div><div class="dot dot-filled"></div><div class="dot"></div><div class="dot"></div></div></td>
+        <td><div class="dot-row"><div class="dot dot-filled"></div><div class="dot dot-filled"></div><div class="dot dot-half"></div><div class="dot"></div><div class="dot"></div></div></td>
+        <td><div class="dot-row"><div class="dot dot-filled"></div><div class="dot dot-filled"></div><div class="dot dot-filled"></div><div class="dot"></div><div class="dot"></div></div></td>
+        <td class="td-reco">Impacte màxim, look modern premium</td>
+      </tr>
+      <tr>
+        <td class="td-name">5 · Neon fosc</td>
+        <td><div class="dot-row"><div class="dot dot-filled"></div><div class="dot dot-filled"></div><div class="dot dot-filled"></div><div class="dot dot-filled"></div><div class="dot dot-filled"></div></div></td>
+        <td><div class="dot-row"><div class="dot dot-filled"></div><div class="dot dot-half"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></td>
+        <td><div class="dot-row"><div class="dot dot-filled"></div><div class="dot dot-filled"></div><div class="dot dot-filled"></div><div class="dot dot-filled"></div><div class="dot dot-half"></div></div></td>
+        <td><div class="dot-row"><div class="dot dot-filled"></div><div class="dot dot-filled"></div><div class="dot dot-filled"></div><div class="dot"></div><div class="dot"></div></div></td>
+        <td class="td-reco">Proposta C (Night Cosmos) exclusivament</td>
+      </tr>
+      <tr>
+        <td class="td-name">6 · Bauhaus / Pla pur</td>
+        <td><div class="dot-row"><div class="dot dot-filled"></div><div class="dot dot-filled"></div><div class="dot dot-filled"></div><div class="dot dot-half"></div><div class="dot"></div></div></td>
+        <td><div class="dot-row"><div class="dot dot-filled"></div><div class="dot dot-filled"></div><div class="dot dot-filled"></div><div class="dot dot-half"></div><div class="dot"></div></div></td>
+        <td><div class="dot-row"><div class="dot dot-filled"></div><div class="dot dot-filled"></div><div class="dot dot-filled"></div><div class="dot dot-filled"></div><div class="dot dot-filled"></div></div></td>
+        <td><div class="dot-row"><div class="dot dot-filled"></div><div class="dot dot-filled"></div><div class="dot dot-filled"></div><div class="dot dot-filled"></div><div class="dot dot-filled"></div></div></td>
+        <td class="td-reco">Màxima llegibilitat a qualsevol mida ⭐</td>
+      </tr>
+      <tr>
+        <td class="td-name">7 · Tinta / Croquis</td>
+        <td><div class="dot-row"><div class="dot dot-filled"></div><div class="dot dot-filled"></div><div class="dot dot-filled"></div><div class="dot dot-half"></div><div class="dot"></div></div></td>
+        <td><div class="dot-row"><div class="dot dot-filled"></div><div class="dot dot-filled"></div><div class="dot dot-filled"></div><div class="dot dot-filled"></div><div class="dot dot-filled"></div></div></td>
+        <td><div class="dot-row"><div class="dot dot-filled"></div><div class="dot dot-filled"></div><div class="dot dot-filled"></div><div class="dot dot-filled"></div><div class="dot dot-half"></div></div></td>
+        <td><div class="dot-row"><div class="dot dot-filled"></div><div class="dot dot-filled"></div><div class="dot dot-filled"></div><div class="dot dot-filled"></div><div class="dot"></div></div></td>
+        <td class="td-reco">Si vols màxima coherència amb Zen Paper ⭐</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+</body>
+</html>

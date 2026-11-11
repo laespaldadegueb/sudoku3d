@@ -1,0 +1,8 @@
+{
+  "appId": "io.sudoku3d.app",
+  "appName": "Sudoku 3D",
+  "webDir": "dist",
+  "server": {
+    "androidScheme": "https"
+  }
+}

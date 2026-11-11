@@ -1,0 +1,1177 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WOW Home Screen — 3 Propostes · Sudoku³</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800;900&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: #131210;
+  color: #e8e4de;
+  font-family: 'Inter', system-ui, sans-serif;
+  padding: 48px 24px 80px;
+  min-height: 100vh;
+}
+
+/* ─── Capçalera del document ─── */
+.doc-header {
+  max-width: 980px; margin: 0 auto 56px;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.doc-eyebrow {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px; letter-spacing: .22em; text-transform: uppercase;
+  color: #5a5650;
+}
+.doc-title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 30px; font-weight: 800; letter-spacing: -.03em;
+  color: #f0ece6; line-height: 1.1;
+}
+.doc-title b { color: #c06040; }
+.doc-subtitle {
+  font-size: 13px; color: #6a6460; line-height: 1.6; max-width: 540px; margin-top: 4px;
+}
+.doc-tag {
+  display: inline-block;
+  background: rgba(192,96,64,.12); border: 1px solid rgba(192,96,64,.25);
+  color: #c06040; font-size: 10px; font-weight: 600;
+  letter-spacing: .08em; text-transform: uppercase;
+  padding: 3px 10px; border-radius: 20px; margin-top: 8px; width: fit-content;
+}
+
+/* ─── Grid de propostes ─── */
+.proposals-grid {
+  max-width: 1100px; margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 40px;
+  align-items: start;
+}
+
+/* ─── Etiqueta de proposta ─── */
+.proposal-wrap { display: flex; flex-direction: column; gap: 16px; }
+.proposal-meta { display: flex; flex-direction: column; gap: 6px; padding: 0 4px; }
+.proposal-id {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px; letter-spacing: .2em; text-transform: uppercase; color: #4a4640;
+}
+.proposal-name {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 17px; font-weight: 700; color: #ddd8d0; letter-spacing: -.01em;
+}
+.proposal-desc { font-size: 11px; color: #5a5650; line-height: 1.6; }
+.proposal-pills { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+.pill {
+  font-size: 9px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase;
+  padding: 2px 8px; border-radius: 20px;
+}
+.pill-wow  { background: rgba(192,96,64,.15); color: #c06040; border: 1px solid rgba(192,96,64,.3); }
+.pill-calm { background: rgba(80,144,176,.15); color: #5090b0; border: 1px solid rgba(80,144,176,.3); }
+.pill-dark { background: rgba(144,96,176,.15); color: #9060b0; border: 1px solid rgba(144,96,176,.3); }
+.pill-info { background: rgba(100,100,100,.12); color: #787068; border: 1px solid rgba(100,100,100,.2); }
+
+/* ─── Marc de telèfon genèric ─── */
+.phone-frame {
+  width: 100%;
+  border-radius: 36px;
+  overflow: hidden;
+  border: 1.5px solid #2a2724;
+  box-shadow: 0 40px 80px rgba(0,0,0,.5), 0 8px 24px rgba(0,0,0,.3);
+  position: relative;
+}
+.phone-notch {
+  position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
+  width: 80px; height: 22px; background: #0c0b09;
+  border-radius: 14px; z-index: 100;
+}
+
+/* ═══════════════════════════════════════════════════════
+   PROPOSTA A — "Cube Splash"
+   Un cub isomètric enorme ocupa 2/3 de la pantalla.
+   El toc inicial és visual, no textual.
+═══════════════════════════════════════════════════════ */
+
+.phone-a {
+  background: #faf8f5;
+  height: 620px;
+  display: flex; flex-direction: column;
+}
+
+/* Canvas del cub — 2/3 superior */
+.a-hero {
+  position: relative;
+  flex: 0 0 340px;
+  background: radial-gradient(ellipse 70% 60% at 50% 55%, #f5f0e8, #e8e0d4 70%, #d8d0c4);
+  overflow: hidden;
+  display: flex; align-items: center; justify-content: center;
+}
+.a-hero::before {
+  content: '';
+  position: absolute; inset: 0;
+  background-image: repeating-linear-gradient(0deg, transparent, transparent 22px, rgba(192,96,64,.06) 22px, rgba(192,96,64,.06) 23px),
+                    repeating-linear-gradient(90deg, transparent, transparent 22px, rgba(192,96,64,.06) 22px, rgba(192,96,64,.06) 23px);
+}
+
+/* Cub SVG isomètric gran */
+.a-cube-svg {
+  width: 220px; height: 220px;
+  position: relative; z-index: 2;
+  filter: drop-shadow(0 18px 36px rgba(0,0,0,.18)) drop-shadow(0 4px 8px rgba(0,0,0,.10));
+  animation: cubeBob 3.5s ease-in-out infinite;
+}
+@keyframes cubeBob {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-8px); }
+}
+
+/* Glow sota el cub */
+.a-cube-shadow {
+  position: absolute; bottom: 24px; left: 50%; transform: translateX(-50%);
+  width: 140px; height: 20px;
+  background: radial-gradient(ellipse, rgba(192,96,64,.25) 0%, transparent 70%);
+  border-radius: 50%;
+  animation: shadowPulse 3.5s ease-in-out infinite;
+}
+@keyframes shadowPulse {
+  0%, 100% { opacity: 1; transform: translateX(-50%) scaleX(1); }
+  50%       { opacity: .6; transform: translateX(-50%) scaleX(.85); }
+}
+
+/* Partícules de números flotants */
+.a-particle {
+  position: absolute; font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px; font-weight: 500; color: rgba(192,96,64,.4);
+  animation: floatNum linear infinite;
+  user-select: none; pointer-events: none; z-index: 1;
+}
+@keyframes floatNum {
+  from { transform: translateY(30px); opacity: 0; }
+  15%  { opacity: 1; }
+  85%  { opacity: 1; }
+  to   { transform: translateY(-300px); opacity: 0; }
+}
+
+/* Badge "daily" flotant */
+.a-daily-badge {
+  position: absolute; top: 18px; right: 16px; z-index: 10;
+  background: rgba(192,96,64,.9); color: white;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px; font-weight: 500; letter-spacing: .08em; text-transform: uppercase;
+  padding: 5px 10px; border-radius: 20px;
+  display: flex; align-items: center; gap: 5px;
+  box-shadow: 0 2px 8px rgba(192,96,64,.4);
+  animation: badgePop .5s cubic-bezier(.34,1.56,.64,1) .8s both;
+}
+@keyframes badgePop {
+  from { transform: scale(.5); opacity: 0; }
+  to   { transform: scale(1); opacity: 1; }
+}
+.a-daily-dot {
+  width: 6px; height: 6px; background: rgba(255,255,255,.7);
+  border-radius: 50%; animation: pulseDot 1.5s ease-in-out infinite;
+}
+@keyframes pulseDot {
+  0%, 100% { opacity: .7; transform: scale(1); }
+  50%       { opacity: 1; transform: scale(1.3); }
+}
+
+/* Àrea inferior de selecció */
+.a-bottom {
+  flex: 1; background: #faf8f5;
+  padding: 20px 18px 18px;
+  display: flex; flex-direction: column; gap: 14px;
+}
+.a-title-row {
+  display: flex; align-items: baseline; justify-content: space-between;
+}
+.a-wordmark {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 26px; font-weight: 800; letter-spacing: -.03em;
+  color: #1a1714; line-height: 1;
+}
+.a-wordmark sup { color: #c06040; font-size: 16px; vertical-align: super; }
+.a-tagline { font-size: 10px; color: #b0a898; margin-top: 2px; }
+
+.a-size-row {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+}
+.a-size-btn {
+  background: white; border: 1.5px solid #e0d8d0;
+  border-radius: 14px; padding: 12px 6px;
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  cursor: pointer; transition: all 150ms;
+}
+.a-size-btn:hover { border-color: #c06040; background: rgba(192,96,64,.04); }
+.a-size-btn.popular { border-color: #c06040; background: rgba(192,96,64,.05); }
+.a-sz-num {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 20px; font-weight: 700; color: #1a1714; line-height: 1;
+}
+.a-sz-sub { font-family: 'IBM Plex Mono', monospace; font-size: 8px; color: #b0a898; }
+.a-sz-tag {
+  font-size: 7px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em;
+  color: #c06040; background: rgba(192,96,64,.12);
+  padding: 1px 6px; border-radius: 8px;
+}
+
+.a-daily-btn {
+  background: #c06040; color: white;
+  border: none; border-radius: 14px; padding: 13px 16px;
+  display: flex; align-items: center; justify-content: space-between;
+  font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 13px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(192,96,64,.3);
+}
+.a-daily-right { font-size: 11px; opacity: .8; font-weight: 400; }
+
+.a-more-row {
+  display: flex; gap: 6px;
+}
+.a-more-chip {
+  flex: 1; background: #f0ece6; border: 1px solid #e0d8d0;
+  border-radius: 10px; padding: 8px 4px;
+  font-size: 9px; font-weight: 600; text-align: center; color: #8a7a6a;
+  cursor: pointer;
+}
+.a-more-chip:hover { border-color: #b0a898; color: #1a1714; }
+
+
+/* ═══════════════════════════════════════════════════════
+   PROPOSTA B — "Game Gallery"
+   Targetes grans per a cada joc, visibles des del primer moment.
+   Paleta pròpia per joc, sense menú ocult.
+═══════════════════════════════════════════════════════ */
+
+.phone-b {
+  background: #f7f4f0;
+  height: 620px;
+  display: flex; flex-direction: column;
+  overflow: hidden;
+}
+
+.b-header {
+  padding: 18px 18px 12px;
+  display: flex; align-items: center; gap: 10px;
+  border-bottom: 1px solid #e8e2dc;
+  flex-shrink: 0;
+}
+.b-icon {
+  width: 34px; height: 34px; border-radius: 8px;
+  overflow: hidden; flex-shrink: 0;
+}
+.b-header-text { flex: 1; }
+.b-wordmark {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 18px; font-weight: 800; letter-spacing: -.02em;
+  color: #1a1714; line-height: 1;
+}
+.b-wordmark sup { color: #c06040; font-size: 12px; }
+.b-tagline { font-size: 9px; color: #b0a898; margin-top: 2px; }
+.b-streak-badge {
+  background: rgba(192,96,64,.1); border: 1px solid rgba(192,96,64,.2);
+  color: #c06040; font-size: 10px; font-weight: 700;
+  padding: 4px 9px; border-radius: 20px; flex-shrink: 0;
+  font-family: 'IBM Plex Mono', monospace;
+}
+
+.b-scroll {
+  flex: 1; overflow-y: auto; padding: 14px 14px 14px;
+  display: flex; flex-direction: column; gap: 10px;
+  scrollbar-width: none;
+}
+.b-scroll::-webkit-scrollbar { display: none; }
+
+/* Targeta gran per al joc principal */
+.b-card-main {
+  border-radius: 18px; overflow: hidden;
+  position: relative;
+  flex-shrink: 0;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(0,0,0,.1);
+  transition: transform 100ms;
+}
+.b-card-main:active { transform: scale(.98); }
+
+.b-card-bg {
+  padding: 20px 18px 16px;
+  position: relative; overflow: hidden;
+}
+.b-card-bg::after {
+  content: ''; position: absolute;
+  bottom: -20px; right: -20px;
+  width: 120px; height: 120px;
+  border-radius: 50%;
+  opacity: .15;
+}
+.b-card-bg-3d {
+  background: linear-gradient(135deg, #c06040, #a04830);
+}
+.b-card-bg-3d::after { background: white; }
+
+.b-card-grid-preview {
+  position: absolute; top: 0; right: -10px; bottom: 0;
+  width: 110px;
+  display: flex; align-items: center; justify-content: center;
+  opacity: .18;
+}
+
+/* Miniatura cub isomètric per previsualització */
+.b-mini-cube { width: 80px; height: 80px; }
+
+.b-card-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 8px; letter-spacing: .18em; text-transform: uppercase;
+  color: rgba(255,255,255,.6); margin-bottom: 5px;
+}
+.b-card-title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 22px; font-weight: 800; letter-spacing: -.02em;
+  color: white; line-height: 1.1;
+}
+.b-card-desc { font-size: 10px; color: rgba(255,255,255,.65); margin-top: 5px; line-height: 1.5; }
+
+.b-card-footer {
+  background: rgba(0,0,0,.15); padding: 10px 18px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.b-card-sizes {
+  display: flex; gap: 6px;
+}
+.b-size-chip {
+  background: rgba(255,255,255,.15); border: 1px solid rgba(255,255,255,.2);
+  color: white; font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px; padding: 3px 8px; border-radius: 8px;
+}
+.b-size-chip.active { background: rgba(255,255,255,.9); color: #c06040; border-color: transparent; }
+.b-card-action {
+  color: rgba(255,255,255,.8); font-size: 11px; font-weight: 600;
+}
+
+/* Targetes petites per a jocs secundaris */
+.b-small-grid {
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px;
+  flex-shrink: 0;
+}
+.b-card-small {
+  border-radius: 14px; overflow: hidden; cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0,0,0,.08);
+  transition: transform 100ms;
+}
+.b-card-small:active { transform: scale(.97); }
+
+.b-small-body {
+  padding: 14px 14px 12px; position: relative; overflow: hidden;
+}
+.b-small-bg-2d     { background: linear-gradient(135deg, #5090b0, #3a7090); }
+.b-small-bg-kakuro { background: linear-gradient(135deg, #508050, #3a6438); }
+.b-small-bg-futo   { background: linear-gradient(135deg, #9060b0, #6a3d90); }
+.b-small-bg-bin    { background: linear-gradient(135deg, #408878, #2a6058); }
+
+.b-small-title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 14px; font-weight: 700; color: white; letter-spacing: -.01em;
+}
+.b-small-desc { font-size: 9px; color: rgba(255,255,255,.6); margin-top: 3px; }
+.b-small-icon {
+  position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
+  font-size: 24px; opacity: .2;
+}
+
+/* Previsualitzador de graella jocs 2D */
+.b-grid-preview {
+  display: grid; gap: 1px;
+  background: rgba(255,255,255,.12);
+  border-radius: 4px; overflow: hidden;
+  position: absolute; right: 12px; bottom: 12px; opacity: .25;
+}
+.b-grid-cell {
+  background: rgba(255,255,255,.5);
+  width: 8px; height: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'IBM Plex Mono', monospace; font-size: 5px; color: white; opacity: .8;
+}
+.b-grid-cell.filled { background: rgba(255,255,255,.9); opacity: 1; }
+
+
+/* ═══════════════════════════════════════════════════════
+   PROPOSTA C — "Night Cosmos"
+   Fons fosc amb números que floten en segon pla (ambient).
+   Cada joc és un portal brillant. Sensació "joc".
+═══════════════════════════════════════════════════════ */
+
+.phone-c {
+  background: #0e0d0c;
+  height: 620px;
+  display: flex; flex-direction: column;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Fons ambiental: números que floten */
+.c-ambient {
+  position: absolute; inset: 0; overflow: hidden; pointer-events: none;
+  z-index: 0;
+}
+.c-num {
+  position: absolute;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 14px; font-weight: 500;
+  color: rgba(192,96,64,.12);
+  animation: driftNum linear infinite;
+}
+@keyframes driftNum {
+  0%   { transform: translateY(100%) rotate(-5deg); opacity: 0; }
+  10%  { opacity: 1; }
+  90%  { opacity: 1; }
+  100% { transform: translateY(-120%) rotate(5deg); opacity: 0; }
+}
+
+/* Grid de fons subtil */
+.c-grid-bg {
+  position: absolute; inset: 0; pointer-events: none;
+  background-image:
+    repeating-linear-gradient(0deg,  transparent, transparent 29px, rgba(255,255,255,.02) 29px, rgba(255,255,255,.02) 30px),
+    repeating-linear-gradient(90deg, transparent, transparent 29px, rgba(255,255,255,.02) 29px, rgba(255,255,255,.02) 30px);
+  z-index: 0;
+}
+
+/* Contingut principal */
+.c-content { position: relative; z-index: 2; flex: 1; display: flex; flex-direction: column; }
+
+/* Header fosc */
+.c-header {
+  padding: 20px 18px 14px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.c-wordmark {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 24px; font-weight: 800; letter-spacing: -.03em;
+  color: #f0ece6; line-height: 1;
+}
+.c-wordmark sup { color: #c06040; font-size: 15px; }
+.c-tagline { font-size: 9px; color: #4a4640; margin-top: 2px; font-family: 'IBM Plex Mono', monospace; letter-spacing: .1em; text-transform: uppercase; }
+
+/* Cub heroic fosc */
+.c-hero {
+  flex: 0 0 200px;
+  display: flex; align-items: center; justify-content: center;
+  position: relative;
+}
+.c-cube-glow {
+  position: absolute;
+  width: 180px; height: 180px; border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(192,96,64,.2) 0%, transparent 65%);
+  filter: blur(20px);
+  animation: glowPulse 3s ease-in-out infinite;
+}
+@keyframes glowPulse {
+  0%, 100% { opacity: .7; transform: scale(1); }
+  50%       { opacity: 1; transform: scale(1.15); }
+}
+.c-cube-svg {
+  width: 150px; height: 150px;
+  filter: drop-shadow(0 0 20px rgba(192,96,64,.35)) drop-shadow(0 4px 12px rgba(0,0,0,.5));
+  animation: cubeBob 3.5s ease-in-out infinite;
+}
+
+/* Botons de talla com pastilles brillants */
+.c-size-row {
+  display: flex; gap: 8px; padding: 0 18px;
+  justify-content: center; flex-shrink: 0;
+  margin-bottom: 6px;
+}
+.c-size-btn {
+  flex: 1;
+  background: rgba(255,255,255,.04);
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 12px; padding: 12px 8px;
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  cursor: pointer; transition: all 200ms;
+}
+.c-size-btn:hover {
+  background: rgba(192,96,64,.12); border-color: rgba(192,96,64,.3);
+}
+.c-size-btn.featured {
+  background: rgba(192,96,64,.1); border-color: rgba(192,96,64,.25);
+}
+.c-sz-num {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 19px; font-weight: 700; color: #e8e4de; line-height: 1;
+}
+.c-sz-sub { font-family: 'IBM Plex Mono', monospace; font-size: 8px; color: #5a5650; }
+.c-sz-glow { width: 20px; height: 2px; border-radius: 1px; background: #c06040; opacity: 0; margin-top: 2px; }
+.c-size-btn.featured .c-sz-glow { opacity: 1; }
+
+/* Botó daily amb gradient lluminós */
+.c-daily-btn {
+  margin: 10px 18px 8px;
+  background: linear-gradient(135deg, rgba(192,96,64,.25), rgba(160,72,48,.15));
+  border: 1px solid rgba(192,96,64,.35);
+  border-radius: 14px; padding: 13px 18px;
+  display: flex; align-items: center; justify-content: space-between;
+  cursor: pointer; flex-shrink: 0;
+}
+.c-daily-left { display: flex; align-items: center; gap: 8px; }
+.c-daily-icon { font-size: 16px; }
+.c-daily-text { font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 12px; color: #e8e4de; }
+.c-daily-sub { font-size: 9px; color: #7a6a60; margin-top: 1px; font-family: 'IBM Plex Mono', monospace; }
+.c-daily-right {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px; color: #c06040; font-weight: 600;
+}
+
+/* Jocs secundaris: fila horitzontal de "portals" */
+.c-more-label {
+  padding: 0 18px 8px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 8px; letter-spacing: .2em; text-transform: uppercase;
+  color: #3a3630; flex-shrink: 0;
+}
+.c-games-row {
+  display: flex; gap: 8px; padding: 0 18px;
+  overflow-x: auto; flex-shrink: 0;
+  scrollbar-width: none;
+  padding-bottom: 4px;
+}
+.c-games-row::-webkit-scrollbar { display: none; }
+.c-game-chip {
+  flex-shrink: 0;
+  border-radius: 12px; overflow: hidden; cursor: pointer;
+  border: 1px solid rgba(255,255,255,.06);
+  transition: transform 100ms;
+  width: 68px;
+}
+.c-game-chip:active { transform: scale(.96); }
+.c-chip-body {
+  padding: 10px 8px 9px;
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+}
+.c-chip-icon { font-size: 18px; }
+.c-chip-name {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 7px; letter-spacing: .06em; text-align: center;
+  color: rgba(255,255,255,.55); text-transform: uppercase;
+}
+
+.c-chip-2d     { background: rgba(80,144,176,.12); border-color: rgba(80,144,176,.2); }
+.c-chip-kakuro { background: rgba(80,128,80,.12);  border-color: rgba(80,128,80,.2);  }
+.c-chip-futo   { background: rgba(144,96,176,.12); border-color: rgba(144,96,176,.2); }
+.c-chip-bin    { background: rgba(64,136,120,.12); border-color: rgba(64,136,120,.2); }
+
+.c-chip-2d     .c-chip-name { color: rgba(80,144,176,.7); }
+.c-chip-kakuro .c-chip-name { color: rgba(80,128,80,.7);  }
+.c-chip-futo   .c-chip-name { color: rgba(144,96,176,.7); }
+.c-chip-bin    .c-chip-name { color: rgba(64,136,120,.7); }
+
+
+/* ─── Comparativa actual vs propostes ─── */
+.compare-section {
+  max-width: 980px; margin: 64px auto 0;
+  padding-top: 48px; border-top: 1px solid #1e1c1a;
+}
+.compare-title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 20px; font-weight: 700; color: #c8c0b8;
+  letter-spacing: -.02em; margin-bottom: 24px;
+}
+.compare-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;
+}
+.compare-item { display: flex; flex-direction: column; gap: 8px; }
+.compare-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 8px; letter-spacing: .18em; text-transform: uppercase;
+  color: #4a4640; text-align: center;
+}
+.compare-score {
+  display: flex; flex-direction: column; gap: 4px;
+}
+.score-row {
+  display: flex; align-items: center; gap: 6px;
+}
+.score-name { font-size: 9px; color: #6a6460; flex: 0 0 72px; }
+.score-bar-bg {
+  flex: 1; height: 4px; background: #1e1c1a; border-radius: 2px; overflow: hidden;
+}
+.score-bar-fill { height: 100%; border-radius: 2px; }
+.fill-actual  { background: #3a3630; }
+.fill-a       { background: #c06040; }
+.fill-b       { background: #5090b0; }
+.fill-c       { background: #9060b0; }
+.score-val { font-family: 'IBM Plex Mono', monospace; font-size: 8px; color: #5a5650; flex: 0 0 20px; text-align: right; }
+
+/* ─── Notes de disseny ─── */
+.notes-section {
+  max-width: 980px; margin: 48px auto 0;
+}
+.notes-title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 16px; font-weight: 700; color: #c8c0b8; margin-bottom: 16px;
+}
+.notes-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;
+}
+.note-card {
+  background: #161412; border: 1px solid #221e1c;
+  border-radius: 12px; padding: 16px;
+  display: flex; flex-direction: column; gap: 10px;
+}
+.note-prop {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 8px; letter-spacing: .16em; text-transform: uppercase;
+}
+.note-prop-a { color: #c06040; }
+.note-prop-b { color: #5090b0; }
+.note-prop-c { color: #9060b0; }
+.note-heading {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 13px; font-weight: 700; color: #d8d0c8; letter-spacing: -.01em;
+}
+.note-body { font-size: 11px; color: #5a5650; line-height: 1.6; }
+.note-pro, .note-con {
+  display: flex; align-items: flex-start; gap: 6px;
+  font-size: 10px; line-height: 1.4;
+}
+.note-pro { color: #608060; }
+.note-con { color: #806060; }
+.note-bullet { flex-shrink: 0; font-size: 8px; margin-top: 2px; }
+
+</style>
+</head>
+<body>
+
+<!-- ─── Capçalera del document ─── -->
+<header class="doc-header">
+  <div class="doc-eyebrow">Sudoku³ · Pantalla d'inici · Propostes visuals</div>
+  <div class="doc-title">Tres propostes WOW per a la <b>pantalla inicial</b></div>
+  <div class="doc-subtitle">
+    L'objectiu és que el jugador s'aturi i rigui de sorpresa quan obri l'app per primera vegada.
+    Cada proposta té una personalitat diferent: des del cub heroic fins a les targetes de joc,
+    passant per una estètica "night cosmos" fosca i immersiva.
+  </div>
+  <div class="doc-tag">Proposta de disseny · oct 2026</div>
+</header>
+
+<!-- ─── Grid de 3 propostes ─── -->
+<div class="proposals-grid">
+
+  <!-- ═══ PROPOSTA A ═══ -->
+  <div class="proposal-wrap">
+    <div class="proposal-meta">
+      <div class="proposal-id">Proposta A</div>
+      <div class="proposal-name">"Cube Splash"</div>
+      <div class="proposal-desc">
+        El cub isomètric ocupa 2/3 de la pantalla i flota suaument (animació de bob).
+        Un fons de paper quadriculat evoca la sensació de trencaclosques.
+        La selecció de mida queda sota, compacta i clara.
+        <strong style="color:#c8c0b8">El cub ES la portada.</strong>
+      </div>
+      <div class="proposal-pills">
+        <span class="pill pill-wow">Cub protagonista</span>
+        <span class="pill pill-info">Paleta càlida</span>
+        <span class="pill pill-info">Animació subtle</span>
+      </div>
+    </div>
+
+    <div class="phone-frame">
+      <div class="phone-notch"></div>
+      <div class="phone-a">
+        <!-- Hero amb cub animat -->
+        <div class="a-hero">
+          <!-- Partícules de números -->
+          <span class="a-particle" style="left:12%; animation-duration:8s; animation-delay:0s">3</span>
+          <span class="a-particle" style="left:28%; animation-duration:11s; animation-delay:2.5s">7</span>
+          <span class="a-particle" style="left:45%; animation-duration:9s; animation-delay:1s">1</span>
+          <span class="a-particle" style="left:63%; animation-duration:13s; animation-delay:4s">5</span>
+          <span class="a-particle" style="left:78%; animation-duration:7s; animation-delay:0.5s">9</span>
+          <span class="a-particle" style="left:88%; animation-duration:10s; animation-delay:3s">2</span>
+          <span class="a-particle" style="left:20%; animation-duration:12s; animation-delay:6s">4</span>
+          <span class="a-particle" style="left:55%; animation-duration:8.5s; animation-delay:7s">8</span>
+
+          <!-- Cub isomètric SVG gran -->
+          <svg class="a-cube-svg" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <!-- Cara superior (terracota) -->
+            <polygon points="50,8 84,26 50,44 16,26" fill="#d4724e"/>
+            <polygon points="50,8 84,26 50,44 16,26" fill="url(#topSheen)" opacity=".4"/>
+            <!-- Cara dreta (blau acer) -->
+            <polygon points="84,26 84,62 50,80 50,44" fill="#4080a0"/>
+            <!-- Cara esquerra (verd) -->
+            <polygon points="16,26 50,44 50,80 16,62" fill="#428060"/>
+            <!-- Grid cara superior -->
+            <g opacity=".25" stroke="white" stroke-width=".6">
+              <line x1="38" y1="21" x2="62" y2="21"/>
+              <line x1="32" y1="26" x2="68" y2="26"/>
+              <line x1="38" y1="38" x2="50" y2="44"/>
+              <line x1="50" y1="38" x2="62" y2="32"/>
+            </g>
+            <!-- Grid cara dreta -->
+            <g opacity=".2" stroke="white" stroke-width=".6">
+              <line x1="84" y1="38" x2="50" y2="56"/>
+              <line x1="84" y1="50" x2="50" y2="68"/>
+              <line x1="72" y1="32" x2="72" y2="68"/>
+              <line x1="62" y1="38" x2="62" y2="74"/>
+            </g>
+            <!-- Grid cara esquerra -->
+            <g opacity=".2" stroke="white" stroke-width=".6">
+              <line x1="16" y1="38" x2="50" y2="56"/>
+              <line x1="16" y1="50" x2="50" y2="68"/>
+              <line x1="28" y1="32" x2="28" y2="68"/>
+              <line x1="38" y1="38" x2="38" y2="74"/>
+            </g>
+            <!-- Números cara superior -->
+            <text x="37" y="24" font-family="IBM Plex Mono,monospace" font-size="5" fill="rgba(255,255,255,.7)" text-anchor="middle">3</text>
+            <text x="50" y="28" font-family="IBM Plex Mono,monospace" font-size="5" fill="rgba(255,255,255,.7)" text-anchor="middle">1</text>
+            <text x="63" y="24" font-family="IBM Plex Mono,monospace" font-size="5" fill="rgba(255,255,255,.7)" text-anchor="middle">2</text>
+            <text x="44" y="36" font-family="IBM Plex Mono,monospace" font-size="5" fill="rgba(255,255,255,.7)" text-anchor="middle">2</text>
+            <text x="56" y="36" font-family="IBM Plex Mono,monospace" font-size="5" fill="rgba(255,255,255,.7)" text-anchor="middle">3</text>
+            <!-- Highlight cantonada superior -->
+            <polygon points="50,8 54,10 50,12 46,10" fill="rgba(255,255,255,.5)"/>
+            <!-- Vèrtex fosc inferior -->
+            <circle cx="50" cy="80" r="1.5" fill="rgba(0,0,0,.3)"/>
+            <!-- Ombres de bores -->
+            <line x1="50" y1="44" x2="50" y2="80" stroke="rgba(0,0,0,.15)" stroke-width="1"/>
+            <defs>
+              <linearGradient id="topSheen" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="white" stop-opacity=".6"/>
+                <stop offset="60%" stop-color="white" stop-opacity="0"/>
+              </linearGradient>
+            </defs>
+          </svg>
+
+          <!-- Ombra flotant sota el cub -->
+          <div class="a-cube-shadow"></div>
+
+          <!-- Badge desafiament diari -->
+          <div class="a-daily-badge">
+            <div class="a-daily-dot"></div>
+            Desafiament diari
+          </div>
+        </div>
+
+        <!-- Àrea inferior -->
+        <div class="a-bottom">
+          <div>
+            <div class="a-wordmark">Sudoku<sup>³</sup></div>
+            <div class="a-tagline">La tercera dimensió del Sudoku</div>
+          </div>
+
+          <!-- Selector de mida -->
+          <div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:.16em;text-transform:uppercase;color:#b0a898;margin-bottom:8px">Tria la mida del cub</div>
+            <div class="a-size-row">
+              <div class="a-size-btn">
+                <div class="a-sz-num">3³</div>
+                <div class="a-sz-sub">27 cel·les</div>
+              </div>
+              <div class="a-size-btn popular">
+                <div class="a-sz-num">4³</div>
+                <div class="a-sz-sub">64 cel·les</div>
+                <div class="a-sz-tag">Popular</div>
+              </div>
+              <div class="a-size-btn">
+                <div class="a-sz-num">9³</div>
+                <div class="a-sz-sub">729 cel·les</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Botó daily -->
+          <div class="a-daily-btn">
+            <span>📅 Repte d'avui</span>
+            <span class="a-daily-right">🔥 5</span>
+          </div>
+
+          <!-- Jocs addicionals -->
+          <div class="a-more-row">
+            <div class="a-more-chip">Sudoku 2D</div>
+            <div class="a-more-chip">Kakuro</div>
+            <div class="a-more-chip">Futoshiki</div>
+            <div class="a-more-chip">Takuzu</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ PROPOSTA B ═══ -->
+  <div class="proposal-wrap">
+    <div class="proposal-meta">
+      <div class="proposal-id">Proposta B</div>
+      <div class="proposal-name">"Game Gallery"</div>
+      <div class="proposal-desc">
+        Tots els 5 jocs visibles immediatament com a targetes de colors,
+        sense menú ocult. Cada targeta mostra el color del joc, una previsualització
+        de la graella i una descripció curta.
+        <strong style="color:#c8c0b8">Descobriment immediat de tots els jocs.</strong>
+      </div>
+      <div class="proposal-pills">
+        <span class="pill pill-calm">Targetes per joc</span>
+        <span class="pill pill-info">Scroll vertical</span>
+        <span class="pill pill-info">Previsualització</span>
+      </div>
+    </div>
+
+    <div class="phone-frame">
+      <div class="phone-notch"></div>
+      <div class="phone-b">
+        <!-- Header compacte -->
+        <div class="b-header">
+          <div class="b-icon">
+            <svg viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect width="34" height="34" fill="#f0ece6"/>
+              <polygon points="17,4 27,9 17,14 7,9" fill="#c06040"/>
+              <polygon points="27,9 27,22 17,27 17,14" fill="#4a80a0"/>
+              <polygon points="7,9 17,14 17,27 7,22" fill="#428060"/>
+            </svg>
+          </div>
+          <div class="b-header-text">
+            <div class="b-wordmark">Sudoku<sup>³</sup></div>
+            <div class="b-tagline">The third dimension of Sudoku</div>
+          </div>
+          <div class="b-streak-badge">🔥 5</div>
+        </div>
+
+        <!-- Scroll de targetes -->
+        <div class="b-scroll">
+
+          <!-- Targeta gran Sudoku 3D -->
+          <div class="b-card-main">
+            <div class="b-card-bg b-card-bg-3d">
+              <!-- Previsualització cub petit -->
+              <div class="b-card-grid-preview">
+                <svg class="b-mini-cube" viewBox="0 0 80 80" fill="none">
+                  <polygon points="40,6 66,20 40,34 14,20" fill="rgba(255,255,255,.3)"/>
+                  <polygon points="66,20 66,50 40,64 40,34" fill="rgba(0,0,0,.2)"/>
+                  <polygon points="14,20 40,34 40,64 14,50" fill="rgba(0,0,0,.3)"/>
+                </svg>
+              </div>
+              <div class="b-card-label">Joc principal</div>
+              <div class="b-card-title">Sudoku<br>3D</div>
+              <div class="b-card-desc">Omple un cub sense repetir cap número en files, columnes o pilars.</div>
+            </div>
+            <div class="b-card-footer">
+              <div class="b-card-sizes">
+                <span class="b-size-chip">3³</span>
+                <span class="b-size-chip active">4³</span>
+                <span class="b-size-chip">9³</span>
+              </div>
+              <span class="b-card-action">Jugar →</span>
+            </div>
+          </div>
+
+          <!-- Grid 2x2 jocs secundaris -->
+          <div class="b-small-grid">
+
+            <div class="b-card-small">
+              <div class="b-small-body b-small-bg-2d">
+                <!-- Previsualització 3x3 -->
+                <div class="b-grid-preview" style="grid-template-columns:repeat(3,8px)">
+                  <div class="b-grid-cell filled">5</div><div class="b-grid-cell">3</div><div class="b-grid-cell filled">7</div>
+                  <div class="b-grid-cell">6</div><div class="b-grid-cell filled">8</div><div class="b-grid-cell">4</div>
+                  <div class="b-grid-cell filled">1</div><div class="b-grid-cell">9</div><div class="b-grid-cell filled">2</div>
+                </div>
+                <div class="b-small-title">Sudoku<br>2D</div>
+                <div class="b-small-desc">Clàssic 9×9</div>
+              </div>
+            </div>
+
+            <div class="b-card-small">
+              <div class="b-small-body b-small-bg-kakuro">
+                <div class="b-grid-preview" style="grid-template-columns:repeat(3,8px)">
+                  <div class="b-grid-cell filled" style="background:rgba(0,0,0,.3)">╲</div><div class="b-grid-cell filled">3</div><div class="b-grid-cell filled">7</div>
+                  <div class="b-grid-cell filled">2</div><div class="b-grid-cell">1</div><div class="b-grid-cell">2</div>
+                  <div class="b-grid-cell filled">6</div><div class="b-grid-cell">3</div><div class="b-grid-cell">4</div>
+                </div>
+                <div class="b-small-title">Kakuro</div>
+                <div class="b-small-desc">Sumes creuades</div>
+              </div>
+            </div>
+
+            <div class="b-card-small">
+              <div class="b-small-body b-small-bg-futo">
+                <div class="b-grid-preview" style="grid-template-columns:repeat(4,8px)">
+                  <div class="b-grid-cell filled">2</div><div class="b-grid-cell">1</div><div class="b-grid-cell filled">4</div><div class="b-grid-cell">3</div>
+                  <div class="b-grid-cell">3</div><div class="b-grid-cell filled">4</div><div class="b-grid-cell">1</div><div class="b-grid-cell filled">2</div>
+                </div>
+                <div class="b-small-title">Futoshiki</div>
+                <div class="b-small-desc">Inequacions 4×4</div>
+              </div>
+            </div>
+
+            <div class="b-card-small">
+              <div class="b-small-body b-small-bg-bin">
+                <div class="b-grid-preview" style="grid-template-columns:repeat(4,8px)">
+                  <div class="b-grid-cell filled">0</div><div class="b-grid-cell">1</div><div class="b-grid-cell filled">0</div><div class="b-grid-cell">1</div>
+                  <div class="b-grid-cell">1</div><div class="b-grid-cell filled">0</div><div class="b-grid-cell">1</div><div class="b-grid-cell filled">0</div>
+                </div>
+                <div class="b-small-title">Takuzu</div>
+                <div class="b-small-desc">Binari 6×6</div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Botó desafiament diari -->
+          <div style="background:white;border:1.5px solid #e0d8d0;border-radius:14px;padding:13px 16px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;">
+            <span style="font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:13px;color:#1a1714">📅 Repte d'avui</span>
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:#c06040">Juga →</span>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ PROPOSTA C ═══ -->
+  <div class="proposal-wrap">
+    <div class="proposal-meta">
+      <div class="proposal-id">Proposta C</div>
+      <div class="proposal-name">"Night Cosmos"</div>
+      <div class="proposal-desc">
+        Fons fosc amb números que floten com constel·lacions en segon pla.
+        El cub lluu en terracota com un objecte que espera ser descobert.
+        Jocs secundaris com "portals" horitzontals.
+        <strong style="color:#c8c0b8">Sensació de joc immersiu des del primer instant.</strong>
+      </div>
+      <div class="proposal-pills">
+        <span class="pill pill-dark">Mode fosc</span>
+        <span class="pill pill-info">Ambient numèric</span>
+        <span class="pill pill-info">Glow terracota</span>
+      </div>
+    </div>
+
+    <div class="phone-frame">
+      <div class="phone-notch"></div>
+      <div class="phone-c">
+        <!-- Fons ambiental -->
+        <div class="c-grid-bg"></div>
+        <div class="c-ambient">
+          <span class="c-num" style="left:8%;  animation-duration:12s; animation-delay:0s">4</span>
+          <span class="c-num" style="left:18%; animation-duration:9s;  animation-delay:2s">7</span>
+          <span class="c-num" style="left:32%; animation-duration:14s; animation-delay:1s">2</span>
+          <span class="c-num" style="left:48%; animation-duration:10s; animation-delay:4s">9</span>
+          <span class="c-num" style="left:62%; animation-duration:11s; animation-delay:3s">1</span>
+          <span class="c-num" style="left:72%; animation-duration:8s;  animation-delay:5s">5</span>
+          <span class="c-num" style="left:85%; animation-duration:13s; animation-delay:1.5s">3</span>
+          <span class="c-num" style="left:25%; animation-duration:16s; animation-delay:7s">8</span>
+          <span class="c-num" style="left:55%; animation-duration:10s; animation-delay:9s">6</span>
+        </div>
+
+        <!-- Contingut -->
+        <div class="c-content">
+          <!-- Header -->
+          <div class="c-header">
+            <div>
+              <div class="c-wordmark">Sudoku<sup>³</sup></div>
+              <div class="c-tagline">Third dimension of Sudoku</div>
+            </div>
+          </div>
+
+          <!-- Cub hero fosc -->
+          <div class="c-hero">
+            <div class="c-cube-glow"></div>
+            <svg class="c-cube-svg" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <!-- Cara superior (terracota brillant) -->
+              <polygon points="50,10 82,27 50,44 18,27" fill="#d06848"/>
+              <polygon points="50,10 82,27 50,44 18,27" fill="url(#darkTopSheen)" opacity=".5"/>
+              <!-- Cara dreta -->
+              <polygon points="82,27 82,62 50,79 50,44" fill="#3a6888"/>
+              <!-- Cara esquerra -->
+              <polygon points="18,27 50,44 50,79 18,62" fill="#386852"/>
+              <!-- Glow a la cantonada superior -->
+              <polygon points="50,10 54,12 50,14 46,12" fill="rgba(255,220,200,.8)"/>
+              <!-- Línies de grid subtils -->
+              <g opacity=".3" stroke="rgba(255,255,255,.5)" stroke-width=".5">
+                <line x1="50" y1="44" x2="50" y2="79"/>
+                <line x1="66" y1="35" x2="66" y2="70"/>
+                <line x1="34" y1="35" x2="34" y2="70"/>
+                <line x1="82" y1="44" x2="18" y2="44"/>
+                <line x1="82" y1="53" x2="50" y2="61"/>
+                <line x1="18" y1="53" x2="50" y2="61"/>
+              </g>
+              <!-- Números a la cara superior amb glow -->
+              <text x="38" y="26" font-family="IBM Plex Mono,monospace" font-size="5.5" fill="rgba(255,220,200,.8)" text-anchor="middle">3</text>
+              <text x="50" y="30" font-family="IBM Plex Mono,monospace" font-size="5.5" fill="rgba(255,220,200,.8)" text-anchor="middle">1</text>
+              <text x="62" y="26" font-family="IBM Plex Mono,monospace" font-size="5.5" fill="rgba(255,220,200,.8)" text-anchor="middle">2</text>
+              <text x="44" y="38" font-family="IBM Plex Mono,monospace" font-size="5.5" fill="rgba(255,220,200,.8)" text-anchor="middle">2</text>
+              <text x="56" y="38" font-family="IBM Plex Mono,monospace" font-size="5.5" fill="rgba(255,220,200,.8)" text-anchor="middle">3</text>
+              <defs>
+                <linearGradient id="darkTopSheen" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="white" stop-opacity=".8"/>
+                  <stop offset="50%" stop-color="white" stop-opacity="0"/>
+                </linearGradient>
+              </defs>
+            </svg>
+          </div>
+
+          <!-- Selector de mida -->
+          <div class="c-size-row">
+            <div class="c-size-btn">
+              <div class="c-sz-num">3³</div>
+              <div class="c-sz-sub">27 cels.</div>
+              <div class="c-sz-glow"></div>
+            </div>
+            <div class="c-size-btn featured">
+              <div class="c-sz-num">4³</div>
+              <div class="c-sz-sub">64 cels.</div>
+              <div class="c-sz-glow"></div>
+            </div>
+            <div class="c-size-btn">
+              <div class="c-sz-num">9³</div>
+              <div class="c-sz-sub">729 cels.</div>
+              <div class="c-sz-glow"></div>
+            </div>
+          </div>
+
+          <!-- Botó desafiament diari -->
+          <div class="c-daily-btn">
+            <div class="c-daily-left">
+              <span class="c-daily-icon">📅</span>
+              <div>
+                <div class="c-daily-text">Repte d'avui</div>
+                <div class="c-daily-sub">nova dificultat cada dia</div>
+              </div>
+            </div>
+            <div class="c-daily-right">🔥 5</div>
+          </div>
+
+          <!-- Jocs addicionals -->
+          <div class="c-more-label">Més jocs</div>
+          <div class="c-games-row">
+            <div class="c-game-chip c-chip-2d">
+              <div class="c-chip-body">
+                <span class="c-chip-icon">⊞</span>
+                <span class="c-chip-name">Sudoku<br>2D</span>
+              </div>
+            </div>
+            <div class="c-game-chip c-chip-kakuro">
+              <div class="c-chip-body">
+                <span class="c-chip-icon">╲</span>
+                <span class="c-chip-name">Kakuro</span>
+              </div>
+            </div>
+            <div class="c-game-chip c-chip-futo">
+              <div class="c-chip-body">
+                <span class="c-chip-icon">≺≻</span>
+                <span class="c-chip-name">Futoshiki</span>
+              </div>
+            </div>
+            <div class="c-game-chip c-chip-bin">
+              <div class="c-chip-body">
+                <span class="c-chip-icon">01</span>
+                <span class="c-chip-name">Takuzu</span>
+              </div>
+            </div>
+          </div>
+
+        </div><!-- /c-content -->
+      </div>
+    </div>
+  </div>
+
+</div><!-- /proposals-grid -->
+
+
+<!-- ─── Comparativa ─── -->
+<div class="compare-section">
+  <div class="compare-title">Comparativa de propostes</div>
+  <div class="compare-grid">
+    <div class="compare-item">
+      <div class="compare-label">Actual</div>
+      <div class="compare-score">
+        <div class="score-row"><span class="score-name">Impacte visual</span><div class="score-bar-bg"><div class="score-bar-fill fill-actual" style="width:20%"></div></div><span class="score-val">2/10</span></div>
+        <div class="score-row"><span class="score-name">Sorpresa inicial</span><div class="score-bar-bg"><div class="score-bar-fill fill-actual" style="width:10%"></div></div><span class="score-val">1/10</span></div>
+        <div class="score-row"><span class="score-name">Descobriment</span><div class="score-bar-bg"><div class="score-bar-fill fill-actual" style="width:30%"></div></div><span class="score-val">3/10</span></div>
+        <div class="score-row"><span class="score-name">Usabilitat</span><div class="score-bar-bg"><div class="score-bar-fill fill-actual" style="width:80%"></div></div><span class="score-val">8/10</span></div>
+      </div>
+    </div>
+    <div class="compare-item">
+      <div class="compare-label">Proposta A — Cube Splash</div>
+      <div class="compare-score">
+        <div class="score-row"><span class="score-name">Impacte visual</span><div class="score-bar-bg"><div class="score-bar-fill fill-a" style="width:90%"></div></div><span class="score-val">9/10</span></div>
+        <div class="score-row"><span class="score-name">Sorpresa inicial</span><div class="score-bar-bg"><div class="score-bar-fill fill-a" style="width:90%"></div></div><span class="score-val">9/10</span></div>
+        <div class="score-row"><span class="score-name">Descobriment</span><div class="score-bar-bg"><div class="score-bar-fill fill-a" style="width:60%"></div></div><span class="score-val">6/10</span></div>
+        <div class="score-row"><span class="score-name">Usabilitat</span><div class="score-bar-bg"><div class="score-bar-fill fill-a" style="width:80%"></div></div><span class="score-val">8/10</span></div>
+      </div>
+    </div>
+    <div class="compare-item">
+      <div class="compare-label">Proposta B — Game Gallery</div>
+      <div class="compare-score">
+        <div class="score-row"><span class="score-name">Impacte visual</span><div class="score-bar-bg"><div class="score-bar-fill fill-b" style="width:80%"></div></div><span class="score-val">8/10</span></div>
+        <div class="score-row"><span class="score-name">Sorpresa inicial</span><div class="score-bar-bg"><div class="score-bar-fill fill-b" style="width:70%"></div></div><span class="score-val">7/10</span></div>
+        <div class="score-row"><span class="score-name">Descobriment</span><div class="score-bar-bg"><div class="score-bar-fill fill-b" style="width:100%"></div></div><span class="score-val">10/10</span></div>
+        <div class="score-row"><span class="score-name">Usabilitat</span><div class="score-bar-bg"><div class="score-bar-fill fill-b" style="width:90%"></div></div><span class="score-val">9/10</span></div>
+      </div>
+    </div>
+    <div class="compare-item">
+      <div class="compare-label">Proposta C — Night Cosmos</div>
+      <div class="compare-score">
+        <div class="score-row"><span class="score-name">Impacte visual</span><div class="score-bar-bg"><div class="score-bar-fill fill-c" style="width:100%"></div></div><span class="score-val">10/10</span></div>
+        <div class="score-row"><span class="score-name">Sorpresa inicial</span><div class="score-bar-bg"><div class="score-bar-fill fill-c" style="width:100%"></div></div><span class="score-val">10/10</span></div>
+        <div class="score-row"><span class="score-name">Descobriment</span><div class="score-bar-bg"><div class="score-bar-fill fill-c" style="width:60%"></div></div><span class="score-val">6/10</span></div>
+        <div class="score-row"><span class="score-name">Usabilitat</span><div class="score-bar-bg"><div class="score-bar-fill fill-c" style="width:70%"></div></div><span class="score-val">7/10</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ─── Notes de disseny ─── -->
+<div class="notes-section">
+  <div class="notes-title">Notes de disseny per a cada proposta</div>
+  <div class="notes-grid">
+
+    <div class="note-card">
+      <div class="note-prop note-prop-a">Proposta A · Cube Splash</div>
+      <div class="note-heading">El cub com a protagonista absolut</div>
+      <div class="note-body">
+        L'animació de "bob" (flotació lleu) és la primera cosa que veu el jugador.
+        Els números que floten com partícules reforcen el tema numèric.
+        El fons de paper quadriculat crea sensació de joc analògic premium.
+      </div>
+      <div class="note-pro"><span class="note-bullet">✓</span> Màxim impacte visual amb la paleta actual</div>
+      <div class="note-pro"><span class="note-bullet">✓</span> Fàcil d'implementar amb SVG + CSS</div>
+      <div class="note-pro"><span class="note-bullet">✓</span> Coherent amb el disseny "Zen Paper" existent</div>
+      <div class="note-con"><span class="note-bullet">✗</span> Els jocs secundaris queden amagats</div>
+      <div class="note-con"><span class="note-bullet">✗</span> Requereix pantalla prou alta (≥580px)</div>
+    </div>
+
+    <div class="note-card">
+      <div class="note-prop note-prop-b">Proposta B · Game Gallery</div>
+      <div class="note-heading">Tots els jocs descoberts a primer cop d'ull</div>
+      <div class="note-body">
+        El menú "Més jocs" desapareix: ara tot és visible. Cada targeta és
+        un joc diferent amb el seu color propi. L'usuari entén immediatament
+        la riquesa de l'app. Scroll vertical natural.
+      </div>
+      <div class="note-pro"><span class="note-bullet">✓</span> Descobriment màxim: 5 jocs visibles</div>
+      <div class="note-pro"><span class="note-bullet">✓</span> Colors de joc com a identitat visual</div>
+      <div class="note-pro"><span class="note-bullet">✓</span> Previsualitzacions de graella orientatives</div>
+      <div class="note-con"><span class="note-bullet">✗</span> El 3D perd protagonisme</div>
+      <div class="note-con"><span class="note-bullet">✗</span> Requereix scroll per veure el botó diari</div>
+    </div>
+
+    <div class="note-card">
+      <div class="note-prop note-prop-c">Proposta C · Night Cosmos</div>
+      <div class="note-heading">Mode fosc immersiu estil "app de joc"</div>
+      <div class="note-body">
+        Trencament total amb el disseny actual. Els números de fons creen
+        ambient sense soroll visual. El cub lluu com un objecte màgic.
+        Pot coexistir amb el mode fosc del sistema operatiu.
+      </div>
+      <div class="note-pro"><span class="note-bullet">✓</span> Sensació de "joc" molt forta</div>
+      <div class="note-pro"><span class="note-bullet">✓</span> Diferenciador total en el mercat</div>
+      <div class="note-pro"><span class="note-bullet">✓</span> El glow de terracota és molt efectiu</div>
+      <div class="note-con"><span class="note-bullet">✗</span> Trencament amb la paleta "Zen Paper"</div>
+      <div class="note-con"><span class="note-bullet">✗</span> Pot ser menys llegible en entorns lluminosos</div>
+    </div>
+
+  </div>
+</div>
+
+</body>
+</html>

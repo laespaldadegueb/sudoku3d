@@ -1,0 +1,248 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <defs>
+    <!-- Background: warm paper -->
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#faf8f5"/>
+      <stop offset="100%" stop-color="#f0ece6"/>
+    </linearGradient>
+
+    <!-- Top face: terracota (mode 3D) -->
+    <linearGradient id="topFace" x1="20%" y1="0%" x2="80%" y2="100%">
+      <stop offset="0%" stop-color="#d4724e"/>
+      <stop offset="100%" stop-color="#b85538"/>
+    </linearGradient>
+
+    <!-- Right face: blau acer (mode 2D) -->
+    <linearGradient id="rightFace" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#5090b0"/>
+      <stop offset="100%" stop-color="#3a7090"/>
+    </linearGradient>
+
+    <!-- Left face: verd sàlvia (mode Kakuro) -->
+    <linearGradient id="leftFace" x1="100%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#508050"/>
+      <stop offset="100%" stop-color="#3a6438"/>
+    </linearGradient>
+
+    <!-- Soft shadow under cube -->
+    <filter id="shadow" x="-25%" y="-10%" width="150%" height="160%">
+      <feDropShadow dx="0" dy="20" stdDeviation="28"
+                    flood-color="#8a7a6a" flood-opacity="0.22"/>
+    </filter>
+
+    <!-- Subtle inner highlight for top face -->
+    <linearGradient id="topSheen" x1="30%" y1="0%" x2="70%" y2="100%">
+      <stop offset="0%" stop-color="rgba(255,255,255,0.28)"/>
+      <stop offset="60%" stop-color="rgba(255,255,255,0)"/>
+    </linearGradient>
+  </defs>
+
+  <!-- ══════════════════════════════════════════
+       BACKGROUND: rounded square, paper warm
+       ══════════════════════════════════════════ -->
+  <rect width="1024" height="1024" rx="195" ry="195" fill="url(#bg)"/>
+
+  <!-- Subtle rule line grid in background (like graph paper, very faint) -->
+  <g stroke="#d8d0c8" stroke-width="1" opacity="0.35">
+    <!-- Horizontal lines -->
+    <line x1="0" y1="128" x2="1024" y2="128"/>
+    <line x1="0" y1="256" x2="1024" y2="256"/>
+    <line x1="0" y1="384" x2="1024" y2="384"/>
+    <line x1="0" y1="512" x2="1024" y2="512"/>
+    <line x1="0" y1="640" x2="1024" y2="640"/>
+    <line x1="0" y1="768" x2="1024" y2="768"/>
+    <line x1="0" y1="896" x2="1024" y2="896"/>
+    <!-- Vertical lines -->
+    <line x1="128" y1="0" x2="128" y2="1024"/>
+    <line x1="256" y1="0" x2="256" y2="1024"/>
+    <line x1="384" y1="0" x2="384" y2="1024"/>
+    <line x1="512" y1="0" x2="512" y2="1024"/>
+    <line x1="640" y1="0" x2="640" y2="1024"/>
+    <line x1="768" y1="0" x2="768" y2="1024"/>
+    <line x1="896" y1="0" x2="896" y2="1024"/>
+  </g>
+  <!-- Mask the grid so it only shows inside the rounded rect -->
+  <!-- (simplified: lines near corners will be clipped naturally by the SVG render context) -->
+
+  <!-- ══════════════════════════════════════════
+       ISOMETRIC CUBE  (s=210)
+         T   = (512, 248)
+         TR  = (694, 356)   (+182, +108)
+         C   = (512, 464)   (cube center)
+         TL  = (330, 356)   (-182, +108)
+         BR  = (694, 572)
+         B   = (512, 680)
+         BL  = (330, 572)
+       ══════════════════════════════════════════ -->
+
+  <!-- Drop shadow -->
+  <g filter="url(#shadow)">
+    <ellipse cx="512" cy="690" rx="195" ry="28" fill="#8a7a6a" opacity="0.18"/>
+  </g>
+
+  <!-- ── TOP FACE (terracota = mode 3D) ── -->
+  <polygon points="512,248 694,356 512,464 330,356" fill="url(#topFace)"/>
+  <!-- Sheen highlight on top face -->
+  <polygon points="512,248 694,356 512,464 330,356" fill="url(#topSheen)"/>
+
+  <!-- TOP face grid (3×3)
+       AB = (182,108)  →  1/3=(60.7,36)   2/3=(121.3,72)
+       AD = (-182,108) →  same magnitude
+
+       Lines parallel to AD (at u=1/3 and u=2/3):
+         u=1/3: (572.7,284) → (390.7,392)
+         u=2/3: (633.3,320) → (451.3,428)
+       Lines parallel to AB (at v=1/3 and v=2/3):
+         v=1/3: (451.3,284) → (633.3,392)
+         v=2/3: (390.7,320) → (572.7,428)
+  -->
+  <g stroke="rgba(26,23,20,0.18)" stroke-width="2" stroke-linecap="round">
+    <line x1="573" y1="284" x2="391" y2="392"/>
+    <line x1="633" y1="320" x2="451" y2="428"/>
+    <line x1="451" y1="284" x2="633" y2="392"/>
+    <line x1="391" y1="320" x2="573" y2="428"/>
+  </g>
+
+  <!-- ── RIGHT FACE (blau acer = mode 2D) ── -->
+  <polygon points="694,356 694,572 512,680 512,464" fill="url(#rightFace)"/>
+
+  <!-- RIGHT face grid (3×3)
+       AB=(0,216)  AD=(-182,108)
+       Lines parallel to AD (horizontal divisions):
+         u=1/3: (694,428) → (512,536)
+         u=2/3: (694,500) → (512,608)
+       Lines parallel to AB (vertical divisions in isometric):
+         v=1/3: (633.3,392) → (633.3,608)
+         v=2/3: (572.7,428) → (572.7,644)
+  -->
+  <g stroke="rgba(255,255,255,0.22)" stroke-width="2" stroke-linecap="round">
+    <line x1="694" y1="428" x2="512" y2="536"/>
+    <line x1="694" y1="500" x2="512" y2="608"/>
+    <line x1="633" y1="392" x2="633" y2="608"/>
+    <line x1="573" y1="428" x2="573" y2="644"/>
+  </g>
+
+  <!-- ── LEFT FACE (verd sàlvia = mode Kakuro) ── -->
+  <polygon points="330,356 512,464 512,680 330,572" fill="url(#leftFace)"/>
+
+  <!-- LEFT face grid (3×3)
+       AB=(0,216)  AD=(182,108)
+       Lines parallel to AD:
+         u=1/3: (330,428) → (512,536)
+         u=2/3: (330,500) → (512,608)
+       Lines parallel to AB:
+         v=1/3: (390.7,392) → (390.7,608)
+         v=2/3: (451.3,428) → (451.3,644)
+  -->
+  <g stroke="rgba(255,255,255,0.22)" stroke-width="2" stroke-linecap="round">
+    <line x1="330" y1="428" x2="512" y2="536"/>
+    <line x1="330" y1="500" x2="512" y2="608"/>
+    <line x1="391" y1="392" x2="391" y2="608"/>
+    <line x1="451" y1="428" x2="451" y2="644"/>
+  </g>
+
+  <!-- ══════════════════════════════════════════
+       NUMBERS — fets amb IBM Plex Mono / mono
+       Top face: numbers en blanc crema (sobre terracota)
+       Cell centers (top face):
+         P(u,v) = T + u*AB + v*AD
+               = (512 + (u-v)*182, 248 + (u+v)*108)
+         Cell (col,row): u=(col+0.5)/3, v=(row+0.5)/3
+         (0,0)=(512,284)  (1,0)=(573,320)  (2,0)=(633,356)
+         (0,1)=(451,320)  (1,1)=(512,356)  (2,1)=(573,392)
+         (0,2)=(391,356)  (1,2)=(451,392)  (2,2)=(512,428)
+       ══════════════════════════════════════════ -->
+
+  <!-- TOP face numbers (cream white, IBM Plex Mono style) -->
+  <g font-family="'IBM Plex Mono', 'Courier New', monospace"
+     font-weight="500" font-size="42" text-anchor="middle" dominant-baseline="middle"
+     fill="rgba(255,248,240,0.90)">
+    <text x="512" y="284">5</text>
+    <text x="573" y="320">1</text>
+    <text x="633" y="356">9</text>
+    <text x="451" y="320">3</text>
+    <text x="512" y="356">7</text>
+    <text x="573" y="392">2</text>
+    <text x="391" y="356">8</text>
+    <text x="451" y="392">4</text>
+    <text x="512" y="428">6</text>
+  </g>
+
+  <!-- RIGHT face numbers (white, sparse)
+       P(u,v) = TR + u*(0,216) + v*(-182,108)
+       Cell centers: u=(row+0.5)/3, v=(col+0.5)/3
+       (r=0,c=0)=(663,392)  (r=0,c=1)=(603,428)  (r=0,c=2)=(543,464)
+       (r=1,c=0)=(663,464)  (r=1,c=1)=(603,500)  (r=1,c=2)=(543,536)
+       (r=2,c=0)=(663,536)  (r=2,c=1)=(603,572)  (r=2,c=2)=(543,608)
+  -->
+  <g font-family="'IBM Plex Mono', 'Courier New', monospace"
+     font-weight="500" font-size="40" text-anchor="middle" dominant-baseline="middle"
+     fill="rgba(255,255,255,0.78)">
+    <text x="663" y="392">4</text>
+    <text x="603" y="428">9</text>
+    <text x="543" y="464">2</text>
+    <text x="663" y="464">8</text>
+    <text x="603" y="500">1</text>
+    <text x="543" y="536">6</text>
+    <text x="663" y="536">3</text>
+    <text x="603" y="572">7</text>
+    <text x="543" y="608">5</text>
+  </g>
+
+  <!-- LEFT face numbers (white, sparse)
+       P(u,v) = TL + u*(0,216) + v*(182,108)
+       Cell centers: u=(row+0.5)/3, v=(col+0.5)/3
+       (r=0,c=0)=(360,392)  (r=0,c=1)=(421,428)  (r=0,c=2)=(481,464)
+       (r=1,c=0)=(360,464)  (r=1,c=1)=(421,500)  (r=1,c=2)=(481,536)
+       (r=2,c=0)=(360,536)  (r=2,c=1)=(421,572)  (r=2,c=2)=(481,608)
+  -->
+  <g font-family="'IBM Plex Mono', 'Courier New', monospace"
+     font-weight="500" font-size="40" text-anchor="middle" dominant-baseline="middle"
+     fill="rgba(255,255,255,0.68)">
+    <text x="360" y="392">7</text>
+    <text x="421" y="428">2</text>
+    <text x="481" y="464">5</text>
+    <text x="360" y="464">6</text>
+    <text x="421" y="500">8</text>
+    <text x="481" y="536">3</text>
+    <text x="360" y="536">1</text>
+    <text x="421" y="572">4</text>
+    <text x="481" y="608">9</text>
+  </g>
+
+  <!-- ══════════════════════════════════════════
+       CUBE EDGES — ink dark
+       ══════════════════════════════════════════ -->
+  <g stroke="#1a1714" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Top edges (most visible) -->
+    <line x1="512" y1="248" x2="694" y2="356" stroke-width="4" opacity="0.55"/>
+    <line x1="512" y1="248" x2="330" y2="356" stroke-width="4" opacity="0.55"/>
+    <!-- Right vertical edge -->
+    <line x1="694" y1="356" x2="694" y2="572" stroke-width="3.5" opacity="0.40"/>
+    <!-- Left vertical edge -->
+    <line x1="330" y1="356" x2="330" y2="572" stroke-width="3.5" opacity="0.35"/>
+    <!-- Center vertical (where 3 faces meet) -->
+    <line x1="512" y1="464" x2="512" y2="680" stroke-width="3" opacity="0.32"/>
+    <!-- Face dividers at center (upper) -->
+    <line x1="694" y1="356" x2="512" y2="464" stroke-width="3" opacity="0.30"/>
+    <line x1="330" y1="356" x2="512" y2="464" stroke-width="3" opacity="0.30"/>
+    <!-- Bottom edges -->
+    <line x1="694" y1="572" x2="512" y2="680" stroke-width="3" opacity="0.28"/>
+    <line x1="330" y1="572" x2="512" y2="680" stroke-width="3" opacity="0.25"/>
+  </g>
+
+  <!-- Top vertex: small accent dot (terracota) -->
+  <circle cx="512" cy="248" r="9" fill="#c06040" opacity="0.85"/>
+  <circle cx="512" cy="248" r="20" fill="#c06040" opacity="0.12"/>
+
+  <!-- ══════════════════════════════════════════
+       SUPERSCRIPT "3" — brand accent, top-right
+       Matches the wordmark "Sudoku³" style
+       ══════════════════════════════════════════ -->
+  <text x="860" y="195"
+        font-family="'Space Grotesk', 'Inter', sans-serif"
+        font-weight="700" font-size="110"
+        fill="#c06040" opacity="0.90"
+        text-anchor="middle" dominant-baseline="middle">3</text>
+
+</svg>
